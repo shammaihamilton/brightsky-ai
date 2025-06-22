@@ -1,0 +1,8 @@
+{
+  "name": "floating-widget-extension-build",
+  "private": true,
+  "scripts": {
+    "build:extension": "vite build --config vite.config.extension.ts",
+    "dev:extension": "vite build --config vite.config.extension.ts --watch"
+  }
+}
