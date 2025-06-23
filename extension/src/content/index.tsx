@@ -1,13 +1,27 @@
-import * as React from 'react';
-import { createRoot } from 'react-dom/client';
-import FloatingWidget from '../components/FloatingWidget';
+import * as React from "react";
+import { createRoot } from "react-dom/client";
+import FloatingWidget from "../../../src/components/FloatingWidget";
+// import FloatingChatWidget from '../../../src/components/FloatingChatWidget';
+// import { Providers } from '../../../src/store/providers'
+console.log("🚀 Content script starting...");
 
-console.log('🚀 Content script starting...');
+// Inject Tailwind CSS into the page
+const injectTailwindCSS = () => {
+  const id = "floating-widget-tailwind-css";
+  if (document.getElementById(id)) return; // Prevent duplicate injection
+  const link = document.createElement("link");
+  link.id = id;
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = chrome.runtime.getURL("index.css");
+  document.head.appendChild(link);
+};
 
 // Create widget container
 const createWidget = () => {
-  const container = document.createElement('div');
-  container.id = 'floating-widget-root';
+  injectTailwindCSS();
+  const container = document.createElement("div");
+  container.id = "floating-widget-root";
   container.style.cssText = `
     position: fixed !important;
     top: 0 !important;
@@ -17,18 +31,23 @@ const createWidget = () => {
     pointer-events: none !important;
     z-index: 2147483647 !important;
   `;
-  
+
   document.body.appendChild(container);
-  
+
   const root = createRoot(container);
   root.render(React.createElement(FloatingWidget));
-  
-  console.log('✅ Widget created successfully');
+  // root.render(
+  //   <Providers>
+  //     <FloatingChatWidget />
+  //   </Providers>
+  // );
+
+  console.log("✅ Widget created successfully");
 };
 
 // Initialize
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', createWidget);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", createWidget);
 } else {
   createWidget();
 }

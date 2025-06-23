@@ -21,7 +21,20 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Path mapping */
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@/store/*": ["store/*"],
+      "@/types/*": ["types/*"],
+      "@/utils/*": ["utils/*"],
+      "@/components/*": ["components/*"],
+      "@/config/*": ["config/*"],
+      "@/services/*": ["services/*"],
+      "@/selectors/*": ["store/selectors/*"]
+    }
   },
   "include": ["src"]
 }

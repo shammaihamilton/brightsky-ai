@@ -1,4 +1,6 @@
-import FloatingWidget from './components/FloatingWidget2';
+// import FloatingWidget from './components/FloatingWidget';
+import FloatingChatWidget from './components/FloatingChatWidget';
+
 
 function App() {
   return (
@@ -10,7 +12,7 @@ function App() {
       </div>
 
       {/* Floating Widget */}
-      <FloatingWidget />
+      <FloatingChatWidget />
     </div>
   );
 }

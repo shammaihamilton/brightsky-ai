@@ -10,35 +10,39 @@ interface Position {
 
 const FloatingWidget: React.FC = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-    // Safe default position that works during SSR
-  const getDefaultPosition = (): Position => {
-    return { x: 50, y: 50 }; // Always start at a visible position
-  };
-
-  const [storedPosition, setStoredPosition] = useLocalStorage<Position>('widget-position', getDefaultPosition());
-
-  const { position, isDragging, handleMouseDown } = useDrag(storedPosition);
-
-  // Debug logging
+  // Add debugging
   useEffect(() => {
-    console.log('Widget position:', position);
-    console.log('Window size:', { width: window.innerWidth, height: window.innerHeight });
-  }, [position]);
-
-  // Update position to default if window size changes and position is invalid
-  useEffect(() => {
-    const updatePosition = () => {
-      const defaultPos = getDefaultPosition();
-      if (storedPosition.x === 20 && storedPosition.y === 20) {
-        setStoredPosition(defaultPos);
-      }
+    console.log('🎯 FloatingWidget component mounted!');
+    console.log('📏 Window dimensions:', window.innerWidth, 'x', window.innerHeight);
+    
+    // Add a native click handler as backup
+    const handleNativeClick = (e: MouseEvent) => {
+      console.log('🔥 Native click detected!', e.target);
     };
     
-    // Set proper position after component mounts
-    updatePosition();
-    window.addEventListener('resize', updatePosition);
-    return () => window.removeEventListener('resize', updatePosition);
-  }, [storedPosition, setStoredPosition]);
+    document.addEventListener('click', handleNativeClick);
+    return () => document.removeEventListener('click', handleNativeClick);
+  }, []);
+
+  // Debug panel state changes
+  useEffect(() => {
+    console.log('🔄 Panel state changed to:', isPanelOpen);
+  }, [isPanelOpen]);
+  
+  // Start with a position in the bottom-right corner
+  const getDefaultPosition = (): Position => {
+    return {
+      x: Math.max(20, window.innerWidth - 100),
+      y: Math.max(20, window.innerHeight - 100),
+    };
+  };
+
+  const [storedPosition, setStoredPosition] = useLocalStorage<Position>(
+    'chrome-extension-widget-position', 
+    getDefaultPosition()
+  );
+
+  const { position, isDragging, handleMouseDown } = useDrag(storedPosition);
 
   // Save position to localStorage when it changes
   useEffect(() => {
@@ -50,8 +54,10 @@ const FloatingWidget: React.FC = () => {
   // Handle window resize to keep widget in bounds
   useEffect(() => {
     const handleResize = () => {
-      const maxX = window.innerWidth - 80;
-      const maxY = window.innerHeight - 80;
+      const padding = 10;
+      const widgetSize = 64;
+      const maxX = Math.max(padding, window.innerWidth - widgetSize - padding);
+      const maxY = Math.max(padding, window.innerHeight - widgetSize - padding);
       
       if (position.x > maxX || position.y > maxY) {
         const newPosition = {
@@ -64,89 +70,168 @@ const FloatingWidget: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [position, setStoredPosition]);
-
-  const handleWidgetClick = (e: React.MouseEvent) => {
-    // Only toggle panel if we're not dragging
+  }, [position, setStoredPosition]);  const handleWidgetClick = (e: React.MouseEvent) => {
+    console.log('🖱️ Widget clicked! Event target:', e.target);
+    console.log('🖱️ Current target:', e.currentTarget);
+    console.log('🖱️ isDragging:', isDragging);
+    console.log('🖱️ Current panel state:', isPanelOpen);
+    
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only toggle if not dragging
     if (!isDragging) {
-      e.stopPropagation();
-      setIsPanelOpen(!isPanelOpen);
+      const newState = !isPanelOpen;
+      console.log('📦 Setting panel to:', newState);
+      setIsPanelOpen(newState);
+    } else {
+      console.log('🚫 Click ignored - widget is being dragged');
     }
   };
-
   const handleClosePanel = () => {
+    console.log('❌ Closing panel');
     setIsPanelOpen(false);
+  };  const containerStyles: React.CSSProperties = {
+    position: 'fixed',
+    left: position.x,
+    top: position.y,
+    zIndex: 2147483647,
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    pointerEvents: 'auto', // CRITICAL: Allow pointer events
+    width: '64px',
+    height: '64px',
+  };  const widgetStyles: React.CSSProperties = {
+    position: 'relative',
+    width: '64px',
+    height: '64px',
+    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+    borderRadius: '50%',
+    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3)',
+    cursor: isDragging ? 'grabbing' : 'pointer',
+    transform: isDragging ? 'scale(1.05)' : 'scale(1)',
+    transition: isDragging ? 'none' : 'transform 0.2s ease, box-shadow 0.2s ease',
+    userSelect: 'none',
+    // Make the entire area clickable
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Enhanced visibility
+    border: '2px solid rgba(255, 255, 255, 0.3)',
+    // Ensure this is fully clickable
+    overflow: 'visible',  };
+  
+  const iconStyles: React.CSSProperties = {
+    width: '24px',
+    height: '24px',
+    color: 'white',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: '2',
+    pointerEvents: 'none', // Allow clicks to pass through
+    zIndex: 1, // Keep icon above background animations
   };
-  return (
-    <div 
-      className="fixed z-50" 
-      style={{ 
-        left: position.x, 
-        top: position.y,
-        border: '2px solid red' // Debug border to make it visible
-      }}
-    >
-      {/* Widget Button */}
-      <div
-        className={`
-          relative w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 
-          rounded-full shadow-lg cursor-pointer transform transition-all duration-200
-          hover:scale-110 hover:shadow-xl active:scale-95
-          ${isDragging ? 'scale-105 shadow-2xl' : ''}
-          select-none
-        `}
-        onMouseDown={handleMouseDown}
-        onClick={handleWidgetClick}
-        role="button"
-        tabIndex={0}
-        aria-label="Open widget panel"
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsPanelOpen(!isPanelOpen);
-          }
-        }}
-      >
-        {/* Widget Icon */}
-        <div className="absolute inset-0 flex items-center justify-center">
+  const indicatorStyles: React.CSSProperties = {
+    position: 'absolute',
+    top: '-2px',
+    right: '-2px',
+    width: '16px',
+    height: '16px',
+    backgroundColor: '#10b981',
+    borderRadius: '50%',
+    border: '2px solid white',
+    display: isPanelOpen ? 'block' : 'none',
+    pointerEvents: 'none', // Allow clicks to pass through
+  };  return (
+    <>
+      <div style={containerStyles}>
+        {/* Widget Button - entire area clickable */}
+        <div
+          style={widgetStyles}
+          onMouseDown={handleMouseDown}
+          onClick={handleWidgetClick}
+          onMouseEnter={(e) => {
+            console.log('🖱️ Mouse entered widget');
+            if (!isDragging) {
+              e.currentTarget.style.transform = 'scale(1.1)';
+              e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(0, 0, 0, 0.4)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            console.log('🖱️ Mouse left widget');
+            if (!isDragging) {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.3)';
+            }
+          }}
+          role="button"
+          tabIndex={0}
+          aria-label="Open widget panel"
+        >
+          {/* Chat Icon - centered in flex container */}
           <svg 
-            className="w-8 h-8 text-white" 
-            fill="none" 
-            stroke="currentColor" 
+            style={iconStyles} 
             viewBox="0 0 24 24"
           >
             <path 
               strokeLinecap="round" 
               strokeLinejoin="round" 
-              strokeWidth={2} 
               d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" 
             />
           </svg>
+
+          {/* Panel open indicator */}
+          {isPanelOpen && (
+            <div style={indicatorStyles}></div>
+          )}
+
+          {/* Pulse animation when not dragging */}
+          {!isDragging && (
+            <div style={{
+              position: 'absolute',
+              inset: '0',
+              borderRadius: '50%',
+              background: 'rgba(59, 130, 246, 0.4)',
+              animation: 'pulse 2s infinite',
+              pointerEvents: 'none', // Allow clicks to pass through
+            }}></div>
+          )}
         </div>
 
-        {/* Pulse animation when not dragging */}
-        {!isDragging && (
-          <div className="absolute inset-0 rounded-full bg-blue-400 animate-ping opacity-20"></div>
-        )}
-
-        {/* Panel open indicator */}
+        {/* Widget Panel */}
         {isPanelOpen && (
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+          <WidgetPanel isOpen={isPanelOpen} onClose={handleClosePanel} />
         )}
       </div>
-
-      {/* Widget Panel */}
-      <WidgetPanel isOpen={isPanelOpen} onClose={handleClosePanel} />
 
       {/* Click outside to close panel */}
       {isPanelOpen && (
         <div
-          className="fixed inset-0 z-40"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 2147483646,
+          }}
           onClick={handleClosePanel}
-          aria-hidden="true"
         />
       )}
-    </div>
+
+      {/* Inject pulse animation styles */}
+      <style>
+        {`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.2;
+            }
+          }
+        `}
+      </style>
+    </>
   );
 };
 

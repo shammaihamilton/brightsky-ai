@@ -1,9 +1,33 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'extension/manifest.json',
+          dest: '.'
+        },
+        {
+          src: 'extension/popup.html',
+          dest: '.'
+        },
+        {
+          src: 'src/index.css', // Copy built Tailwind CSS
+          dest: '.'
+        }
+      ]
+    })
+  ],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, 'src'),
+    },
+  },
   build: {
     outDir: 'dist',
     rollupOptions: {
