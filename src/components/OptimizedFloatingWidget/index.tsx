@@ -109,45 +109,74 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const handleMenuMouseLeave = () => {
     // Menu stays open - only closes on click outside or close button
   };
-
-  // Calculate chat panel position
+  // Calculate chat panel position (prefer left/above button)
   const getChatPanelPosition = () => {
     const panelWidth = 380;
     const panelHeight = 500;
+    const buttonSize = 64;
     const padding = 20;
     
-    let x = position.x - panelWidth + 64;
-    let y = position.y - panelHeight - 12;
+    // Strategy: Chat panel prefers left side and above button
+    let x = position.x - panelWidth + buttonSize; // Align right edge with button right edge
+    let y = position.y - panelHeight - 12; // Position above button with gap
     
-    if (x < padding) x = padding;
-    if (y < padding) y = position.y + 64 + 12;
+    // If panel would go off left edge, position to the right
+    if (x < padding) {
+      x = position.x + buttonSize + 12; // Position to the right of button
+    }
+    
+    // If panel would go off top edge, position below
+    if (y < padding) {
+      y = position.y + buttonSize + 12; // Position below button
+    }
+    
+    // If panel would go off right edge, adjust left
     if (x + panelWidth > window.innerWidth - padding) {
       x = window.innerWidth - panelWidth - padding;
     }
+    
+    // If panel would go off bottom edge, adjust up
     if (y + panelHeight > window.innerHeight - padding) {
       y = window.innerHeight - panelHeight - padding;
     }
-      return { x, y };
-  };  // Calculate dropdown menu position (1px away from button)
+    
+    return { x, y };
+  };// Calculate dropdown menu position (avoid chat panel area)
   const getMenuPosition = () => {
     const menuWidth = 200;
+    const menuHeight = 300; // Estimated menu height
     const buttonSize = 64;
     const padding = 10;
-    const gap = 1; // 1px gap as requested
+    const gap = 1;
     
-    // Position menu directly adjacent to the button with 1px gap
-    let x = position.x - menuWidth + buttonSize;
-    let y = position.y + buttonSize + gap;
+    // Strategy: Position menu in opposite direction from chat panel
+    // Chat panel prefers left/above, so menu will prefer right/below
     
-    // Adjust if menu would go off-screen
-    if (x < padding) {
-      x = position.x + buttonSize + gap; // Position to the right if too far left
-    }
+    let x = position.x + buttonSize + gap; // Start to the right of button
+    let y = position.y + buttonSize + gap; // Start below button
+    
+    // If menu would go off right edge, try left side
     if (x + menuWidth > window.innerWidth - padding) {
-      x = window.innerWidth - menuWidth - padding;
+      x = position.x - menuWidth - gap;
     }
-    if (y + 300 > window.innerHeight - padding) { // Estimated menu height
-      y = position.y - 300 - gap; // Position above if too low
+    
+    // If menu would go off bottom edge, try above
+    if (y + menuHeight > window.innerHeight - padding) {
+      y = position.y - menuHeight - gap;
+    }
+    
+    // Final boundary checks
+    if (x < padding) x = padding;
+    if (y < padding) y = padding;
+    
+    // Ensure menu doesn't overlap with chat panel if both are open
+    if (isPanelOpen) {
+      const chatPanel = getChatPanelPosition();
+      // If menu would overlap with chat panel, move it further right
+      if (x < chatPanel.x + 380 && x + menuWidth > chatPanel.x &&
+          y < chatPanel.y + 500 && y + menuHeight > chatPanel.y) {
+        x = Math.min(window.innerWidth - menuWidth - padding, chatPanel.x + 380 + 10);
+      }
     }
     
     return { x, y };
@@ -155,7 +184,6 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
   const chatPanelPosition = getChatPanelPosition();
   const menuPosition = getMenuPosition();
-
   // Debug logging
   useEffect(() => {
     console.log('🔍 OptimizedFloatingWidget Debug:', {
@@ -165,9 +193,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
       isDragging,
       isHovered,
       isPanelOpen,
-      showMenu
+      showMenu,
+      chatPanelPosition: isPanelOpen ? chatPanelPosition : 'closed',
+      menuPosition: showMenu ? menuPosition : 'closed'
     });
-  }, [isVisible, connectionStatus, position, isDragging, isHovered, isPanelOpen, showMenu]);
+  }, [isVisible, connectionStatus, position, isDragging, isHovered, isPanelOpen, showMenu, chatPanelPosition, menuPosition]);
 
   if (!isVisible) {
     console.log('❌ Widget not visible - isVisible:', isVisible);

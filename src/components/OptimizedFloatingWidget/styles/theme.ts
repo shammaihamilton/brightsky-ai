@@ -105,8 +105,8 @@ export const typography = {
 } as const;
 
 export const zIndex = {
-  widget: 2147483647,
-  panel: 2147483646,
-  menu: 2147483645,
-  overlay: 2147483644,
+  widget: 2147483647,    // Floating button (highest)
+  menu: 2147483646,      // Dropdown menu (above chat panel)
+  panel: 2147483645,     // Chat panel (below menu)
+  overlay: 2147483644,   // Click-outside overlay (lowest)
 } as const;
