@@ -11,8 +11,8 @@ export const ButtonContainer = styled.div<ButtonContainerProps>`
   position: fixed;
   left: ${props => props.position.x}px;
   top: ${props => props.position.y}px;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   z-index: ${zIndex.widget};
   pointer-events: auto;
   font-family: ${typography.fontFamily.system};
@@ -31,8 +31,8 @@ interface FloatingButtonProps {
 
 export const FloatingButton = styled.button<FloatingButtonProps>`
   position: relative;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   background: ${colors.primary.gradient};
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: ${borderRadius.full};

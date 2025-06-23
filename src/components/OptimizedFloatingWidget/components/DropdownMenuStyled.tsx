@@ -12,6 +12,7 @@ import {
 
 interface DropdownMenuProps {
   position: { x: number; y: number };
+  isPanelOpen: boolean;
   onChatClick: () => void;
   onSettingsClick: () => void;
   onKeyboardShortcutsClick: () => void;
@@ -23,6 +24,7 @@ interface DropdownMenuProps {
 
 const DropdownMenuStyled: React.FC<DropdownMenuProps> = ({
   position,
+  isPanelOpen,
   onChatClick,
   onSettingsClick,
   onKeyboardShortcutsClick,
@@ -30,13 +32,23 @@ const DropdownMenuStyled: React.FC<DropdownMenuProps> = ({
   onClose,
   onMouseEnter,
   onMouseLeave,
-}) => {
-  const menuSections = [
+}) => {  const menuSections = [
     {
       header: "Chat",
       items: [
         {
-          icon: (
+          icon: isPanelOpen ? (
+            // Close icon when chat is open
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          ) : (
+            // Chat icon when chat is closed
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -46,7 +58,7 @@ const DropdownMenuStyled: React.FC<DropdownMenuProps> = ({
               />
             </svg>
           ),
-          label: "Open Chat",
+          label: isPanelOpen ? "Close Chat" : "Open Chat",
           onClick: onChatClick,
         },
       ],

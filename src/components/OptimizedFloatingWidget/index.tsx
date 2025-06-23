@@ -68,13 +68,10 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     
     setIsPanelOpen(!isPanelOpen);
     setShowMenu(false);
-  };
-
-  const handleClosePanel = () => {
+  };  const handleCloseChatOnly = () => {
+    // Only close chat panel, keep menu open if it was open
     setIsPanelOpen(false);
-    setShowMenu(false);
-    setIsHovered(false);
-  };  const handleMenuClick = (e: React.MouseEvent) => {
+  };const handleMenuClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -108,12 +105,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
   const handleMenuMouseLeave = () => {
     // Menu stays open - only closes on click outside or close button
-  };
-  // Calculate chat panel position (prefer left/above button)
+  };  // Calculate chat panel position (prefer left/above button)
   const getChatPanelPosition = () => {
-    const panelWidth = 380;
-    const panelHeight = 500;
-    const buttonSize = 64;
+    const panelWidth = 320;  // Reduced from 380px - more compact
+    const panelHeight = 280; // Much smaller - similar to menu height
+    const buttonSize = 56; // Updated to match smaller button size
     const padding = 20;
     
     // Strategy: Chat panel prefers left side and above button
@@ -141,11 +137,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     }
     
     return { x, y };
-  };// Calculate dropdown menu position (avoid chat panel area)
+  };  // Calculate dropdown menu position (avoid chat panel area)
   const getMenuPosition = () => {
     const menuWidth = 200;
     const menuHeight = 300; // Estimated menu height
-    const buttonSize = 64;
+    const buttonSize = 56; // Updated to match smaller button size
     const padding = 10;
     const gap = 1;
     
@@ -167,15 +163,13 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     
     // Final boundary checks
     if (x < padding) x = padding;
-    if (y < padding) y = padding;
-    
-    // Ensure menu doesn't overlap with chat panel if both are open
+    if (y < padding) y = padding;    // Ensure menu doesn't overlap with chat panel if both are open
     if (isPanelOpen) {
       const chatPanel = getChatPanelPosition();
       // If menu would overlap with chat panel, move it further right
-      if (x < chatPanel.x + 380 && x + menuWidth > chatPanel.x &&
-          y < chatPanel.y + 500 && y + menuHeight > chatPanel.y) {
-        x = Math.min(window.innerWidth - menuWidth - padding, chatPanel.x + 380 + 10);
+      if (x < chatPanel.x + 320 && x + menuWidth > chatPanel.x &&
+          y < chatPanel.y + 280 && y + menuHeight > chatPanel.y) {
+        x = Math.min(window.innerWidth - menuWidth - padding, chatPanel.x + 320 + 10);
       }
     }
     
@@ -229,10 +223,17 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
       {showMenu && (
         <DropdownMenu
           position={menuPosition}
-          onChatClick={() => {
-            setIsPanelOpen(true);
-            setShowMenu(false);
-            setIsHovered(false);
+          isPanelOpen={isPanelOpen}          onChatClick={() => {
+            if (isPanelOpen) {
+              // Close chat if it's open - keep menu open to show state change
+              setIsPanelOpen(false);
+            } else {
+              // Open chat if it's closed - keep menu open to show state change
+              setIsPanelOpen(true);
+            }
+            // Don't close menu - let user see the button change and interact more
+            // setShowMenu(false);
+            // setIsHovered(false);
           }}
           onSettingsClick={() => {
             console.log('Settings clicked');
@@ -256,18 +257,16 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           onMouseEnter={handleMenuMouseEnter}
           onMouseLeave={handleMenuMouseLeave}
         />
-      )}
-
-      {/* Chat Panel */}
+      )}      {/* Chat Panel */}
       {isPanelOpen && (
         <ChatPanel
           position={chatPanelPosition}
           connectionStatus={connectionStatus}
-          onClose={handleClosePanel}
+          onClose={handleCloseChatOnly}
           onSend={handleSendMessage}
           chatPanelRef={chatPanelRef}
         />
-      )}      {/* Click outside to close */}
+      )}{/* Click outside to close */}
       {(isPanelOpen || showMenu) && (
         <div
           style={{

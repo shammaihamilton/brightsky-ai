@@ -10,8 +10,8 @@ export const ChatPanelContainer = styled.div<ChatPanelContainerProps>`
   position: fixed;
   left: ${props => props.position.x}px;
   top: ${props => props.position.y}px;
-  width: 380px;
-  height: 500px;
+  width: 320px;  /* Reduced from 380px - more compact */
+  height: 280px; /* Much smaller - similar to menu height */
   z-index: ${zIndex.panel};
   pointer-events: auto;
   font-family: ${typography.fontFamily.system};
