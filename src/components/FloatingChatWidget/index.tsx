@@ -25,6 +25,7 @@ import ChatButton from "./components/ChatButton";
 import MenuButton from "./components/MenuButton";
 import DropdownMenu from "./components/DropdownMenu";
 import ChatPanel from "./components/ChatPanel";
+import { Providers } from "@/store/providers";
 
 const FloatingChatWidget: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -99,9 +100,7 @@ const FloatingChatWidget: React.FC = () => {
     ) {
       closeAll();
     }
-  };
-
-  // Early return if not visible or initialized
+  };  // Early return if not visible or initialized
   if (!isVisible || !isInitialized) return null;
 
   // Calculate chat panel position
@@ -197,4 +196,15 @@ const FloatingChatWidget: React.FC = () => {
   );
 };
 
-export default FloatingChatWidget;
+// export default FloatingChatWidget;
+
+
+const FloatingAiWidget: React.FC = () => {
+  return (
+    <Providers>
+      <FloatingChatWidget />
+    </Providers>
+  );
+};
+
+export default FloatingAiWidget;

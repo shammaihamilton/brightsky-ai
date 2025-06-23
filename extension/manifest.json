@@ -7,10 +7,11 @@
     "activeTab",
     "scripting",
     "storage"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],  "content_scripts": [
+  ],  "host_permissions": [
+    "<all_urls>",
+    "http://localhost:*/*",
+    "ws://localhost:*/*"
+  ],"content_scripts": [
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
@@ -18,7 +19,7 @@
     }
   ],  "web_accessible_resources": [
     {
-      "resources": ["content.js", "assets/*"],
+      "resources": ["content.js", "index.css", "assets/*"],
       "matches": ["<all_urls>"]
     }
   ],

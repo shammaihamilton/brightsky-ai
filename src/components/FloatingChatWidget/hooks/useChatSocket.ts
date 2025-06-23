@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { socket } from './socket';
+import { socket } from './socket.mock'; // Use mock socket for Chrome extension
 import { useAppDispatch } from '../../../store/hooks';
 import { setConnectionStatus } from '../../../store/slices/chatSlice';
 
@@ -38,15 +38,16 @@ export const useChatSocket = (
       dispatch(setConnectionStatus('disconnected'));
     });
 
-    socket.on('ai_message_chunk', ({ messageId, chunk }: AiMessageChunkPayload) => {
+    socket.on('ai_message_chunk', (payload: unknown) => {
+      const { messageId, chunk } = payload as AiMessageChunkPayload;
       onChunk(chunk, messageId);
-    });
-
-    socket.on('ai_message_done', ({ messageId }: AiMessageDonePayload) => {
+    });    socket.on('ai_message_done', (payload: unknown) => {
+      const { messageId } = payload as AiMessageDonePayload;
       onDone(messageId);
     });
 
-    socket.on('ai_message_error', ({ messageId, error }: AiMessageErrorPayload) => {
+    socket.on('ai_message_error', (payload: unknown) => {
+      const { messageId, error } = payload as AiMessageErrorPayload;
       onError?.(messageId, error);
     });
 

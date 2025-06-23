@@ -8,9 +8,7 @@ import type { DraggableEvent } from "react-draggable";
 export const useWidgetPosition = (isExpanded: boolean) => {
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
-  const wasDragged = useRef(false);
-
-  useEffect(() => {
+  const wasDragged = useRef(false);  useEffect(() => {
     if (typeof window === "undefined" || isInitialized) return;
 
     const winWidth = window.innerWidth;

@@ -6,7 +6,7 @@ import {
   selectIsAiLoading, 
   selectCurrentError 
 } from '../../../store/selectors/chatSelectors';
-import { VirtualizedMessageList } from './VirtualizedMessageList';
+import { SimpleMessageList } from './SimpleMessageList';
 import { useMessageListItems } from './useMessageListItems';
 
 const MessageList: React.FC = () => {
@@ -16,10 +16,9 @@ const MessageList: React.FC = () => {
   
   // Custom hook to combine messages with loading/error states
   const listItems = useMessageListItems(messages, isLoading, error);
-  
-  return (
+    return (
     <div className="flex-grow overflow-hidden bg-gray-50 dark:bg-gray-900">
-      <VirtualizedMessageList items={listItems} />
+      <SimpleMessageList items={listItems} />
     </div>
   );
 };

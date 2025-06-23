@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import ReactMarkdown from "react-markdown";
 import type { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { SimpleCodeBlock } from "./SimpleCodeBlock";
 import { format } from "date-fns";
 import type { Message, MessageStatus } from "@/types/chat.types";
 import {
@@ -69,21 +69,13 @@ const CustomCodeBlock: Components["code"] = (props) => {
 
   // Remove problematic props that conflict with SyntaxHighlighter
   // const { ref: _unusedRef, style: _unusedStyle, ...cleanProps } = otherProps;
-
   // Handle block code (```code```)
   if (!isInline) {
     return (
-      <div className="relative group/code my-2 bg-[#1e1e1e] rounded overflow-x-auto text-sm">
-        {" "}
-        {/* Container for bg and scroll */}
-        <SyntaxHighlighter>{codeString}</SyntaxHighlighter>
-        <button
-          onClick={() => navigator.clipboard.writeText(codeString)}
-          className="absolute top-1 right-1 p-1 bg-gray-600/70 hover:bg-gray-500/80 rounded text-white opacity-0 group-hover/code:opacity-100 transition-opacity text-xs z-10"
-          aria-label="Copy code"
-        >
-          Copy
-        </button>
+      <div className="my-2">
+        <SimpleCodeBlock className={className}>
+          {codeString}
+        </SimpleCodeBlock>
       </div>
     );
   }

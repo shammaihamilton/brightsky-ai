@@ -1,14 +1,14 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import FloatingWidget from "../../../src/components/FloatingWidget";
-// import FloatingChatWidget from '../../../src/components/FloatingChatWidget';
-// import { Providers } from '../../../src/store/providers'
+import OptimizedFloatingWidget from "../../../src/components/OptimizedFloatingWidget";
 console.log("🚀 Content script starting...");
+
+declare const chrome: typeof globalThis.chrome;
 
 // Inject Tailwind CSS into the page
 const injectTailwindCSS = () => {
   const id = "floating-widget-tailwind-css";
-  if (document.getElementById(id)) return; // Prevent duplicate injection
+  if (document.getElementById(id)) return; 
   const link = document.createElement("link");
   link.id = id;
   link.rel = "stylesheet";
@@ -33,14 +33,8 @@ const createWidget = () => {
   `;
 
   document.body.appendChild(container);
-
   const root = createRoot(container);
-  root.render(React.createElement(FloatingWidget));
-  // root.render(
-  //   <Providers>
-  //     <FloatingChatWidget />
-  //   </Providers>
-  // );
+  root.render(React.createElement(OptimizedFloatingWidget));
 
   console.log("✅ Widget created successfully");
 };
