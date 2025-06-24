@@ -8,8 +8,7 @@ interface ChatPanelContainerProps {
 }
 
 export const ChatPanelContainer = styled.div<ChatPanelContainerProps>`
-  position: fixed;
-  left: ${props => props.position.x}px;
+  position: fixed; left: ${props => props.position.x}px;  
   top: ${props => props.position.y}px;
   width: 320px;
   height: ${props => {
@@ -23,9 +22,8 @@ export const ChatPanelContainer = styled.div<ChatPanelContainerProps>`
   max-height: 80vh; /* Never exceed 80% of viewport height */
   z-index: ${zIndex.panel};
   pointer-events: auto;
-  font-family: ${typography.fontFamily.system};
-  animation: ${fadeIn} 0.3s ease-out;
-  transition: height 0.3s ease-out;
+  font-family: ${typography.fontFamily.system};  animation: ${fadeIn} 0.3s ease-out;
+  transition: height 0.3s ease-out; /* Only animate height changes, not position */
 `;
 
 export const PanelContent = styled.div`
@@ -144,3 +142,17 @@ export const MessagesContainer = styled.div`
 export const InputContainer = styled.div`
   border-top: 1px solid ${colors.neutral.gray200};
 `;
+
+  //   const buttonX = props.position.x;
+  //   const panelWidth = 320;
+  //   const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
+  //   const messageCount = props.messageCount || 0;
+    
+  //   // Only adjust position if button is on RIGHT side AND chat has expanded with multiple messages
+  //   if (buttonX > screenWidth / 2 && messageCount > 2) {
+  //     return Math.max(16, buttonX - panelWidth + 56); // Move chat left to prevent overlap when expanded
+  //   }
+    
+  //   // Otherwise, use original simple positioning (connected to button)
+  //   return buttonX;
+  // }}px;
