@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build --config vite.config.extension.ts",
+    "build": "tsc -b && vite build",
     "build:extension": "vite build --config vite.config.extension.ts && copy extension\\manifest.json dist\\manifest.json && copy extension\\popup.html dist\\popup.html",
     "dev:extension": "vite build --config vite.config.extension.ts --watch",
     "lint": "eslint .",

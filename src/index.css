@@ -1,7 +1,6 @@
-/* Basic reset and global styles */
-* {
-  box-sizing: border-box;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
   margin: 0;
@@ -11,7 +10,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
 }
-
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
