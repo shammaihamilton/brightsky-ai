@@ -9,16 +9,16 @@ export const ChatInputContainer = styled.div`
 export const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: ${spacing.sm};
+  gap: ${spacing.xs};
   background-color: ${colors.neutral.gray50};
-  border: 2px solid ${colors.neutral.gray200};
+  border: 1px solid ${colors.neutral.gray200};
   border-radius: 20px;
-  padding: ${spacing.xs};
+  padding: ${spacing.xs} ${spacing.sm};
   transition: all 0.2s ease;
   
   &:focus-within {
-    border-color: ${colors.primary.blue};
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #4285f4;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
   }
 `;
 
@@ -33,26 +33,35 @@ interface StyledTextAreaProps {
 
 export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   width: 100%;
-  min-height: 32px;
-  max-height: 80px;
-  padding: ${spacing.sm};
+  min-height: 18px;
+  max-height: 60px;
+  padding: ${spacing.xs} ${spacing.sm};
   border: none;
-  border-radius: 16px;
   background-color: transparent;
   color: ${colors.neutral.gray800};
   font-family: ${typography.fontFamily.system};
   font-size: ${typography.fontSize.sm};
-  line-height: ${typography.lineHeight.normal};
+  line-height: 1.2;
   resize: none;
   outline: none;
   transition: all 0.2s ease;
+  
   &::placeholder {
     color: ${colors.neutral.gray400};
+    transition: color 0.2s ease;
+  }
+  
+  &:focus::placeholder {
+    color: ${colors.neutral.gray300};
   }
   
   ${props => props.isDisabled && css`
     color: ${colors.neutral.gray400};
     cursor: not-allowed;
+    
+    &::placeholder {
+      color: ${colors.neutral.gray300};
+    }
   `}
   
   /* Custom scrollbar */
@@ -67,6 +76,7 @@ export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   &::-webkit-scrollbar-thumb {
     background: ${colors.neutral.gray300};
     border-radius: 2px;
+    transition: background-color 0.2s ease;
   }
   
   &::-webkit-scrollbar-thumb:hover {
@@ -79,30 +89,32 @@ interface SendButtonProps {
 }
 
 export const SendButton = styled.button<SendButtonProps>`
-  min-width: 36px;
-  height: 36px;
+  min-width: 28px;
+  height: 28px;
   border: none;
-  border-radius: 18px;
+  border-radius: 50%;
   background: ${props => props.isEnabled 
-    ? 'transparent'
-    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    ? 'linear-gradient(135deg, #4285f4 0%, #1a73e8 100%)'
+    : 'transparent'
   };
-  color: ${props => props.isEnabled ? colors.neutral.gray500 : colors.neutral.white};
+  color: ${props => props.isEnabled ? colors.neutral.white : colors.neutral.gray400};
   cursor: ${props => props.isEnabled ? 'pointer' : 'not-allowed'};
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  flex-shrink: 0;  
+  flex-shrink: 0;
+  position: relative;
+  
   &:hover {
     ${props => props.isEnabled && css`
-      color: ${colors.neutral.gray700};
-      transform: scale(1.05);
-    `}
-    ${props => !props.isEnabled && css`
-      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      background: linear-gradient(135deg, #3367d6 0%, #1557b0 100%);
       transform: scale(1.05);
       box-shadow: ${shadows.sm};
+    `}
+    ${props => !props.isEnabled && css`
+      color: ${colors.neutral.gray500};
+      transform: scale(1.02);
     `}
   }
   
@@ -115,9 +127,21 @@ export const SendButton = styled.button<SendButtonProps>`
     `}
   }
   
+  &:focus-visible {
+    outline: 2px solid #4285f4;
+    outline-offset: 2px;
+  }
+  
   svg {
     width: 14px;
     height: 14px;
+    transition: transform 0.2s ease;
+  }
+  
+  &:hover svg {
+    ${props => props.isEnabled && css`
+      transform: translateX(1px);
+    `}
   }
 `;
 
@@ -177,7 +201,18 @@ export const InputTypingIndicator = styled.div`
     height: 4px;
     border-radius: ${borderRadius.full};
     background-color: ${colors.primary.blue};
-    animation: pulse 1s infinite;
     margin-left: ${spacing.xs};
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
   }
 `;

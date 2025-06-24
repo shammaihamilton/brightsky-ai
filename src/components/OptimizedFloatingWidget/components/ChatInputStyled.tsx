@@ -1,4 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { IoSend } from 'react-icons/io5';
 import {
   ChatInputContainer,
   InputWrapper,
@@ -17,25 +18,34 @@ interface ChatInputProps {
 const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus }) => {
   const [message, setMessage] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const maxLength = 2000;  const handleSend = () => {
+  const maxLength = 2000;  const handleSend = useCallback(() => {
     if (message.trim() && connectionStatus === 'connected') {
       onSend(message.trim());
       setMessage('');
+      // Reset textarea height after sending
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto';
+        inputRef.current.style.height = '27px';
+      }
     }
-  };
+  }, [message, connectionStatus, onSend]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
-  };
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  };  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     if (value.length <= maxLength) {
       setMessage(value);
+      
+      // Auto-resize textarea
+      const target = e.target;
+      target.style.height = 'auto';
+      target.style.height = `${Math.min(target.scrollHeight, 80)}px`;
     }
-  };
+  }, [maxLength]);
   const isDisabled = connectionStatus !== 'connected';
   const isOverLimit = message.length > maxLength * 0.9;
   const canSend = message.trim().length > 0 && !isDisabled;
@@ -76,8 +86,7 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus })
         {getStatusText()}
       </ConnectionStatusIndicator>
       
-      <InputWrapper>
-        <TextAreaWrapper>
+      <InputWrapper>        <TextAreaWrapper>
           <StyledTextArea
             ref={inputRef}
             value={message}
@@ -85,19 +94,22 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus })
             onKeyPress={handleKeyPress}
             placeholder={getPlaceholder()}
             isDisabled={isDisabled}
-            rows={1}            style={{
+            rows={1}
+            style={{
               height: 'auto',
-              minHeight: '32px',
+              minHeight: '27px',
               maxHeight: '80px',
             }}
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = `${Math.min(target.scrollHeight, 80)}px`;
-            }}
+            aria-label="Type your message"
+            aria-describedby={message.length > maxLength * 0.8 ? "char-count" : undefined}
           />
           {message.length > maxLength * 0.8 && (
-            <CharacterCount isOverLimit={isOverLimit}>
+            <CharacterCount 
+              isOverLimit={isOverLimit}
+              id="char-count"
+              role="status"
+              aria-live="polite"
+            >
               {message.length}/{maxLength}
             </CharacterCount>
           )}
@@ -105,21 +117,10 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus })
           onClick={handleSend}
           isEnabled={canSend}
           disabled={!canSend}
-          aria-label="Send message"
+          aria-label={canSend ? "Send message" : "Cannot send message"}
+          title={canSend ? "Send message (Enter)" : getStatusText()}
         >
-          <svg
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
+          <IoSend size={16} />
         </SendButton>
       </InputWrapper>
     </ChatInputContainer>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { KeyboardEvent } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 import { PaperAirplaneIcon, PaperClipIcon } from '@heroicons/react/24/solid';
@@ -25,8 +25,7 @@ const ChatInput = ({ connectionStatus, onSend }: ChatInputProps) => {
   const isDisabled =
     connectionStatus === 'connecting' || (isOffline && !canQueueOffline);
   const canSend = inputText.trim().length > 0 && !isDisabled;
-
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     const textToSend = inputText.trim();
     if (!textToSend || isDisabled) return;
     setInputText('');
@@ -43,7 +42,7 @@ const ChatInput = ({ connectionStatus, onSend }: ChatInputProps) => {
       dispatch(addMessageOptimistic(queuedMessage)); 
       console.log('Queued offline message:', queuedMessage);
     }
-  };
+  }, [inputText, isDisabled, isOffline, canQueueOffline, dispatch, onSend]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.shiftKey) {
@@ -53,18 +52,17 @@ const ChatInput = ({ connectionStatus, onSend }: ChatInputProps) => {
       }
     }
   };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputText(e.target.value.slice(0, MAX_CHARS)); // Enforce max length
-  };
+  }, []);
 
   return (
     <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0 bg-gray-50 dark:bg-gray-800">
-      <div className="flex items-end space-x-2">
-        <button
-          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none disabled:opacity-50"
+      <div className="flex items-end space-x-2">        <button
+          className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 focus:outline-none disabled:opacity-50 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-md transition-colors"
           disabled={isDisabled}
           aria-label="Attach file"
+          title="Attach file (coming soon)"
         >
           <PaperClipIcon className="w-5 h-5" />
         </button>
@@ -88,23 +86,27 @@ const ChatInput = ({ connectionStatus, onSend }: ChatInputProps) => {
             disabled={isDisabled}
             inputMode="text"
             enterKeyHint="send"
-          />
-          <span
+          />          <span
             className={`absolute bottom-1 right-2 text-xs ${
               inputText.length > MAX_CHARS - 50
                 ? 'text-red-500'
                 : 'text-gray-400 dark:text-gray-500'
             }`}
+            role="status"
+            aria-live="polite"
+            aria-label={`${inputText.length} of ${MAX_CHARS} characters used`}
           >
             {inputText.length}/{MAX_CHARS}
           </span>
-        </div>
-
-        <button
+        </div>        <button
           onClick={handleSend}
           disabled={!canSend}
-          className="p-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-opacity"
-          aria-label="Send message"
+          className="p-2 rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 hover:scale-105 active:scale-95"
+          aria-label={canSend ? "Send message" : "Cannot send message - " + 
+            (isOffline && !canQueueOffline ? "offline" : 
+             isOffline && canQueueOffline ? "will queue for later" : 
+             "type a message")}
+          title={canSend ? "Send message (Enter)" : "Cannot send message"}
         >
           <PaperAirplaneIcon className="h-5 w-5" />
         </button>
