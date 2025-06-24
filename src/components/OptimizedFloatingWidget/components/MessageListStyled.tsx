@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from 'react';
+import { useAppSelector } from '../../../store/hooks';
+import { selectIsAiLoading } from '../../../store/selectors/chatSelectors';
 import type { Message } from '../../../types/chat.types';
 import {
   MessageListContainer,
@@ -7,6 +9,9 @@ import {
   EmptyStateTitle,
   EmptyStateSubtitle,
   ScrollAnchor,
+  TypingIndicatorContainer,
+  TypingIndicatorDot,
+  TypingIndicatorText,
 } from '../styled-components';
 import MessageItemStyled from './MessageItemStyled';
 
@@ -16,14 +21,26 @@ interface MessageListProps {
 
 const MessageListStyled: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const isAiLoading = useAppSelector(selectIsAiLoading);
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Use setTimeout to ensure DOM is updated before scrolling
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'end'
+      });
+    }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, isAiLoading]);
+  // Also scroll when component mounts with existing messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
+  }, [messages.length]);
 
   return (
     <MessageListContainer>
@@ -42,11 +59,18 @@ const MessageListStyled: React.FC<MessageListProps> = ({ messages }) => {
           <EmptyStateTitle>Start a conversation</EmptyStateTitle>
           <EmptyStateSubtitle>Ask me anything!</EmptyStateSubtitle>
         </EmptyStateContainer>
-      ) : (
-        <>
+      ) : (        <>
           {messages.map((message) => (
             <MessageItemStyled key={message.id} message={message} />
           ))}
+          {isAiLoading && (
+            <TypingIndicatorContainer>
+              <TypingIndicatorDot />
+              <TypingIndicatorDot />
+              <TypingIndicatorDot />
+              <TypingIndicatorText>AI is typing...</TypingIndicatorText>
+            </TypingIndicatorContainer>
+          )}
           <ScrollAnchor ref={messagesEndRef} />
         </>
       )}

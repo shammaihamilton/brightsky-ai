@@ -33,9 +33,8 @@ const ChatPanelStyled: React.FC<ChatPanelProps> = ({
   chatPanelRef,
 }) => {
   const messages = useAppSelector(selectConversationHistory);
-
   return (
-    <ChatPanelContainer ref={chatPanelRef} position={position}>
+    <ChatPanelContainer ref={chatPanelRef} position={position} messageCount={messages.length}>
       <PanelContent>
         {/* Header */}
         <PanelHeader>

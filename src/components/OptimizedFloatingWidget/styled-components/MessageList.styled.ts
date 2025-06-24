@@ -4,11 +4,13 @@ import { colors, spacing, typography } from '../styles/theme';
 export const MessageListContainer = styled.div`
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: ${spacing.lg};
   background-color: ${colors.neutral.gray50};
   display: flex;
   flex-direction: column;
   gap: ${spacing.lg};
+  min-height: 0; /* Important for flex child scrolling */
   
   /* Custom scrollbar */
   &::-webkit-scrollbar {
@@ -27,6 +29,9 @@ export const MessageListContainer = styled.div`
   &::-webkit-scrollbar-thumb:hover {
     background: ${colors.neutral.gray400};
   }
+  
+  /* Ensure smooth scrolling */
+  scroll-behavior: smooth;
 `;
 
 export const EmptyStateContainer = styled.div`
@@ -65,4 +70,51 @@ export const EmptyStateSubtitle = styled.p`
 
 export const ScrollAnchor = styled.div`
   height: 1px;
+  width: 100%;
+  flex-shrink: 0;
+`;
+
+export const TypingIndicatorContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${spacing.sm};
+  padding: ${spacing.md};
+  background-color: ${colors.neutral.white};
+  border-radius: ${spacing.md};
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  align-self: flex-start;
+  max-width: 70%;
+`;
+
+export const TypingIndicatorDot = styled.div`
+  width: 8px;
+  height: 8px;
+  background-color: ${colors.neutral.gray400};
+  border-radius: 50%;
+  animation: typingPulse 1.4s infinite ease-in-out;
+  
+  &:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  
+  &:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+  
+  @keyframes typingPulse {
+    0%, 80%, 100% {
+      opacity: 0.3;
+      transform: scale(1);
+    }
+    40% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+`;
+
+export const TypingIndicatorText = styled.span`
+  font-size: ${typography.fontSize.xs};
+  color: ${colors.neutral.gray500};
+  margin-left: ${spacing.xs};
 `;

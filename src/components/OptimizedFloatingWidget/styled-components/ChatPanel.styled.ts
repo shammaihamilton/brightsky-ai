@@ -4,18 +4,28 @@ import { colors, shadows, spacing, borderRadius, zIndex, typography } from '../s
 
 interface ChatPanelContainerProps {
   position: { x: number; y: number };
+  messageCount?: number;
 }
 
 export const ChatPanelContainer = styled.div<ChatPanelContainerProps>`
   position: fixed;
   left: ${props => props.position.x}px;
   top: ${props => props.position.y}px;
-  width: 320px;  /* Reduced from 380px - more compact */
-  height: 280px; /* Much smaller - similar to menu height */
+  width: 320px;
+  height: ${props => {
+    const messageCount = props.messageCount || 0;
+    if (messageCount === 0) return '280px'; // Empty state
+    if (messageCount <= 2) return '320px';  // Small conversation
+    if (messageCount <= 5) return '400px';  // Medium conversation
+    if (messageCount <= 10) return '480px'; // Large conversation
+    return '520px'; // Very large conversation (max size)
+  }};
+  max-height: 80vh; /* Never exceed 80% of viewport height */
   z-index: ${zIndex.panel};
   pointer-events: auto;
   font-family: ${typography.fontFamily.system};
   animation: ${fadeIn} 0.3s ease-out;
+  transition: height 0.3s ease-out;
 `;
 
 export const PanelContent = styled.div`
@@ -126,7 +136,9 @@ export const CloseButton = styled.button`
 
 export const MessagesContainer = styled.div`
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0; /* Important for flex child to scroll */
 `;
 
 export const InputContainer = styled.div`

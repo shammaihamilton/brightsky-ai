@@ -3,7 +3,7 @@ import { useDrag } from '../../hooks/useDrag';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { Providers } from '../../store/providers';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { clearConversation } from '../../store/slices/chatSlice';
+import { clearConversation, addMessageOptimistic } from '../../store/slices/chatSlice';
 import { selectConnectionStatus, selectIsButtonVisible } from '../../store/selectors/chatSelectors';
 import { useChatSocket } from '../FloatingChatWidget/hooks/useChatSocket';
 import { addAiResponseChunk } from '../../store/slices/chatSlice';
@@ -83,10 +83,15 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
       setIsHovered(true);
     }
   };const handleSendMessage = (message: string) => {
+    // First, add the user message to the store optimistically
+    dispatch(addMessageOptimistic({ text: message }));
+    
     // Generate a unique message ID
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Then send to AI
     sendUserMessage(message, messageId);
-  };  const handleMouseEnter = () => {
+  };const handleMouseEnter = () => {
     if (!isDragging) {
       setIsHovered(true);
     }
