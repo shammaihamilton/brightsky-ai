@@ -10,10 +10,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         .catch((error) => {
           console.error('Failed to open popup:', error);
           sendResponse({ success: false, error: error.message });
-        });
-    } else {
+        });    } else {
       // Fallback - the popup will open when user clicks the extension icon
-      console.log('Popup opening not supported, user needs to click extension icon');
       sendResponse({ success: false, error: 'Popup opening not supported' });
     }
   }

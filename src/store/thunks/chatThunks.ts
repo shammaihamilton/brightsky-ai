@@ -35,11 +35,7 @@ export const sendMessageToServer = createAsyncThunk<
     const tone = state.chatSettings.tone;
     const history = state.chat.conversationHistory
       .slice(-10)
-      .map((msg) => ({ sender: msg.sender, text: msg.text }));
-
-    try {
-      console.log(`Thunk: Sending "${userMessage}" to API proxy...`);
-
+      .map((msg) => ({ sender: msg.sender, text: msg.text }));    try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,10 +53,7 @@ export const sendMessageToServer = createAsyncThunk<
           `API Error: ${response.status} ${response.statusText}`;
         console.error("API Error Response:", errorMessage);
         return rejectWithValue(errorMessage);
-      }
-
-      const data: ApiResponseSuccess = await response.json();
-      console.log("API Success Response:", data);
+      }      const data: ApiResponseSuccess = await response.json();
 
       if (data.aiResponse) {
         const aiMessageId = data.messageId || uuidv4();

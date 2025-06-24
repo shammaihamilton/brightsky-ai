@@ -1,7 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import OptimizedFloatingWidget from "../../../src/components/OptimizedFloatingWidget";
-console.log("🚀 Content script starting...");
 
 declare const chrome: typeof globalThis.chrome;
 
@@ -32,11 +31,8 @@ const createWidget = () => {
     z-index: 2147483647 !important;
   `;
 
-  document.body.appendChild(container);
-  const root = createRoot(container);
+  document.body.appendChild(container);  const root = createRoot(container);
   root.render(React.createElement(OptimizedFloatingWidget));
-
-  console.log("✅ Widget created successfully");
 };
 
 // Initialize

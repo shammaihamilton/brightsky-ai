@@ -30,11 +30,8 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   onMouseDown,
   onClick,
   onMouseEnter,
-  onMouseLeave,
-  onMenuClick,
+  onMouseLeave,  onMenuClick,
 }) => {
-  console.log('🔵 FloatingButton rendering with position:', position);
-  
   return (
     <ButtonContainer position={position} isDragging={isDragging}>
       {/* Beautiful Widget Button with gradient */}

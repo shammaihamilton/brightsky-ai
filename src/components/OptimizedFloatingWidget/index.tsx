@@ -37,17 +37,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           chrome.storage.sync.get(['apiSettings'], (result) => {
             if (chrome.runtime.lastError) {
               console.error('Chrome storage error:', chrome.runtime.lastError);
-              return;
-            }
-            
-            console.log('📦 Loaded from Chrome storage:', result);
+              return;            }
             
             if (result.apiSettings) {
               // Load the settings into Redux store
               dispatch(loadSettings(result.apiSettings));
-              console.log('✅ Settings loaded into Redux:', result.apiSettings);
-            } else {
-              console.log('⚠️ No apiSettings found in Chrome storage');
             }
           });
         }
@@ -58,18 +52,14 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   }, [dispatch]);
 
   // AI chat functionality (replaces socket-based chat)
-  const { sendMessage: sendAIMessage, isConfigured } = useAIChat();
-  // Update connection status based on configuration
+  const { sendMessage: sendAIMessage, isConfigured } = useAIChat();  // Update connection status based on configuration
   useEffect(() => {
-    console.log('🔧 Connection Status Update:', { isConfigured, connectionStatus });
     if (isConfigured) {
       // Show as connected when API key is configured
       dispatch(setConnectionStatus('connected'));
-      console.log('✅ Setting connection status to CONNECTED');
     } else {
       // Show as disconnected when no API key
       dispatch(setConnectionStatus('disconnected'));
-      console.log('❌ Setting connection status to DISCONNECTED');
     }
   }, [isConfigured, dispatch, connectionStatus]);// Start with a position in the bottom-right corner
   const getDefaultPosition = (): Position => {
@@ -217,30 +207,13 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
     return { x, y };
   };
-
   const chatPanelPosition = getChatPanelPosition();
   const menuPosition = getMenuPosition();
-  // Debug logging
-  useEffect(() => {
-    console.log('🔍 OptimizedFloatingWidget Debug:', {
-      isVisible,
-      connectionStatus,
-      position,
-      isDragging,
-      isHovered,
-      isPanelOpen,
-      showMenu,
-      chatPanelPosition: isPanelOpen ? chatPanelPosition : 'closed',
-      menuPosition: showMenu ? menuPosition : 'closed'
-    });
-  }, [isVisible, connectionStatus, position, isDragging, isHovered, isPanelOpen, showMenu, chatPanelPosition, menuPosition]);
-
+  
   if (!isVisible) {
-    console.log('❌ Widget not visible - isVisible:', isVisible);
     return null;
   }
 
-  console.log('✅ Widget should be visible now!');
   return (
     <div style={{ 
       position: 'fixed', 
@@ -273,12 +246,10 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
               // Open chat if it's closed - keep menu open to show state change
               setIsPanelOpen(true);
             }
-            // Don't close menu - let user see the button change and interact more
-            // setShowMenu(false);
+            // Don't close menu - let user see the button change and interact more            // setShowMenu(false);
             // setIsHovered(false);
-          }}          onSettingsClick={() => {
-            console.log('Settings clicked - Opening Chrome extension popup');            
-            
+          }}
+          onSettingsClick={() => {
             // Check extension context and handle errors gracefully
             if (!ExtensionContext.isValid()) {
               ExtensionContext.showContextError();
@@ -297,9 +268,8 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
                       ExtensionContext.showContextError();
                     } else {
                       console.warn('Could not open popup:', chrome.runtime.lastError.message);
-                    }
-                  } else {
-                    console.log('Popup opened successfully');
+                    }                  } else {
+                    // Success - popup opened
                   }
                 });
               } catch (error) {
@@ -313,7 +283,6 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
             setIsHovered(false);
           }}
           onKeyboardShortcutsClick={() => {
-            console.log('Keyboard shortcuts clicked');
             setShowMenu(false);
             setIsHovered(false);
           }}

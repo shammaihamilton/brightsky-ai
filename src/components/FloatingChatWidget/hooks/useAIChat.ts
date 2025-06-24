@@ -24,19 +24,9 @@ export const useAIChat = (): UseAIChat => {
   const maxTokens = useAppSelector(selectMaxTokens);
   const temperature = useAppSelector(selectTemperature);
   const conversationHistory = useAppSelector(selectConversationHistory);
+    const isConfigured = Boolean(apiKey && provider);
   
-  const isConfigured = Boolean(apiKey && provider);
-  
-  // Debug logging
-  console.log('🔧 useAIChat Debug:', {
-    apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : 'None',
-    provider,
-    maxTokens,
-    temperature,
-    isConfigured
-  });
-
-  const sendMessage = useCallback(async (message: string, _messageId: string) => {
+  const sendMessage = useCallback(async (message: string) => {
     if (!isConfigured) {
       dispatch(setCurrentError('AI chat is not configured. Please set up your API key in settings.'));
       return;

@@ -87,10 +87,9 @@ const SettingsPanel: React.FC = () => {
       maxTokens,
       temperature
     };
-    
-    chrome.storage.sync.set({ apiSettings: settings }, () => {
+      chrome.storage.sync.set({ apiSettings: settings }, () => {
       setIsSaving(false);
-      console.log('API key saved securely (obfuscated)');
+      // API key saved successfully
     });
   };
 

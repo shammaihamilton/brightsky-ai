@@ -28,19 +28,14 @@ const ChatInput = ({ connectionStatus, onSend }: ChatInputProps) => {
   const handleSend = useCallback(() => {
     const textToSend = inputText.trim();
     if (!textToSend || isDisabled) return;
-    setInputText('');
-
-    if (!isOffline) {
+    setInputText('');    if (!isOffline) {
       const userMessage = createUserMessage(textToSend);
-      console.log(userMessage)
       dispatch(addMessageOptimistic(userMessage));
-      console.log('Sending online...');
       onSend(textToSend, userMessage.id);
     } else if (canQueueOffline) {
       const queuedMessage = createQueuedMessage(textToSend);
       dispatch(queueMessage(queuedMessage));
       dispatch(addMessageOptimistic(queuedMessage)); 
-      console.log('Queued offline message:', queuedMessage);
     }
   }, [inputText, isDisabled, isOffline, canQueueOffline, dispatch, onSend]);
 
