@@ -2,14 +2,24 @@ import styled, { css } from 'styled-components';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 
 export const ChatInputContainer = styled.div`
-  padding: ${spacing.lg};
+  padding: ${spacing.md};
   background-color: ${colors.neutral.white};
 `;
 
 export const InputWrapper = styled.div`
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: ${spacing.sm};
+  background-color: ${colors.neutral.gray50};
+  border: 2px solid ${colors.neutral.gray200};
+  border-radius: 20px;
+  padding: ${spacing.xs};
+  transition: all 0.2s ease;
+  
+  &:focus-within {
+    border-color: ${colors.primary.blue};
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
 `;
 
 export const TextAreaWrapper = styled.div`
@@ -23,12 +33,12 @@ interface StyledTextAreaProps {
 
 export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   width: 100%;
-  min-height: 44px;
-  max-height: 120px;
-  padding: ${spacing.md};
-  border: 2px solid ${colors.neutral.gray200};
-  border-radius: ${borderRadius.lg};
-  background-color: ${colors.neutral.white};
+  min-height: 32px;
+  max-height: 80px;
+  padding: ${spacing.sm};
+  border: none;
+  border-radius: 16px;
+  background-color: transparent;
   color: ${colors.neutral.gray800};
   font-family: ${typography.fontFamily.system};
   font-size: ${typography.fontSize.sm};
@@ -36,26 +46,13 @@ export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   resize: none;
   outline: none;
   transition: all 0.2s ease;
-  
   &::placeholder {
     color: ${colors.neutral.gray400};
   }
   
-  &:focus {
-    border-color: ${colors.primary.blue};
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-  
   ${props => props.isDisabled && css`
-    background-color: ${colors.neutral.gray50};
     color: ${colors.neutral.gray400};
     cursor: not-allowed;
-    border-color: ${colors.neutral.gray200};
-    
-    &:focus {
-      border-color: ${colors.neutral.gray200};
-      box-shadow: none;
-    }
   `}
   
   /* Custom scrollbar */
@@ -82,48 +79,58 @@ interface SendButtonProps {
 }
 
 export const SendButton = styled.button<SendButtonProps>`
-  min-width: 44px;
-  height: 44px;
+  min-width: 36px;
+  height: 36px;
   border: none;
-  border-radius: ${borderRadius.lg};
-  background-color: ${props => props.isEnabled ? colors.primary.blue : colors.neutral.gray300};
-  color: ${colors.neutral.white};
+  border-radius: 18px;
+  background: ${props => props.isEnabled 
+    ? 'transparent'
+    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+  };
+  color: ${props => props.isEnabled ? colors.neutral.gray500 : colors.neutral.white};
   cursor: ${props => props.isEnabled ? 'pointer' : 'not-allowed'};
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
-  
+  flex-shrink: 0;  
   &:hover {
     ${props => props.isEnabled && css`
-      background-color: #2563eb;
-      transform: translateY(-1px);
-      box-shadow: ${shadows.md};
+      color: ${colors.neutral.gray700};
+      transform: scale(1.05);
+    `}
+    ${props => !props.isEnabled && css`
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      transform: scale(1.05);
+      box-shadow: ${shadows.sm};
     `}
   }
   
   &:active {
     ${props => props.isEnabled && css`
-      transform: translateY(0);
-      box-shadow: ${shadows.sm};
+      transform: scale(0.95);
+    `}
+    ${props => !props.isEnabled && css`
+      transform: scale(0.95);
     `}
   }
   
   svg {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
   }
 `;
 
 export const CharacterCount = styled.div<{ isOverLimit: boolean }>`
   position: absolute;
-  bottom: 6px;
-  right: 8px;
+  bottom: 4px;
+  right: 6px;
   font-size: ${typography.fontSize.xs};
   color: ${props => props.isOverLimit ? colors.semantic.error : colors.neutral.gray400};
   background-color: ${colors.neutral.white};
-  padding: 2px 4px;
+  padding: 1px 3px;
   border-radius: ${borderRadius.sm};
+  font-size: 10px;
 `;
 
 export const ConnectionStatusIndicator = styled.div<{ status: string }>`

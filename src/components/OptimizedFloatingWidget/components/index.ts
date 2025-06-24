@@ -6,6 +6,3 @@ export { default as DropdownMenu } from './DropdownMenuStyled';
 export { default as MessageList } from './MessageListStyled';
 export { default as MessageItem } from './MessageItemStyled';
 export { default as ChatInput } from './ChatInputStyled';
-
-// Export hooks
-export { useInjectCSS } from '../hooks/useInjectCSS';
