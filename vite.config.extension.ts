@@ -5,8 +5,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   plugins: [
-    react(),
-    viteStaticCopy({
+    react(),    viteStaticCopy({
       targets: [
         {
           src: 'extension/manifest.json',
@@ -17,7 +16,11 @@ export default defineConfig({
           dest: '.'
         },
         {
-          src: 'src/index.css', // Copy built Tailwind CSS
+          src: 'extension/background.js',
+          dest: '.'
+        },
+        {
+          src: 'src/popup/styles/popup.css',
           dest: '.'
         }
       ]
@@ -27,18 +30,16 @@ export default defineConfig({
     alias: {
       '@': resolve(__dirname, 'src'),
     },
-  },
-  build: {
+  },  build: {
     outDir: 'dist',
     rollupOptions: {
-      input: {
-        content: resolve(__dirname, 'extension/src/content/index.tsx'),
-      },
+      input: resolve(__dirname, 'extension/src/content/index.tsx'),
       output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: '[name].js',
+        entryFileNames: 'content.js',
+        chunkFileNames: 'content.js',
         assetFileNames: '[name].[ext]',
         format: 'iife',
+        inlineDynamicImports: true,
       },
     },
     minify: false, // Easier debugging

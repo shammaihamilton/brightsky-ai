@@ -25,9 +25,11 @@
       "resources": ["content.js", "index.css", "assets/*"],
       "matches": ["<all_urls>"]
     }
-  ],
-  "action": {
+  ],  "action": {
     "default_popup": "popup.html",
     "default_title": "Floating Widget"
+  },
+  "background": {
+    "service_worker": "background.js"
   }
 }

@@ -44,3 +44,47 @@ export const selectDefaultPosition = createSelector(
   [selectChatSettingsState],
   (settings) => settings.defaultPosition
 );
+
+// API Settings selectors
+export const selectSettingsState = (state: RootState) => state.settings;
+
+export const selectApiKey = createSelector(
+  [selectSettingsState],
+  (settings) => settings.apiKey
+);
+
+export const selectProvider = createSelector(
+  [selectSettingsState],
+  (settings) => settings.provider
+);
+
+export const selectApiSettings = createSelector(
+  [selectSettingsState],
+  (settings) => ({
+    apiKey: settings.apiKey,
+    provider: settings.provider,
+    maxTokens: settings.maxTokens,
+    temperature: settings.temperature,
+    isConfigured: settings.isConfigured,
+  })
+);
+
+export const selectIsConfigured = createSelector(
+  [selectSettingsState],
+  (settings) => settings.isConfigured
+);
+
+export const selectMaxTokens = createSelector(
+  [selectSettingsState],
+  (settings) => settings.maxTokens
+);
+
+export const selectTemperature = createSelector(
+  [selectSettingsState],
+  (settings) => settings.temperature
+);
+
+export const selectApiTheme = createSelector(
+  [selectSettingsState],
+  (settings) => settings.theme
+);

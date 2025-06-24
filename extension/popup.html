@@ -1,40 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="index.css" />
-  <style>
-    body {
-      width: 300px;
-      padding: 20px;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    h1 {
-      font-size: 18px;
-      margin-bottom: 10px;
-      color: #374151;
-    }
-    p {
-      font-size: 14px;
-      color: #6b7280;
-      line-height: 1.5;
-      margin-bottom: 15px;
-    }
-    .status {
-      padding: 10px;
-      background-color: #f0f9ff;
-      border: 1px solid #0ea5e9;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #0c4a6e;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistant Settings</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h1>Floating Widget Extension</h1>
-  <p>The floating widget is active on all web pages. You can drag it around and click to open the panel.</p>
-  <div class="status">
-    ✅ Extension is running
-  </div>
+  <div id="popup-root"></div>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>
