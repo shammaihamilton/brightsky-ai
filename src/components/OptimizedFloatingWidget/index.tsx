@@ -8,6 +8,7 @@ import { selectConnectionStatus, selectIsButtonVisible } from '../../store/selec
 import { useAIChat } from '../FloatingChatWidget/hooks/useAIChat';
 import { zIndex } from './styles/theme';
 import { loadSettings } from '../../store/slices/settingsSlice';
+import { ExtensionContext } from '../../utils/extensionContext';
 
 // Import optimized components
 import FloatingButton from './components/FloatingButtonStyled';
@@ -27,27 +28,30 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const chatPanelRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const isVisible = useAppSelector(selectIsButtonVisible);
-  // Load settings from Chrome storage on component mount
+  const isVisible = useAppSelector(selectIsButtonVisible);  // Load settings from Chrome storage on component mount
   useEffect(() => {
     const loadSettingsFromStorage = async () => {
-      try {
+      // Use the safe extension context wrapper
+      await ExtensionContext.safeCall(async () => {
         if (typeof chrome !== 'undefined' && chrome.storage) {
-          // Load from sync storage (same as popup saves to)
-          const result = await chrome.storage.sync.get(['apiSettings']);
-          console.log('📦 Loaded from Chrome storage:', result);
-          
-          if (result.apiSettings) {
-            // Load the settings into Redux store
-            dispatch(loadSettings(result.apiSettings));
-            console.log('✅ Settings loaded into Redux:', result.apiSettings);
-          } else {
-            console.log('⚠️ No apiSettings found in Chrome storage');
-          }
+          chrome.storage.sync.get(['apiSettings'], (result) => {
+            if (chrome.runtime.lastError) {
+              console.error('Chrome storage error:', chrome.runtime.lastError);
+              return;
+            }
+            
+            console.log('📦 Loaded from Chrome storage:', result);
+            
+            if (result.apiSettings) {
+              // Load the settings into Redux store
+              dispatch(loadSettings(result.apiSettings));
+              console.log('✅ Settings loaded into Redux:', result.apiSettings);
+            } else {
+              console.log('⚠️ No apiSettings found in Chrome storage');
+            }
+          });
         }
-      } catch (error) {
-        console.warn('Failed to load settings from Chrome storage:', error);
-      }
+      });
     };
     
     loadSettingsFromStorage();
@@ -273,15 +277,35 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
             // setShowMenu(false);
             // setIsHovered(false);
           }}          onSettingsClick={() => {
-            console.log('Settings clicked - Opening Chrome extension popup');            // Send message to background script to open popup
+            console.log('Settings clicked - Opening Chrome extension popup');            
+            
+            // Check extension context and handle errors gracefully
+            if (!ExtensionContext.isValid()) {
+              ExtensionContext.showContextError();
+              setShowMenu(false);
+              setIsHovered(false);
+              return;
+            }
+            
+            // Send message to background script to open popup with error handling
             if (typeof chrome !== 'undefined' && chrome.runtime) {
-              chrome.runtime.sendMessage({ action: 'openPopup' }, () => {
-                if (chrome.runtime.lastError) {
-                  console.warn('Could not open popup:', chrome.runtime.lastError.message);
-                } else {
-                  console.log('Popup opened successfully');
-                }
-              });
+              try {
+                chrome.runtime.sendMessage({ action: 'openPopup' }, () => {
+                  if (chrome.runtime.lastError) {
+                    // Handle extension context invalidated error
+                    if (chrome.runtime.lastError.message?.includes('Extension context invalidated')) {
+                      ExtensionContext.showContextError();
+                    } else {
+                      console.warn('Could not open popup:', chrome.runtime.lastError.message);
+                    }
+                  } else {
+                    console.log('Popup opened successfully');
+                  }
+                });
+              } catch (error) {
+                console.warn('Chrome runtime error:', error);
+                ExtensionContext.showContextError();
+              }
             } else {
               console.warn('Chrome extension API not available');
             }
