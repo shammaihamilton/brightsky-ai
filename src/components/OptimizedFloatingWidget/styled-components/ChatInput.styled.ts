@@ -2,7 +2,7 @@ import styled, { css } from 'styled-components';
 import { colors, spacing, borderRadius, typography, shadows } from '../styles/theme';
 
 export const ChatInputContainer = styled.div`
-  padding: ${spacing.md};
+  padding: ${spacing.sm};
   background-color: ${colors.neutral.white};
 `;
 
@@ -12,7 +12,7 @@ export const InputWrapper = styled.div`
   gap: ${spacing.sm};
   background-color: ${colors.neutral.gray50};
   border: 1px solid ${colors.neutral.gray200};
-  border-radius: ${borderRadius.lg};
+  border-radius: ${borderRadius.xl};
   overflow: hidden;
   box-shadow: ${shadows.sm};
   transition: all 0.2s ease;
@@ -26,8 +26,7 @@ export const InputWrapper = styled.div`
     border-color: ${colors.primary.blue};
     box-shadow: ${shadows.lg};
   };
-  border-radius: ${borderRadius.lg};
-  padding: ${spacing.sm};
+  padding: ${spacing.xs} ${spacing.sm};
   transition: all 0.2s ease;
   box-shadow: none;
   
@@ -48,15 +47,15 @@ interface StyledTextAreaProps {
 
 export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   width: 100%;
-  min-height: 20px;
+  min-height: 16px;
   max-height: 60px;
-  padding: 8px 0;
+  padding: 4px 0;
   border: none !important;
   background-color: transparent;
   color: ${colors.neutral.gray800};
   font-family: ${typography.fontFamily.system};
   font-size: ${typography.fontSize.sm};
-  line-height: 1.4;
+  line-height: 1.3;
   resize: none;
   outline: none !important;
   box-shadow: none !important;
@@ -105,8 +104,8 @@ interface SendButtonProps {
 }
 
 export const SendButton = styled.button<SendButtonProps>`
-  min-width: 32px;
-  height: 32px;
+  min-width: 28px;
+  height: 28px;
   border: none;
   border-radius: 50%;
   background: ${props => props.isEnabled 
@@ -141,10 +140,9 @@ export const SendButton = styled.button<SendButtonProps>`
     outline: 2px solid #4285f4;
     outline-offset: 2px;
   }
-  
-  svg {
-    width: 16px;
-    height: 16px;
+    svg {
+    width: 14px;
+    height: 14px;
     transition: transform 0.2s ease;
   }
   
