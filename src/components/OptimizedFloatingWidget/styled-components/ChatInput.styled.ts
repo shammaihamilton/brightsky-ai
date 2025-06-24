@@ -9,16 +9,31 @@ export const ChatInputContainer = styled.div`
 export const InputWrapper = styled.div`
   display: flex;
   align-items: center;
-  gap: ${spacing.xs};
+  gap: ${spacing.sm};
   background-color: ${colors.neutral.gray50};
   border: 1px solid ${colors.neutral.gray200};
-  border-radius: 20px;
-  padding: ${spacing.xs} ${spacing.sm};
+  border-radius: ${borderRadius.lg};
+  overflow: hidden;
+  box-shadow: ${shadows.sm};
   transition: all 0.2s ease;
   
+  &:hover {
+    border-color: ${colors.neutral.gray300};
+    box-shadow: ${shadows.md};
+  }
+  
   &:focus-within {
-    border-color: #4285f4;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    border-color: ${colors.primary.blue};
+    box-shadow: ${shadows.lg};
+  };
+  border-radius: ${borderRadius.lg};
+  padding: ${spacing.sm};
+  transition: all 0.2s ease;
+  box-shadow: none;
+  
+  &:focus-within {
+    background-color: ${colors.neutral.gray100};
+    box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
   }
 `;
 
@@ -33,17 +48,18 @@ interface StyledTextAreaProps {
 
 export const StyledTextArea = styled.textarea<StyledTextAreaProps>`
   width: 100%;
-  min-height: 18px;
+  min-height: 20px;
   max-height: 60px;
-  padding: ${spacing.xs} ${spacing.sm};
-  border: none;
+  padding: 8px 0;
+  border: none !important;
   background-color: transparent;
   color: ${colors.neutral.gray800};
   font-family: ${typography.fontFamily.system};
   font-size: ${typography.fontSize.sm};
-  line-height: 1.2;
+  line-height: 1.4;
   resize: none;
-  outline: none;
+  outline: none !important;
+  box-shadow: none !important;
   transition: all 0.2s ease;
   
   &::placeholder {
@@ -89,13 +105,13 @@ interface SendButtonProps {
 }
 
 export const SendButton = styled.button<SendButtonProps>`
-  min-width: 28px;
-  height: 28px;
+  min-width: 32px;
+  height: 32px;
   border: none;
   border-radius: 50%;
   background: ${props => props.isEnabled 
     ? 'linear-gradient(135deg, #4285f4 0%, #1a73e8 100%)'
-    : 'transparent'
+    : 'rgba(0, 0, 0, 0.1)'
   };
   color: ${props => props.isEnabled ? colors.neutral.white : colors.neutral.gray400};
   cursor: ${props => props.isEnabled ? 'pointer' : 'not-allowed'};
@@ -113,18 +129,12 @@ export const SendButton = styled.button<SendButtonProps>`
       box-shadow: ${shadows.sm};
     `}
     ${props => !props.isEnabled && css`
-      color: ${colors.neutral.gray500};
-      transform: scale(1.02);
+      background: rgba(0, 0, 0, 0.15);
     `}
   }
   
   &:active {
-    ${props => props.isEnabled && css`
-      transform: scale(0.95);
-    `}
-    ${props => !props.isEnabled && css`
-      transform: scale(0.95);
-    `}
+    transform: scale(0.95);
   }
   
   &:focus-visible {
@@ -133,8 +143,8 @@ export const SendButton = styled.button<SendButtonProps>`
   }
   
   svg {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     transition: transform 0.2s ease;
   }
   

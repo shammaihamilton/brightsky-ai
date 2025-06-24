@@ -21,11 +21,10 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus })
   const maxLength = 2000;  const handleSend = useCallback(() => {
     if (message.trim() && connectionStatus === 'connected') {
       onSend(message.trim());
-      setMessage('');
-      // Reset textarea height after sending
+      setMessage('');      // Reset textarea height after sending
       if (inputRef.current) {
         inputRef.current.style.height = 'auto';
-        inputRef.current.style.height = '27px';
+        inputRef.current.style.height = '20px';
       }
     }
   }, [message, connectionStatus, onSend]);
@@ -94,10 +93,9 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({ onSend, connectionStatus })
             onKeyPress={handleKeyPress}
             placeholder={getPlaceholder()}
             isDisabled={isDisabled}
-            rows={1}
-            style={{
+            rows={1}            style={{
               height: 'auto',
-              minHeight: '27px',
+              minHeight: '20px',
               maxHeight: '80px',
             }}
             aria-label="Type your message"
