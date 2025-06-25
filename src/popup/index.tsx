@@ -1,7 +1,5 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
-import PopupApp from '../popup/PopupApp';
-
+import PopupApp from './components/PopupApp';
 const container = document.getElementById('popup-root');
 
 if (container) {
