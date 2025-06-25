@@ -4,7 +4,7 @@ import { store } from '../../store';
 import { ModularSettingsPanel } from './ModularSettingsPanel';
 import '../styles/modular-popup.css';
 
-const PopupAppV2: React.FC = () => {
+const PopupApp: React.FC = () => {
   return (
     <Provider store={store}>
       <div className="popup-container">
@@ -14,4 +14,4 @@ const PopupAppV2: React.FC = () => {
   );
 };
 
-export default PopupAppV2;
+export default PopupApp;

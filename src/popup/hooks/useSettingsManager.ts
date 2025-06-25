@@ -69,6 +69,7 @@ export interface UseSettingsManagerReturn {
   showAdvanced: boolean;
   showChatSettings: boolean;
   isSaving: boolean;
+  isSettingsSaved: boolean;
   keyValidationError: string | null;
   
   // Actions
@@ -120,25 +121,34 @@ export const useSettingsManager = (): UseSettingsManagerReturn => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showChatSettings, setShowChatSettings] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSettingsSaved, setIsSettingsSaved] = useState(false);
   const [keyValidationError, setKeyValidationError] = useState<string | null>(null);
 
   // Load settings from Chrome storage on mount
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
-      chrome.storage.sync.get(['apiSettings'], (result: ChromeStorageResult) => {
+      chrome.storage.sync.get(['apiSettings', 'chatSettings'], (result: ChromeStorageResult & { chatSettings?: Record<string, unknown> }) => {
         if (chrome.runtime.lastError) {
           console.error('Chrome storage error:', chrome.runtime.lastError);
-        } else if (result.apiSettings) {
-          const settings = result.apiSettings;
-          const deobfuscatedKey = settings.apiKey
-            ? ApiKeySecurity.deobfuscate(settings.apiKey)
-            : '';
+        } else {
+          // Load API settings
+          if (result.apiSettings) {
+            const settings = result.apiSettings;
+            const deobfuscatedKey = settings.apiKey
+              ? ApiKeySecurity.deobfuscate(settings.apiKey)
+              : '';
 
-          dispatch(loadSettings({
-            ...settings,
-            apiKey: deobfuscatedKey,
-          }));
-          setLocalApiKey(deobfuscatedKey);
+            dispatch(loadSettings({
+              ...settings,
+              apiKey: deobfuscatedKey,
+            }));
+            setLocalApiKey(deobfuscatedKey);
+          }
+          
+          // Load chat settings
+          if (result.chatSettings) {
+            dispatch(updateChatSettings(result.chatSettings));
+          }
         }
       });
     }
@@ -184,6 +194,19 @@ export const useSettingsManager = (): UseSettingsManagerReturn => {
     });
   }, []);
 
+  const saveChatSettingsToStorage = useCallback((updates: Record<string, unknown>) => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.sync.get(['chatSettings'], (result) => {
+        const currentChatSettings = result.chatSettings || {};
+        const newChatSettings = { ...currentChatSettings, ...updates };
+        
+        chrome.storage.sync.set({ chatSettings: newChatSettings }, () => {
+          console.log('Chat settings saved to storage');
+        });
+      });
+    }
+  }, []);
+
   // Action handlers
   const handleSaveApiKey = useCallback(async () => {
     if (localApiKey && !ApiKeySecurity.validateKeyFormat(localApiKey, provider)) {
@@ -206,6 +229,9 @@ export const useSettingsManager = (): UseSettingsManagerReturn => {
 
     chrome.storage.sync.set({ apiSettings: settings }, () => {
       setIsSaving(false);
+      setIsSettingsSaved(true);
+      // Hide success message after 2 seconds
+      setTimeout(() => setIsSettingsSaved(false), 2000);
     });
   }, [localApiKey, provider, theme, maxTokens, temperature, dispatch]);
 
@@ -231,7 +257,12 @@ export const useSettingsManager = (): UseSettingsManagerReturn => {
   }, [dispatch, saveToStorage]);
   const handleChatSettingsChange = useCallback((updates: Record<string, unknown>) => {
     dispatch(updateChatSettings(updates));
-  }, [dispatch]);
+    saveChatSettingsToStorage(updates);
+    
+    // Show success feedback for chat settings
+    setIsSettingsSaved(true);
+    setTimeout(() => setIsSettingsSaved(false), 2000);
+  }, [dispatch, saveChatSettingsToStorage]);
 
   const handleAssistantNameChange = useCallback((name: string) => {
     handleChatSettingsChange({ assistantName: name });
@@ -284,6 +315,7 @@ export const useSettingsManager = (): UseSettingsManagerReturn => {
     showAdvanced,
     showChatSettings,
     isSaving,
+    isSettingsSaved,
     keyValidationError,
     actions: {
       setLocalApiKey: (key: string) => {

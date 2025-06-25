@@ -5,16 +5,6 @@ import { ApiConfigSection } from './sections/ApiConfigSection';
 import { AdvancedSettingsSection } from './sections/AdvancedSettingsSection';
 import { ChatSettingsSection } from './sections/ChatSettingsSection';
 
-/**
- * Modular Settings Panel - Refactored version of the original SettingsPanel
- * 
- * Key improvements:
- * - Separated concerns into individual section components
- * - Extracted business logic into custom hook
- * - Better TypeScript interfaces
- * - Easier to maintain and extend
- * - Testable components
- */
 export const ModularSettingsPanel: React.FC = () => {
   const {
     apiSettings,
@@ -24,6 +14,7 @@ export const ModularSettingsPanel: React.FC = () => {
     showAdvanced,
     showChatSettings,
     isSaving,
+    isSettingsSaved,
     keyValidationError,
     actions,
     utils,
@@ -65,14 +56,22 @@ export const ModularSettingsPanel: React.FC = () => {
         actions={actions}
       />
 
+      {/* Settings Saved Toast */}
+      {isSettingsSaved && (
+        <div className="settings-toast">
+          <span className="toast-icon">✓ </span>
+          Settings saved successfully!
+        </div>
+      )}
+
       <div className="action-buttons">
         <button
           onClick={actions.handleSaveApiKey}
-          className={`btn btn-primary btn-full ${isSaving ? 'btn-loading' : ''}`}
+          className={`btn btn-primary btn-full ${isSaving ? 'btn-loading' : ''} ${isSettingsSaved ? 'btn-success' : ''}`}
           disabled={!localApiKey.trim() || isSaving}
           type="button"
         >
-          {isSaving ? 'Saving...' : 'Save Settings'}
+          {isSaving ? 'Saving...' : isSettingsSaved ? '✓ Saved!' : 'Save Settings'}
         </button>
       </div>
     </div>

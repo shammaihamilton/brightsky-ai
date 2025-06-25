@@ -20,6 +20,7 @@ import {
 import { useAIChat } from "../FloatingChatWidget/hooks/useAIChat";
 import { zIndex } from "./styles/theme";
 import { loadSettings } from "../../store/slices/settingsSlice";
+import { updateChatSettings } from "../../store/slices/chatSettingsSlice";
 import { ExtensionContext } from "../../utils/extensionContext";
 import { NotificationService } from "../../services/notificationService";
 
@@ -35,6 +36,16 @@ interface Position {
 
 // Inner component that uses Redux hooks
 const OptimizedFloatingWidgetInner: React.FC = () => {
+  // Helper function to get actual button size in pixels
+  const getButtonSizeInPixels = (size?: string): number => {
+    const sizeMap: Record<string, number> = {
+      small: 44,
+      medium: 56,
+      large: 68
+    };
+    return sizeMap[size || 'medium'] || 56;
+  };
+
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -44,21 +55,29 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const isVisible = useAppSelector(selectIsButtonVisible);
   const buttonSize = useAppSelector(selectButtonSize);
   const privacySettings = useAppSelector(selectPrivacySettings);
-  const accessibilitySettings = useAppSelector(selectAccessibilitySettings); // Load settings from Chrome storage on component mount
+  const accessibilitySettings = useAppSelector(selectAccessibilitySettings);  // Load settings from Chrome storage on component mount
   useEffect(() => {
     const loadSettingsFromStorage = async () => {
       // Use the safe extension context wrapper
       await ExtensionContext.safeCall(async () => {
         if (typeof chrome !== "undefined" && chrome.storage) {
-          chrome.storage.sync.get(["apiSettings"], (result) => {
+          chrome.storage.sync.get(["apiSettings", "chatSettings"], (result) => {
             if (chrome.runtime.lastError) {
               console.error("Chrome storage error:", chrome.runtime.lastError);
               return;
             }
 
+            console.log('Loading settings from storage:', result);
+
             if (result.apiSettings) {
-              // Load the settings into Redux store
+              // Load the API settings into Redux store
               dispatch(loadSettings(result.apiSettings));
+            }
+            
+            if (result.chatSettings) {
+              // Load the chat settings into Redux store
+              console.log('Loading chat settings:', result.chatSettings);
+              dispatch(updateChatSettings(result.chatSettings));
             }
           });
         }
@@ -66,6 +85,33 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     };
 
     loadSettingsFromStorage();
+  }, [dispatch]);
+
+  // Listen for Chrome storage changes (when popup updates settings)
+  useEffect(() => {
+    const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
+      if (areaName === 'sync') {
+        console.log('Storage changed:', changes);
+        
+        if (changes.chatSettings) {
+          console.log('Chat settings changed, updating widget:', changes.chatSettings.newValue);
+          dispatch(updateChatSettings(changes.chatSettings.newValue));
+        }
+        
+        if (changes.apiSettings) {
+          console.log('API settings changed, updating widget:', changes.apiSettings.newValue);
+          dispatch(loadSettings(changes.apiSettings.newValue));
+        }
+      }
+    };
+
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) {
+      chrome.storage.onChanged.addListener(handleStorageChange);
+      
+      return () => {
+        chrome.storage.onChanged.removeListener(handleStorageChange);
+      };
+    }
   }, [dispatch]);
 
   // AI chat functionality (replaces socket-based chat)
@@ -159,25 +205,27 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
   const handleMenuMouseLeave = () => {
     // Menu stays open - only closes on click outside or close button
-  }; // Calculate chat panel position (prefer left/above button)
+  };  // Calculate chat panel position (prefer left/above button)
   const getChatPanelPosition = () => {
     const panelWidth = 320; // Reduced from 380px - more compact
     const panelHeight = 280; // Much smaller - similar to menu height
-    const buttonSize = 56; // Updated to match smaller button size
+    
+    // Get actual button size from Redux state (using same mapping as styled components)
+    const actualButtonSize = getButtonSizeInPixels(buttonSize);
     const padding = 20;
 
     // Strategy: Chat panel prefers left side and above button
-    let x = position.x - panelWidth + buttonSize; // Align right edge with button right edge
+    let x = position.x - panelWidth + actualButtonSize; // Align right edge with button right edge
     let y = position.y - panelHeight - 12; // Position above button with gap
 
     // If panel would go off left edge, position to the right
     if (x < padding) {
-      x = position.x + buttonSize + 12; // Position to the right of button
+      x = position.x + actualButtonSize + 12; // Position to the right of button
     }
 
     // If panel would go off top edge, position below
     if (y < padding) {
-      y = position.y + buttonSize + 12; // Position below button
+      y = position.y + actualButtonSize + 12; // Position below button
     }
 
     // If panel would go off right edge, adjust left
@@ -191,19 +239,21 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     }
 
     return { x, y };
-  }; // Calculate dropdown menu position (avoid chat panel area)
+  };  // Calculate dropdown menu position (avoid chat panel area)
   const getMenuPosition = () => {
     const menuWidth = 200;
     const menuHeight = 300; // Estimated menu height
-    const buttonSize = 56; // Updated to match smaller button size
+    
+    // Get actual button size from Redux state (same mapping as above)
+    const actualButtonSize = getButtonSizeInPixels(buttonSize);
     const padding = 10;
     const gap = 1;
 
     // Strategy: Position menu in opposite direction from chat panel
     // Chat panel prefers left/above, so menu will prefer right/below
 
-    let x = position.x + buttonSize + gap; // Start to the right of button
-    let y = position.y + buttonSize + gap; // Start below button
+    let x = position.x + actualButtonSize + gap; // Start to the right of button
+    let y = position.y + actualButtonSize + gap; // Start below button
 
     // If menu would go off right edge, try left side
     if (x + menuWidth > window.innerWidth - padding) {

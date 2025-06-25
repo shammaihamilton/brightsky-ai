@@ -43,7 +43,8 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   onMouseEnter,
   onMouseLeave,
   onMenuClick,
-}) => {  return (
+}) => {
+  return (
     <ButtonContainer 
       position={position} 
       isDragging={isDragging} 
