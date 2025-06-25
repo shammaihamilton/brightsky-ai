@@ -1,4 +1,3 @@
-// import FloatingWidget from './components/FloatingWidget';
 import FloatingChatWidget from './components/FloatingChatWidget';
 
 
