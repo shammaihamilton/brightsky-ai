@@ -1,18 +1,37 @@
 import styled, { css } from 'styled-components';
 import { pulse, wiggle } from '../styles/animations';
 import { colors, shadows, borderRadius, zIndex, typography } from '../styles/theme';
+import type { ButtonSize } from '../../../types/chat.types';
+
+interface AccessibilitySettings {
+  highContrast: boolean;
+  reducedMotion: boolean;
+  screenReaderOptimized: boolean;
+}
 
 interface ButtonContainerProps {
   position: { x: number; y: number };
   isDragging: boolean;
+  buttonSize?: ButtonSize;
+  accessibilitySettings?: AccessibilitySettings;
 }
+
+// Helper function to get size values
+const getSizeValues = (size: ButtonSize = 'medium') => {
+  const sizeMap = {
+    small: { size: 44, iconSize: 18 },
+    medium: { size: 56, iconSize: 24 },
+    large: { size: 68, iconSize: 28 }
+  };
+  return sizeMap[size];
+};
 
 export const ButtonContainer = styled.div<ButtonContainerProps>`
   position: fixed;
   left: ${props => props.position.x}px;
   top: ${props => props.position.y}px;
-  width: 56px;
-  height: 56px;
+  width: ${props => getSizeValues(props.buttonSize).size}px;
+  height: ${props => getSizeValues(props.buttonSize).size}px;
   z-index: ${zIndex.widget};
   pointer-events: auto;
   font-family: ${typography.fontFamily.system};
@@ -27,12 +46,14 @@ interface FloatingButtonProps {
   isHovered: boolean;
   isDragging: boolean;
   isPanelOpen: boolean;
+  buttonSize?: ButtonSize;
+  accessibilitySettings?: AccessibilitySettings;
 }
 
 export const FloatingButton = styled.button<FloatingButtonProps>`
   position: relative;
-  width: 56px;
-  height: 56px;
+  width: ${props => getSizeValues(props.buttonSize).size}px;
+  height: ${props => getSizeValues(props.buttonSize).size}px;
   background: ${colors.primary.gradient};
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: ${borderRadius.full};
@@ -81,9 +102,13 @@ export const PulseRing = styled.div<PulseRingProps>`
   pointer-events: none;
 `;
 
-export const ChatIcon = styled.div`
-  width: 24px;
-  height: 24px;
+interface ChatIconProps {
+  buttonSize?: ButtonSize;
+}
+
+export const ChatIcon = styled.div<ChatIconProps>`
+  width: ${props => getSizeValues(props.buttonSize).iconSize}px;
+  height: ${props => getSizeValues(props.buttonSize).iconSize}px;
   color: ${colors.neutral.white};
   fill: none;
   display: flex;

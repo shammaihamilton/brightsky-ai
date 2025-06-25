@@ -6,6 +6,7 @@ export interface AIServiceConfig {
   apiKey: string;
   maxTokens?: number;
   temperature?: number;
+  tone?: string;
 }
 
 export interface ChatMessage {
@@ -56,8 +57,21 @@ export class AIService {
       }
     } catch (error) {
       console.error('AI Service Error:', error);
-      throw error;
-    }
+      throw error;    }
+  }
+
+  private getSystemMessage(): string {
+    const tone = this.config.tone || 'Friendly';
+    
+    const toneMessages = {
+      'Professional': 'You are a professional AI assistant. Provide clear, formal, and well-structured responses with accuracy and professionalism.',
+      'Friendly': 'You are a friendly and helpful AI assistant. Be warm, conversational, and supportive in your responses while maintaining helpfulness.',
+      'Casual': 'You are a casual and relaxed AI assistant. Be informal, easy-going, and conversational while still being helpful and informative.',
+      'Creative': 'You are a creative and imaginative AI assistant. Think outside the box, provide innovative ideas, and bring creativity to your responses.',
+      'Analytical': 'You are an analytical and detail-oriented AI assistant. Focus on data, logic, thorough analysis, and well-reasoned responses.',
+    };
+
+    return toneMessages[tone as keyof typeof toneMessages] || toneMessages['Friendly'];
   }
 
   private async sendOpenAIMessage(
@@ -65,11 +79,10 @@ export class AIService {
     message: string,
     conversationHistory: ChatMessage[],
     onChunk?: (chunk: StreamChunk) => void
-  ): Promise<string> {
-    const messages: ChatMessage[] = [
+  ): Promise<string> {    const messages: ChatMessage[] = [
       {
         role: 'system',
-        content: 'You are a helpful AI assistant. Provide clear, concise, and accurate responses.',
+        content: this.getSystemMessage(),
       },
       ...conversationHistory.slice(-10), // Keep last 10 messages for context
       {

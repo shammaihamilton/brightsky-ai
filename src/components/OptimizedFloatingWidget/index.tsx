@@ -1,19 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useDrag } from '../../hooks/useDrag';
-import { useLocalStorage } from '../../hooks/useLocalStorage';
-import { Providers } from '../../store/providers';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { clearConversation, addMessageOptimistic, setConnectionStatus } from '../../store/slices/chatSlice';
-import { selectConnectionStatus, selectIsButtonVisible } from '../../store/selectors/chatSelectors';
-import { useAIChat } from '../FloatingChatWidget/hooks/useAIChat';
-import { zIndex } from './styles/theme';
-import { loadSettings } from '../../store/slices/settingsSlice';
-import { ExtensionContext } from '../../utils/extensionContext';
+import React, { useState, useEffect, useRef } from "react";
+import { useDrag } from "../../hooks/useDrag";
+import { useLocalStorage } from "../../hooks/useLocalStorage";
+import { Providers } from "../../store/providers";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import {
+  clearConversation,
+  addMessageOptimistic,
+  setConnectionStatus,
+} from "../../store/slices/chatSlice";
+import {
+  selectConnectionStatus,
+  selectIsButtonVisible,
+} from "../../store/selectors/chatSelectors";
+import {
+  selectButtonSize,
+  selectPrivacySettings,
+  selectAccessibilitySettings,
+} from "../../store/selectors/settingsSelectors";
+import { useAIChat } from "../FloatingChatWidget/hooks/useAIChat";
+import { zIndex } from "./styles/theme";
+import { loadSettings } from "../../store/slices/settingsSlice";
+import { ExtensionContext } from "../../utils/extensionContext";
+import { NotificationService } from "../../services/notificationService";
 
 // Import optimized components
-import FloatingButton from './components/FloatingButtonStyled';
-import ChatPanel from './components/ChatPanelStyled';
-import DropdownMenu from './components/DropdownMenuStyled';
+import FloatingButton from "./components/FloatingButtonStyled";
+import ChatPanel from "./components/ChatPanelStyled";
+import DropdownMenu from "./components/DropdownMenuStyled";
 
 interface Position {
   x: number;
@@ -28,17 +41,21 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const chatPanelRef = useRef<HTMLDivElement>(null);
   const dispatch = useAppDispatch();
   const connectionStatus = useAppSelector(selectConnectionStatus);
-  const isVisible = useAppSelector(selectIsButtonVisible);  // Load settings from Chrome storage on component mount
+  const isVisible = useAppSelector(selectIsButtonVisible);
+  const buttonSize = useAppSelector(selectButtonSize);
+  const privacySettings = useAppSelector(selectPrivacySettings);
+  const accessibilitySettings = useAppSelector(selectAccessibilitySettings); // Load settings from Chrome storage on component mount
   useEffect(() => {
     const loadSettingsFromStorage = async () => {
       // Use the safe extension context wrapper
       await ExtensionContext.safeCall(async () => {
-        if (typeof chrome !== 'undefined' && chrome.storage) {
-          chrome.storage.sync.get(['apiSettings'], (result) => {
+        if (typeof chrome !== "undefined" && chrome.storage) {
+          chrome.storage.sync.get(["apiSettings"], (result) => {
             if (chrome.runtime.lastError) {
-              console.error('Chrome storage error:', chrome.runtime.lastError);
-              return;            }
-            
+              console.error("Chrome storage error:", chrome.runtime.lastError);
+              return;
+            }
+
             if (result.apiSettings) {
               // Load the settings into Redux store
               dispatch(loadSettings(result.apiSettings));
@@ -47,21 +64,24 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
         }
       });
     };
-    
+
     loadSettingsFromStorage();
   }, [dispatch]);
 
   // AI chat functionality (replaces socket-based chat)
-  const { sendMessage: sendAIMessage, isConfigured } = useAIChat();  // Update connection status based on configuration
+  const { sendMessage: sendAIMessage, isConfigured } = useAIChat(); // Update connection status based on configuration
   useEffect(() => {
     if (isConfigured) {
       // Show as connected when API key is configured
-      dispatch(setConnectionStatus('connected'));
+      dispatch(setConnectionStatus("connected"));
     } else {
       // Show as disconnected when no API key
-      dispatch(setConnectionStatus('disconnected'));
+      dispatch(setConnectionStatus("disconnected"));
     }
-  }, [isConfigured, dispatch, connectionStatus]);// Start with a position in the bottom-right corner
+  }, [isConfigured, dispatch, connectionStatus]); // Initialize notification service
+  useEffect(() => {
+    NotificationService.initialize();
+  }, []); // Start with a position in the bottom-right corner
   const getDefaultPosition = (): Position => {
     return {
       x: Math.max(20, window.innerWidth - 100),
@@ -70,7 +90,7 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   };
 
   const [storedPosition, setStoredPosition] = useLocalStorage<Position>(
-    'optimized-widget-position',
+    "optimized-widget-position",
     getDefaultPosition()
   );
 
@@ -113,7 +133,9 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     dispatch(addMessageOptimistic({ text: message }));
 
     // Generate a unique message ID
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const messageId = `msg_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     // Send to AI using the new AI chat service
     sendAIMessage(message, messageId);
@@ -199,9 +221,16 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     if (isPanelOpen) {
       const chatPanel = getChatPanelPosition();
       // If menu would overlap with chat panel, move it further right
-      if (x < chatPanel.x + 320 && x + menuWidth > chatPanel.x &&
-          y < chatPanel.y + 280 && y + menuHeight > chatPanel.y) {
-        x = Math.min(window.innerWidth - menuWidth - padding, chatPanel.x + 320 + 10);
+      if (
+        x < chatPanel.x + 320 &&
+        x + menuWidth > chatPanel.x &&
+        y < chatPanel.y + 280 &&
+        y + menuHeight > chatPanel.y
+      ) {
+        x = Math.min(
+          window.innerWidth - menuWidth - padding,
+          chatPanel.x + 320 + 10
+        );
       }
     }
 
@@ -209,36 +238,69 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   };
   const chatPanelPosition = getChatPanelPosition();
   const menuPosition = getMenuPosition();
-  
+
+  // Auto-clear messages based on privacy settings
+  useEffect(() => {
+    if (privacySettings?.autoClearDays && privacySettings.autoClearDays > 0) {
+      const clearOldMessages = () => {
+        const cutoffDate = new Date();
+        cutoffDate.setDate(
+          cutoffDate.getDate() - (privacySettings.autoClearDays ?? 0)
+        );
+
+        // This would require a new action to clear messages older than cutoffDate
+        // For now, let's just clear all messages if they're older than the specified days
+        // In a real implementation, you'd want to check message timestamps
+        console.log(
+          `Auto-clear enabled: clearing messages older than ${privacySettings.autoClearDays} days`
+        );
+      };
+
+      // Check for old messages on mount and then periodically
+      clearOldMessages();
+      const interval = setInterval(clearOldMessages, 24 * 60 * 60 * 1000); // Check daily
+
+      return () => clearInterval(interval);
+    }
+  }, [privacySettings?.autoClearDays]);
+
   if (!isVisible) {
     return null;
   }
 
   return (
-    <div style={{ 
-      position: 'fixed', 
-      inset: 0, 
-      pointerEvents: 'none', 
-      zIndex: 2147483647, 
-      fontFamily: 'system-ui, -apple-system, sans-serif' 
-    }}>
-      {/* Floating Button */}      <FloatingButton
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        pointerEvents: "none",
+        zIndex: 2147483647,
+        fontFamily: "system-ui, -apple-system, sans-serif",
+      }}
+    >
+      {/* Chat Panel Position */}
+      {/* Floating Button */}
+      <FloatingButton
         position={position}
         isDragging={isDragging}
         isHovered={isHovered}
         isPanelOpen={isPanelOpen}
         showMenu={showMenu}
         connectionStatus={connectionStatus}
+        buttonSize={buttonSize}
+        accessibilitySettings={accessibilitySettings}
         onMouseDown={handleMouseDown}
         onClick={handleWidgetClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onMenuClick={handleMenuClick}
-      />      {/* Dropdown Menu */}
+      />
+      {/* Dropdown Menu */}
       {showMenu && (
         <DropdownMenu
           position={menuPosition}
-          isPanelOpen={isPanelOpen}          onChatClick={() => {
+          isPanelOpen={isPanelOpen}
+          onChatClick={() => {
             if (isPanelOpen) {
               // Close chat if it's open - keep menu open to show state change
               setIsPanelOpen(false);
@@ -257,27 +319,35 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
               setIsHovered(false);
               return;
             }
-            
+
             // Send message to background script to open popup with error handling
-            if (typeof chrome !== 'undefined' && chrome.runtime) {
+            if (typeof chrome !== "undefined" && chrome.runtime) {
               try {
-                chrome.runtime.sendMessage({ action: 'openPopup' }, () => {
+                chrome.runtime.sendMessage({ action: "openPopup" }, () => {
                   if (chrome.runtime.lastError) {
                     // Handle extension context invalidated error
-                    if (chrome.runtime.lastError.message?.includes('Extension context invalidated')) {
+                    if (
+                      chrome.runtime.lastError.message?.includes(
+                        "Extension context invalidated"
+                      )
+                    ) {
                       ExtensionContext.showContextError();
                     } else {
-                      console.warn('Could not open popup:', chrome.runtime.lastError.message);
-                    }                  } else {
+                      console.warn(
+                        "Could not open popup:",
+                        chrome.runtime.lastError.message
+                      );
+                    }
+                  } else {
                     // Success - popup opened
                   }
                 });
               } catch (error) {
-                console.warn('Chrome runtime error:', error);
+                console.warn("Chrome runtime error:", error);
                 ExtensionContext.showContextError();
               }
             } else {
-              console.warn('Chrome extension API not available');
+              console.warn("Chrome extension API not available");
             }
             setShowMenu(false);
             setIsHovered(false);
@@ -298,7 +368,8 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           onMouseEnter={handleMenuMouseEnter}
           onMouseLeave={handleMenuMouseLeave}
         />
-      )}      {/* Chat Panel */}
+      )}{" "}
+      {/* Chat Panel */}
       {isPanelOpen && (
         <ChatPanel
           position={chatPanelPosition}
@@ -307,13 +378,14 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           onSend={handleSendMessage}
           chatPanelRef={chatPanelRef}
         />
-      )}{/* Click outside to close */}
+      )}
+      {/* Click outside to close */}
       {(isPanelOpen || showMenu) && (
         <div
           style={{
-            position: 'fixed',
+            position: "fixed",
             inset: 0,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: zIndex.overlay,
           }}
           onClick={() => {

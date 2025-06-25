@@ -6,23 +6,25 @@ import {
   updateMessageStatus,
   setCurrentError 
 } from '../../../store/slices/chatSlice';
-import { selectApiKey, selectProvider, selectMaxTokens, selectTemperature } from '../../../store/selectors/settingsSelectors';
+import { selectApiKey, selectProvider, selectMaxTokens, selectTemperature, selectTone, selectAssistantName, selectNotificationSettings } from '../../../store/selectors/settingsSelectors';
 import { selectConversationHistory } from '../../../store/selectors/chatSelectors';
 import { AIService, type ChatMessage } from '../../../services/aiService';
+import { NotificationService } from '../../../services/notificationService';
 
 export interface UseAIChat {
   sendMessage: (message: string, messageId: string) => Promise<void>;
   isConfigured: boolean;
 }
 
-export const useAIChat = (): UseAIChat => {
-  const dispatch = useAppDispatch();
-  
-  // Get settings from Redux store
+export const useAIChat = (): UseAIChat => {  const dispatch = useAppDispatch();
+    // Get settings from Redux store
   const apiKey = useAppSelector(selectApiKey);
   const provider = useAppSelector(selectProvider);
   const maxTokens = useAppSelector(selectMaxTokens);
   const temperature = useAppSelector(selectTemperature);
+  const tone = useAppSelector(selectTone);
+  const assistantName = useAppSelector(selectAssistantName);
+  const notificationSettings = useAppSelector(selectNotificationSettings);
   const conversationHistory = useAppSelector(selectConversationHistory);
     const isConfigured = Boolean(apiKey && provider);
   
@@ -32,13 +34,13 @@ export const useAIChat = (): UseAIChat => {
       return;
     }
 
-    try {
-      // Create AI service instance
+    try {      // Create AI service instance
       const aiService = new AIService({
         provider,
         apiKey,
         maxTokens,
         temperature,
+        tone,
       });
 
       // Convert conversation history to the format expected by AI service
@@ -47,19 +49,24 @@ export const useAIChat = (): UseAIChat => {
         .map(msg => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
           content: msg.text,
-        }));
-
-      // Send message with streaming support
+        }));      // Send message with streaming support
+      let completeMessage = '';
       await aiService.sendMessage(
         message,
         chatHistory,
         (chunk) => {
           // Handle streaming chunks
+          completeMessage += chunk.chunk;
           dispatch(addAiResponseChunk({
             messageId: chunk.messageId,
             chunk: chunk.chunk,
             isFinal: chunk.isFinal,
           }));
+
+          // If this is the final chunk, trigger notification
+          if (chunk.isFinal && notificationSettings) {
+            NotificationService.notify(completeMessage, notificationSettings, assistantName);
+          }
         }
       );
 
@@ -83,7 +90,7 @@ export const useAIChat = (): UseAIChat => {
         }));
       }
     }
-  }, [dispatch, isConfigured, apiKey, provider, maxTokens, temperature, conversationHistory]);
+  }, [dispatch, isConfigured, apiKey, provider, maxTokens, temperature, tone, assistantName, notificationSettings, conversationHistory]);
 
   return {
     sendMessage,

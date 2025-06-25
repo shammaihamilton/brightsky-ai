@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ButtonSize } from '../../../types/chat.types';
 import {
   ButtonContainer,
   FloatingButton as StyledButton,
@@ -7,6 +8,12 @@ import {
   MenuButton,
 } from '../styled-components';
 
+interface AccessibilitySettings {
+  highContrast: boolean;
+  reducedMotion: boolean;
+  screenReaderOptimized: boolean;
+}
+
 interface FloatingButtonProps {
   position: { x: number; y: number };
   isDragging: boolean;
@@ -14,6 +21,8 @@ interface FloatingButtonProps {
   isPanelOpen: boolean;
   showMenu: boolean;
   connectionStatus: 'connected' | 'disconnected' | 'connecting' | 'error';
+  buttonSize?: ButtonSize;
+  accessibilitySettings?: AccessibilitySettings;
   onMouseDown: (e: React.MouseEvent) => void;
   onClick: (e: React.MouseEvent) => void;
   onMouseEnter: () => void;
@@ -27,13 +36,20 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   isHovered,
   isPanelOpen,
   showMenu,
+  buttonSize = 'medium', // Default to medium
+  accessibilitySettings = { highContrast: false, reducedMotion: false, screenReaderOptimized: false },
   onMouseDown,
   onClick,
   onMouseEnter,
-  onMouseLeave,  onMenuClick,
-}) => {
-  return (
-    <ButtonContainer position={position} isDragging={isDragging}>
+  onMouseLeave,
+  onMenuClick,
+}) => {  return (
+    <ButtonContainer 
+      position={position} 
+      isDragging={isDragging} 
+      buttonSize={buttonSize}
+      accessibilitySettings={accessibilitySettings}
+    >
       {/* Beautiful Widget Button with gradient */}
       <StyledButton
         onMouseDown={onMouseDown}
@@ -46,12 +62,14 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
         isHovered={isHovered}
         isDragging={isDragging}
         isPanelOpen={isPanelOpen}
+        buttonSize={buttonSize}
+        accessibilitySettings={accessibilitySettings}
       >
         {/* Pulse animation ring */}
-        {!isDragging && <PulseRing isDragging={isDragging} />}
-
-        {/* Chat Icon - Three dots in speech bubble */}
-        <ChatIcon>
+        {!isDragging && !accessibilitySettings.reducedMotion && (
+          <PulseRing isDragging={isDragging} />
+        )}{/* Chat Icon - Three dots in speech bubble */}
+        <ChatIcon buttonSize={buttonSize}>
           <svg
             fill="none"
             stroke="currentColor"

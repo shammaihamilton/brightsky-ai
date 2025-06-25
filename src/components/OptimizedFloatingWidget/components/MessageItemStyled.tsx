@@ -1,5 +1,7 @@
-import React from 'react';
-import type { Message } from '../../../types/chat.types';
+import React from "react";
+import { useAppSelector } from "../../../store/hooks";
+import { selectAssistantName } from "../../../store/selectors/settingsSelectors";
+import type { Message } from "../../../types/chat.types";
 import {
   MessageContainer,
   MessageBubble,
@@ -7,31 +9,35 @@ import {
   MessageContent,
   MessageText,
   MessageTimestamp,
-} from '../styled-components';
+} from "../styled-components";
 
 interface MessageItemProps {
   message: Message;
 }
 
-const MessageItemStyled: React.FC<MessageItemProps> = ({ message }) => {  const getAvatarText = (sender: string) => {
+const MessageItemStyled: React.FC<MessageItemProps> = ({ message }) => {
+  const assistantName = useAppSelector(selectAssistantName);
+
+  const getAvatarText = (sender: string) => {
     switch (sender) {
-      case 'user':
-        return 'U';
-      case 'ai':
-        return 'AI';
-      case 'system':
-        return 'S';
-      case 'error':
-        return 'E';
+      case "user":
+        return "U";
+      case "ai":
+        // Use first letter of assistant name, fallback to 'AI'
+        return assistantName ? assistantName.charAt(0).toUpperCase() : "AI";
+      case "system":
+        return "S";
+      case "error":
+        return "E";
       default:
-        return '?';
+        return "?";
     }
   };
 
   const formatTimestamp = (timestamp: string) => {
-    return new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(new Date(timestamp));
   };
 
@@ -40,7 +46,9 @@ const MessageItemStyled: React.FC<MessageItemProps> = ({ message }) => {  const 
       <MessageAvatar sender={message.sender}>
         {getAvatarText(message.sender)}
       </MessageAvatar>
-      <MessageContent>        <MessageBubble sender={message.sender}>
+      <MessageContent>
+        {" "}
+        <MessageBubble sender={message.sender}>
           <MessageText>
             <p>{message.text}</p>
           </MessageText>

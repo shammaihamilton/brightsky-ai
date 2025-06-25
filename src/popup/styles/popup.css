@@ -435,6 +435,77 @@ select.form-control {
   margin: 16px 0;
 }
 
+/* Chat Settings Styles */
+.chat-settings {
+  margin-bottom: 20px;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.checkbox-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+  cursor: pointer;
+}
+
+.checkbox-item:hover {
+  color: var(--primary-color);
+}
+
+.checkbox-item input[type="checkbox"]:disabled + span {
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+/* Nested form groups for indented options */
+.form-group .form-group {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* Select and input styling consistency */
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background-color: var(--background-color);
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="number"]:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+
+.form-group select:disabled {
+  background-color: var(--surface-color);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
 /* Responsive adjustments */
 @media (max-width: 400px) {
   .popup-container {

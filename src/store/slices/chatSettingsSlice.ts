@@ -2,6 +2,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { ChatSettings } from "../../types/chat.types";
 import { safeLocalStorage } from "../../utils/safeLocalStorage";
+
 export type ChatSettingsState = ChatSettings;
 
 const ALLOWED_DEFAULT_POSITIONS = [
@@ -12,34 +13,33 @@ const ALLOWED_DEFAULT_POSITIONS = [
 ] as const;
 type AllowedDefaultPositionType = (typeof ALLOWED_DEFAULT_POSITIONS)[number];
 
-
-  const DEFAULT_CHAT_SETTINGS: ChatSettingsState = {
-    assistantName: "Clarity",
-    assistantAvatar: undefined,
-    tone: "Friendly",
-    theme: "system",
-    privacy: {
-      saveHistory: true,
-      autoClearDays: 30,
-    },
-    defaultButtonVisible: true,
-    buttonSize: "medium",
-    defaultPosition: "bottom-right",
-    bubbleStyle: "modern",
-    fontSize: "medium",
-    notifications: {
-      soundEnabled: true,
-      emailSummary: true,
-      desktopNotifications: false,
-    },
-    accessibility: {
-      highContrast: false,
-      reducedMotion: false,
-      screenReaderOptimized: true,
-    },
-  };
- const loadInitialSettings = (): ChatSettingsState => {
-  const savedSettings = safeLocalStorage.getItem("chatSettings"); 
+const DEFAULT_CHAT_SETTINGS: ChatSettingsState = {
+  assistantName: "BrightSky",
+  assistantAvatar: undefined,
+  tone: "Friendly",
+  theme: "system", // This can sync with settings.theme
+  privacy: {
+    saveHistory: true,
+    autoClearDays: 30,
+  },
+  defaultButtonVisible: true,
+  buttonSize: "medium",
+  defaultPosition: "bottom-right",
+  bubbleStyle: "modern",
+  fontSize: "medium",
+  notifications: {
+    soundEnabled: true,
+    emailSummary: true,
+    desktopNotifications: false,
+  },
+  accessibility: {
+    highContrast: false,
+    reducedMotion: false,
+    screenReaderOptimized: true,
+  },
+};
+const loadInitialSettings = (): ChatSettingsState => {
+  const savedSettings = safeLocalStorage.getItem("chatSettings");
 
   if (savedSettings) {
     try {
@@ -122,10 +122,9 @@ export const chatSettingsSlice = createSlice({
       safeLocalStorage.setItem("chatSettings", JSON.stringify(newState));
     },
     resetChatSettings: (state) => {
-      Object.assign(state, DEFAULT_CHAT_SETTINGS);; // Use the canonical defaults
+      Object.assign(state, DEFAULT_CHAT_SETTINGS); // Use the canonical defaults
       safeLocalStorage.removeItem("chatSettings"); // Remove instead of setting defaults
-    },
-    importChatSettings: (state, action: PayloadAction<ChatSettingsState>) => {
+    },    importChatSettings: (state, action: PayloadAction<ChatSettingsState>) => {
       const validatedSettings = action.payload;
       Object.assign(state, validatedSettings);
       safeLocalStorage.setItem(
@@ -133,9 +132,25 @@ export const chatSettingsSlice = createSlice({
         JSON.stringify(validatedSettings)
       );
     },
+    // Sync theme from API settings to chat settings
+    syncThemeFromApiSettings: (state, action: PayloadAction<'light' | 'dark' | 'auto'>) => {
+      const themeMap = {
+        'auto': 'system',
+        'light': 'light', 
+        'dark': 'dark'
+      } as const;
+      
+      state.theme = themeMap[action.payload] || 'system';
+      const newState = { ...state };
+      safeLocalStorage.setItem("chatSettings", JSON.stringify(newState));
+    },
   },
 });
 
-export const { updateChatSettings, resetChatSettings, importChatSettings } =
-  chatSettingsSlice.actions;
+export const { 
+  updateChatSettings, 
+  resetChatSettings, 
+  importChatSettings,
+  syncThemeFromApiSettings 
+} = chatSettingsSlice.actions;
 export default chatSettingsSlice.reducer;
