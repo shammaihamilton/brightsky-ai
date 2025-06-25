@@ -1,10 +1,10 @@
 import React from 'react';
-import type { UseSettingsManagerReturn } from '../../hooks/useSettingsManager';
+import type { UseChatSettingsReturn } from '../../hooks/useChatSettings';
 
 interface ChatSettingsSectionProps {
-  chatSettings: UseSettingsManagerReturn['chatSettings'];
+  chatSettings: UseChatSettingsReturn['chatSettings'];
   showChatSettings: boolean;
-  actions: UseSettingsManagerReturn['actions'];
+  actions: UseChatSettingsReturn['actions'];
 }
 
 export const ChatSettingsSection: React.FC<ChatSettingsSectionProps> = ({

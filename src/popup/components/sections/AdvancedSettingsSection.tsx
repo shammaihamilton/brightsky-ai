@@ -1,10 +1,10 @@
 import React from 'react';
-import type { UseSettingsManagerReturn } from '../../hooks/useSettingsManager';
+import type { UseApiSettingsReturn } from '../../hooks/useApiSettings';
 
 interface AdvancedSettingsSectionProps {
-  apiSettings: UseSettingsManagerReturn['apiSettings'];
+  apiSettings: UseApiSettingsReturn['apiSettings'];
   showAdvanced: boolean;
-  actions: UseSettingsManagerReturn['actions'];
+  actions: UseApiSettingsReturn['actions'];
 }
 
 export const AdvancedSettingsSection: React.FC<AdvancedSettingsSectionProps> = ({

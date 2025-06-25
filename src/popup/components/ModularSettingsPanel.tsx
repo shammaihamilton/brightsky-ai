@@ -1,59 +1,52 @@
 import React from 'react';
-import { useSettingsManager } from '../hooks/useSettingsManager';
+import { useApiSettings } from '../hooks/useApiSettings';
+import { useChatSettings } from '../hooks/useChatSettings';
 import { PopupHeader } from './PopupHeader';
 import { ApiConfigSection } from './sections/ApiConfigSection';
 import { AdvancedSettingsSection } from './sections/AdvancedSettingsSection';
 import { ChatSettingsSection } from './sections/ChatSettingsSection';
 
 export const ModularSettingsPanel: React.FC = () => {
-  const {
-    apiSettings,
-    chatSettings,
-    localApiKey,
-    showApiKey,
-    showAdvanced,
-    showChatSettings,
-    isSaving,
-    isSettingsSaved,
-    keyValidationError,
-    actions,
-    utils,
-  } = useSettingsManager();
+  const apiSettings = useApiSettings();
+  const chatSettings = useChatSettings();
+
+  // Combine settings saved state from both hooks
+  const isSettingsSaved = apiSettings.isSaving || chatSettings.isSettingsSaved;
 
   const handleThemeToggle = () => {
-    const nextTheme = apiSettings.theme === 'light' ? 'dark' : 
-                     apiSettings.theme === 'dark' ? 'auto' : 'light';
-    actions.handleThemeChange(nextTheme);
+    const nextTheme = apiSettings.apiSettings.theme === 'light' ? 'dark' : 
+                     apiSettings.apiSettings.theme === 'dark' ? 'auto' : 'light';
+    apiSettings.actions.handleThemeChange(nextTheme);
   };
 
   return (
     <div className="settings-panel">
       <PopupHeader
-        isConfigured={apiSettings.isConfigured}
-        theme={apiSettings.theme}
+        isConfigured={apiSettings.apiSettings.isConfigured}
+        theme={apiSettings.apiSettings.theme}
         onThemeToggle={handleThemeToggle}
       />
 
       <ApiConfigSection
-        apiSettings={apiSettings}
-        localApiKey={localApiKey}
-        showApiKey={showApiKey}
-        keyValidationError={keyValidationError}
-        isSaving={isSaving}
-        actions={actions}
-        utils={utils}
+        apiSettings={apiSettings.apiSettings}
+        localApiKey={apiSettings.localApiKey}
+        showApiKey={apiSettings.showApiKey}
+        keyValidationError={apiSettings.keyValidationError}
+        isSaving={apiSettings.isSaving}
+        actions={apiSettings.actions}
+        utils={apiSettings.utils}
       />
 
       <AdvancedSettingsSection
-        apiSettings={apiSettings}
-        showAdvanced={showAdvanced}
-        actions={actions}
+        apiSettings={apiSettings.apiSettings}
+        showAdvanced={apiSettings.showAdvanced}
+        actions={apiSettings.actions}
       />
 
       <ChatSettingsSection
-        chatSettings={chatSettings}
-        showChatSettings={showChatSettings}
-        actions={actions}
+        chatSettings={chatSettings.chatSettings}
+        showChatSettings={chatSettings.showChatSettings}
+        actions={chatSettings.actions}
       />
 
       {/* Settings Saved Toast */}
@@ -66,12 +59,12 @@ export const ModularSettingsPanel: React.FC = () => {
 
       <div className="action-buttons">
         <button
-          onClick={actions.handleSaveApiKey}
-          className={`btn btn-primary btn-full ${isSaving ? 'btn-loading' : ''} ${isSettingsSaved ? 'btn-success' : ''}`}
-          disabled={!localApiKey.trim() || isSaving}
+          onClick={apiSettings.actions.handleSaveApiKey}
+          className={`btn btn-primary btn-full ${apiSettings.isSaving ? 'btn-loading' : ''} ${isSettingsSaved ? 'btn-success' : ''}`}
+          disabled={!apiSettings.localApiKey.trim() || apiSettings.isSaving}
           type="button"
         >
-          {isSaving ? 'Saving...' : isSettingsSaved ? '✓ Saved!' : 'Save Settings'}
+          {apiSettings.isSaving ? 'Saving...' : isSettingsSaved ? '✓ Saved!' : 'Save Settings'}
         </button>
       </div>
     </div>

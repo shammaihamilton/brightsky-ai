@@ -25,7 +25,7 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({
   const handleSend = useCallback(() => {
     if (message.trim() && connectionStatus === "connected") {
       onSend(message.trim());
-      setMessage("");      // Reset textarea height after sending
+      setMessage(""); // Reset textarea height after sending
       if (inputRef.current) {
         inputRef.current.style.height = "auto";
         inputRef.current.style.height = "16px";
@@ -102,7 +102,8 @@ const ChatInputStyled: React.FC<ChatInputProps> = ({
             onKeyPress={handleKeyPress}
             placeholder={getPlaceholder()}
             isDisabled={isDisabled}
-            rows={1}            style={{
+            rows={1}
+            style={{
               height: "auto",
               minHeight: "16px",
               maxHeight: "80px",

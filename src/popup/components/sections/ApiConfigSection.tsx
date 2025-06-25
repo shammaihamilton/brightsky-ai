@@ -1,14 +1,14 @@
 import React from 'react';
-import type { UseSettingsManagerReturn } from '../../hooks/useSettingsManager';
+import type { UseApiSettingsReturn } from '../../hooks/useApiSettings';
 
 interface ApiConfigSectionProps {
-  apiSettings: UseSettingsManagerReturn['apiSettings'];
+  apiSettings: UseApiSettingsReturn['apiSettings'];
   localApiKey: string;
   showApiKey: boolean;
   keyValidationError: string | null;
   isSaving: boolean;
-  actions: UseSettingsManagerReturn['actions'];
-  utils: UseSettingsManagerReturn['utils'];
+  actions: UseApiSettingsReturn['actions'];
+  utils: UseApiSettingsReturn['utils'];
 }
 
 export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
@@ -16,7 +16,7 @@ export const ApiConfigSection: React.FC<ApiConfigSectionProps> = ({
   localApiKey,
   showApiKey,
   keyValidationError,
-  isSaving,
+  // isSaving,
   actions,
   utils,
 }) => {
