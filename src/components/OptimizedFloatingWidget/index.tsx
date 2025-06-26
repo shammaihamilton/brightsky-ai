@@ -20,7 +20,6 @@ import { useAIChat } from "../../hooks/useAIChat";
 import { zIndex } from "./styles/theme";
 import { loadSettings } from "../../store/slices/settingsSlice";
 import { updateChatSettings } from "../../store/slices/chatSettingsSlice";
-import { ExtensionContext } from "../../utils/extensionContext";
 import { NotificationService } from "../../services/notificationService";
 
 // Import optimized components
@@ -57,30 +56,27 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const accessibilitySettings = useAppSelector(selectAccessibilitySettings);  
   useEffect(() => {
     const loadSettingsFromStorage = async () => {
-      // Use the safe extension context wrapper
-      await ExtensionContext.safeCall(async () => {
-        if (typeof chrome !== "undefined" && chrome.storage) {
-          chrome.storage.sync.get(["apiSettings", "chatSettings"], (result) => {
-            if (chrome.runtime.lastError) {
-              console.error("Chrome storage error:", chrome.runtime.lastError);
-              return;
-            }
+      if (typeof chrome !== 'undefined' && chrome.storage) {
+        chrome.storage.sync.get(['apiSettings', 'chatSettings'], (result) => {
+          if (chrome.runtime.lastError) {
+            console.error('Chrome storage error:', chrome.runtime.lastError);
+            return;
+          }
 
-            console.log('Loading settings from storage:', result);
+          console.log('Loading settings from storage:', result);
 
-            if (result.apiSettings) {
-              // Load the API settings into Redux store
-              dispatch(loadSettings(result.apiSettings));
-            }
-            
-            if (result.chatSettings) {
-              // Load the chat settings into Redux store
-              console.log('Loading chat settings:', result.chatSettings);
-              dispatch(updateChatSettings(result.chatSettings));
-            }
-          });
-        }
-      });
+          if (result.apiSettings) {
+            // Load the API settings into Redux store
+            dispatch(loadSettings(result.apiSettings));
+          }
+          
+          if (result.chatSettings) {
+            // Load the chat settings into Redux store
+            console.log('Loading chat settings:', result.chatSettings);
+            dispatch(updateChatSettings(result.chatSettings));
+          }
+        });
+      }
     };
 
     loadSettingsFromStorage();
@@ -353,43 +349,6 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
             // setIsHovered(false);
           }}
           onSettingsClick={() => {
-            // Check extension context and handle errors gracefully
-            if (!ExtensionContext.isValid()) {
-              ExtensionContext.showContextError();
-              setShowMenu(false);
-              setIsHovered(false);
-              return;
-            }
-
-            // Send message to background script to open popup with error handling
-            if (typeof chrome !== "undefined" && chrome.runtime) {
-              try {
-                chrome.runtime.sendMessage({ action: "openPopup" }, () => {
-                  if (chrome.runtime.lastError) {
-                    // Handle extension context invalidated error
-                    if (
-                      chrome.runtime.lastError.message?.includes(
-                        "Extension context invalidated"
-                      )
-                    ) {
-                      ExtensionContext.showContextError();
-                    } else {
-                      console.warn(
-                        "Could not open popup:",
-                        chrome.runtime.lastError.message
-                      );
-                    }
-                  } else {
-                    // Success - popup opened
-                  }
-                });
-              } catch (error) {
-                console.warn("Chrome runtime error:", error);
-                ExtensionContext.showContextError();
-              }
-            } else {
-              console.warn("Chrome extension API not available");
-            }
             setShowMenu(false);
             setIsHovered(false);
           }}
