@@ -6,7 +6,7 @@ import { ApiConfigSection } from './sections/ApiConfigSection';
 import { AdvancedSettingsSection } from './sections/AdvancedSettingsSection';
 import { ChatSettingsSection } from './sections/ChatSettingsSection';
 
-export const ModularSettingsPanel: React.FC = () => {
+export const SettingsPanel: React.FC = () => {
   const apiSettings = useApiSettings();
   const chatSettings = useChatSettings();
 

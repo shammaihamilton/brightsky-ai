@@ -1,6 +1,7 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
 import FloatingWidget from "../../../src/components/FloatingWidget";
+// import OptimizedFloatingWidget from "../../../src/components/OptimizedFloatingWidget";
 declare const chrome: typeof globalThis.chrome;
 
 // Inject Tailwind CSS into the page
