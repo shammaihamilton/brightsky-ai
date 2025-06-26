@@ -2,10 +2,10 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import type { RootState, AppDispatch } from "../index"; 
 import {
-  updateMessageStatus,
   addAiResponseChunk,
   dequeueMessage,
 } from "../slices/chatSlice"; 
+import { AIService } from "../../services/aiService"; 
 
 interface SendMessagePayload {
   userMessage: string;
@@ -33,51 +33,52 @@ export const sendMessageToServer = createAsyncThunk<
 
     const state = getState();
     const tone = state.chatSettings.tone;
+    const { apiKey, provider, maxTokens, temperature } = state.settings;
+    
+    // Check if AI service is configured
+    if (!apiKey || !provider) {
+      return rejectWithValue("AI service not configured. Please set up your API key and provider in settings.");
+    }
+
     const history = state.chat.conversationHistory
       .slice(-10)
-      .map((msg) => ({ sender: msg.sender, text: msg.text }));    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userMessage,
-          chatTone: tone,
-          history,
-        }),
+      .map((msg) => ({ 
+        role: msg.sender === 'user' ? 'user' as const : 'assistant' as const, 
+        content: msg.text 
+      }));
+
+    try {
+      const aiService = new AIService({
+        provider,
+        apiKey,
+        maxTokens,
+        temperature,
+        tone,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage =
-          errorData?.error ||
-          `API Error: ${response.status} ${response.statusText}`;
-        console.error("API Error Response:", errorMessage);
-        return rejectWithValue(errorMessage);
-      }      const data: ApiResponseSuccess = await response.json();
+      const aiResponse = await aiService.sendMessage(userMessage, history);
 
-      if (data.aiResponse) {
-        const aiMessageId = data.messageId || uuidv4();
+      if (aiResponse) {
+        const aiMessageId = uuidv4();
         dispatch(
           addAiResponseChunk({
             messageId: aiMessageId,
-            chunk: data.aiResponse,
+            chunk: aiResponse,
             isFinal: true,
           })
         );
-      } else {
-        dispatch(
-          updateMessageStatus({
-            messageId: "some_way_to_identify_last_ai_message",
-            status: "sent",
-          })
-        );
+        
+        return {
+          aiResponse,
+          messageId: aiMessageId,
+        };
       }
 
-      return data;
+      return rejectWithValue("No response from AI service");
     } catch (error: unknown) {
-      console.error("Thunk Error:", error);
+      console.error("AI Service Error:", error);
 
-      let message = "Failed to send message due to network or unexpected error.";
+      let message = "Failed to send message to AI service.";
       if (error instanceof Error) {
         message = error.message;
       } else if (typeof error === "string") {

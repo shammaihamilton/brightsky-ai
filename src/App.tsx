@@ -1,4 +1,4 @@
-import FloatingChatWidget from './components/FloatingChatWidget';
+import FloatingChatWidget from './components/FloatingWidget';
 
 
 function App() {

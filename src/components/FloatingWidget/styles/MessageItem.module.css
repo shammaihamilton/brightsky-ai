@@ -1,0 +1,138 @@
+/* MessageItem CSS Module with Custom Properties */
+
+.messageContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+.messageContainer.sender-user {
+  flex-direction: row-reverse;
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.messageBubble {
+  max-width: 80%;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  position: relative;
+}
+
+.messageBubble.bubble-user {
+  background-color: #3b82f6;
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+
+.messageBubble.bubble-ai {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.messageBubble.bubble-system {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  font-size: 11px;
+}
+
+.messageBubble.bubble-error {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #dc2626;
+  font-size: 11px;
+}
+
+.messageAvatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.messageAvatar.avatar-user {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.messageAvatar.avatar-ai {
+  background-color: #8b5cf6;
+  color: white;
+}
+
+.messageAvatar.avatar-system {
+  background-color: #f59e0b;
+  color: white;
+}
+
+.messageAvatar.avatar-error {
+  background-color: #dc2626;
+  color: white;
+}
+
+.messageContent {
+  flex: 1;
+}
+
+.messageText {
+  margin: 0;
+}
+
+.messageText p {
+  margin: 0 0 8px 0;
+}
+
+.messageText p:last-child {
+  margin-bottom: 0;
+}
+
+.messageText code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9em;
+}
+
+.messageText pre {
+  background-color: #1f2937;
+  color: white;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.messageText pre code {
+  background: none;
+  padding: 0;
+  color: inherit;
+}
+
+.messageTimestamp {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+  text-align: center;
+}

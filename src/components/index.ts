@@ -1,2 +1,2 @@
 
-export { default as FloatingChatWidget } from './FloatingChatWidget';
+export { default as FloatingWidget } from './FloatingWidget';

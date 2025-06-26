@@ -17,24 +17,23 @@ import {
   selectAccessibilitySettings,
 } from "../../store/selectors/settingsSelectors";
 import { useAIChat } from "../../hooks/useAIChat";
-import { zIndex } from "./styles/theme";
 import { loadSettings } from "../../store/slices/settingsSlice";
 import { updateChatSettings } from "../../store/slices/chatSettingsSlice";
 import { ExtensionContext } from "../../utils/extensionContext";
 import { NotificationService } from "../../services/notificationService";
 
-// Import optimized components
-import FloatingButton from "./components/FloatingButtonStyled";
-import ChatPanel from "./components/ChatPanelStyled";
-import DropdownMenu from "./components/DropdownMenuStyled";
+// Import CSS Custom Properties components
+import FloatingButton from "./components/FloatingButton";
+import ChatPanel from "./components/ChatPanel";
+import DropdownMenu from "./components/DropdownMenu";
 
 interface Position {
   x: number;
   y: number;
 }
 
-// Inner component that uses Redux hooks
-const OptimizedFloatingWidgetInner: React.FC = () => {
+// Inner component that uses Redux hooks - EXACT same logic as OptimizedFloatingWidget
+const FloatingWidgetInner: React.FC = () => {
   // Helper function to get actual button size in pixels
   const getButtonSizeInPixels = (size?: string): number => {
     const sizeMap: Record<string, number> = {
@@ -54,10 +53,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   const isVisible = useAppSelector(selectIsButtonVisible);
   const buttonSize = useAppSelector(selectButtonSize);
   const privacySettings = useAppSelector(selectPrivacySettings);
-  const accessibilitySettings = useAppSelector(selectAccessibilitySettings);  
+  const accessibilitySettings = useAppSelector(selectAccessibilitySettings);
+
+  // EXACT same storage loading logic
   useEffect(() => {
     const loadSettingsFromStorage = async () => {
-      // Use the safe extension context wrapper
       await ExtensionContext.safeCall(async () => {
         if (typeof chrome !== "undefined" && chrome.storage) {
           chrome.storage.sync.get(["apiSettings", "chatSettings"], (result) => {
@@ -69,12 +69,10 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
             console.log('Loading settings from storage:', result);
 
             if (result.apiSettings) {
-              // Load the API settings into Redux store
               dispatch(loadSettings(result.apiSettings));
             }
             
             if (result.chatSettings) {
-              // Load the chat settings into Redux store
               console.log('Loading chat settings:', result.chatSettings);
               dispatch(updateChatSettings(result.chatSettings));
             }
@@ -86,7 +84,7 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     loadSettingsFromStorage();
   }, [dispatch]);
 
-  // Listen for Chrome storage changes (when popup updates settings)
+  // EXACT same storage change listener
   useEffect(() => {
     const handleStorageChange = (changes: Record<string, chrome.storage.StorageChange>, areaName: string) => {
       if (areaName === 'sync') {
@@ -113,20 +111,26 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     }
   }, [dispatch]);
 
-  // AI chat functionality (replaces socket-based chat)
-  const { sendMessage: sendAIMessage, isConfigured } = useAIChat(); // Update connection status based on configuration
+  // AI chat functionality
+  const { sendMessage: sendAIMessage, isConfigured } = useAIChat();
+
+  // Update connection status based on configuration
   useEffect(() => {
     if (isConfigured) {
-      // Show as connected when API key is configured
       dispatch(setConnectionStatus("connected"));
+      console.log("AI is configured - connection status set to connected");
     } else {
-      // Show as disconnected when no API key
       dispatch(setConnectionStatus("disconnected"));
+      console.log("AI is not configured - connection status set to disconnected");
     }
-  }, [isConfigured, dispatch, connectionStatus]); // Initialize notification service
+  }, [isConfigured, dispatch]);
+
+  // Initialize notification service - EXACT same
   useEffect(() => {
     NotificationService.initialize();
-  }, []); // Start with a position in the bottom-right corner
+  }, []);
+
+  // Start with a position in the bottom-right corner - EXACT same
   const getDefaultPosition = (): Position => {
     return {
       x: Math.max(20, window.innerWidth - 100),
@@ -141,13 +145,14 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
   const { position, isDragging, handleMouseDown } = useDrag(storedPosition);
 
-  // Save position to localStorage when it changes
+  // Save position to localStorage when it changes - EXACT same
   useEffect(() => {
     if (!isDragging) {
       setStoredPosition(position);
     }
   }, [position, isDragging, setStoredPosition]);
 
+  // EXACT same event handlers
   const handleWidgetClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -157,10 +162,11 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     setIsPanelOpen(!isPanelOpen);
     setShowMenu(false);
   };
+
   const handleCloseChatOnly = () => {
-    // Only close chat panel, keep menu open if it was open
     setIsPanelOpen(false);
   };
+
   const handleMenuClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -168,15 +174,16 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     const newShowMenu = !showMenu;
     setShowMenu(newShowMenu);
 
-    // If opening menu, ensure hover state is active
     if (newShowMenu) {
       setIsHovered(true);
     }
   };
+
   const handleSendMessage = (message: string) => {
     // Send to AI using the new AI chat service
     sendAIMessage(message);
   };
+
   const handleMouseEnter = () => {
     if (!isDragging) {
       setIsHovered(true);
@@ -189,79 +196,70 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
     }
   };
 
-  // Simple menu handlers - no auto-close behavior
+  // Simple menu handlers - EXACT same
   const handleMenuMouseEnter = () => {
     // Menu stays open on hover
   };
 
   const handleMenuMouseLeave = () => {
     // Menu stays open - only closes on click outside or close button
-  };  // Calculate chat panel position (prefer left/above button)
+  };
+
+  // Calculate chat panel position (prefer left/above button) - EXACT same
   const getChatPanelPosition = () => {
-    const panelWidth = 320; // Reduced from 380px - more compact
-    const panelHeight = 280; // Much smaller - similar to menu height
+    const panelWidth = 320;
+    const panelHeight = 280;
     
-    // Get actual button size from Redux state (using same mapping as styled components)
     const actualButtonSize = getButtonSizeInPixels(buttonSize);
     const padding = 20;
 
-    // Strategy: Chat panel prefers left side and above button
-    let x = position.x - panelWidth + actualButtonSize; // Align right edge with button right edge
-    let y = position.y - panelHeight - 12; // Position above button with gap
+    let x = position.x - panelWidth + actualButtonSize;
+    let y = position.y - panelHeight - 12;
 
-    // If panel would go off left edge, position to the right
     if (x < padding) {
-      x = position.x + actualButtonSize + 12; // Position to the right of button
+      x = position.x + actualButtonSize + 12;
     }
 
-    // If panel would go off top edge, position below
     if (y < padding) {
-      y = position.y + actualButtonSize + 12; // Position below button
+      y = position.y + actualButtonSize + 12;
     }
 
-    // If panel would go off right edge, adjust left
     if (x + panelWidth > window.innerWidth - padding) {
       x = window.innerWidth - panelWidth - padding;
     }
 
-    // If panel would go off bottom edge, adjust up
     if (y + panelHeight > window.innerHeight - padding) {
       y = window.innerHeight - panelHeight - padding;
     }
 
     return { x, y };
-  };  // Calculate dropdown menu position (avoid chat panel area)
+  };
+
+  // Calculate dropdown menu position - EXACT same
   const getMenuPosition = () => {
     const menuWidth = 200;
-    const menuHeight = 300; // Estimated menu height
+    const menuHeight = 300;
     
-    // Get actual button size from Redux state (same mapping as above)
     const actualButtonSize = getButtonSizeInPixels(buttonSize);
     const padding = 10;
     const gap = 1;
 
-    // Strategy: Position menu in opposite direction from chat panel
-    // Chat panel prefers left/above, so menu will prefer right/below
+    let x = position.x + actualButtonSize + gap;
+    let y = position.y + actualButtonSize + gap;
 
-    let x = position.x + actualButtonSize + gap; // Start to the right of button
-    let y = position.y + actualButtonSize + gap; // Start below button
-
-    // If menu would go off right edge, try left side
     if (x + menuWidth > window.innerWidth - padding) {
       x = position.x - menuWidth - gap;
     }
 
-    // If menu would go off bottom edge, try above
     if (y + menuHeight > window.innerHeight - padding) {
       y = position.y - menuHeight - gap;
     }
 
-    // Final boundary checks
     if (x < padding) x = padding;
-    if (y < padding) y = padding; // Ensure menu doesn't overlap with chat panel if both are open
+    if (y < padding) y = padding;
+
     if (isPanelOpen) {
       const chatPanel = getChatPanelPosition();
-      // If menu would overlap with chat panel, move it further right
       if (
         x < chatPanel.x + 320 &&
         x + menuWidth > chatPanel.x &&
@@ -277,10 +275,76 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
 
     return { x, y };
   };
+
   const chatPanelPosition = getChatPanelPosition();
   const menuPosition = getMenuPosition();
 
-  // Auto-clear messages based on privacy settings
+  // Dropdown menu handlers (EXACT same as OptimizedFloatingWidget)
+  const handleCloseMenu = () => {
+    console.log("Menu close button clicked!");
+    setShowMenu(false);
+    setIsHovered(false);
+  };
+
+  const handleSettingsClick = () => {
+    // Check extension context and handle errors gracefully
+    if (!ExtensionContext.isValid()) {
+      ExtensionContext.showContextError();
+      setShowMenu(false);
+      setIsHovered(false);
+      return;
+    }
+
+    // Send message to background script to open popup with error handling
+    if (typeof chrome !== "undefined" && chrome.runtime) {
+      try {
+        chrome.runtime.sendMessage({ action: "openPopup" }, () => {
+          if (chrome.runtime.lastError) {
+            // Handle extension context invalidated error
+            if (
+              chrome.runtime.lastError.message?.includes(
+                "Extension context invalidated"
+              )
+            ) {
+              ExtensionContext.showContextError();
+            } else {
+              console.warn(
+                "Could not open popup:",
+                chrome.runtime.lastError.message
+              );
+            }
+          } else {
+            // Success - popup opened
+          }
+        });
+      } catch (error) {
+        console.warn("Chrome runtime error:", error);
+        ExtensionContext.showContextError();
+      }
+    } else {
+      console.warn("Chrome extension API not available");
+    }
+    setShowMenu(false);
+    setIsHovered(false);
+  };
+
+  const handleKeyboardShortcutsClick = () => {
+    alert("Keyboard Shortcuts:\n• Ctrl+Shift+A: Toggle widget\n• Enter: Send message\n• Shift+Enter: New line\n• Esc: Close chat");
+    setShowMenu(false);
+    setIsHovered(false);
+  };
+
+  const handleClearConversation = () => {
+    console.log("Clear conversation clicked!");
+    if (window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
+      dispatch(clearConversation());
+      console.log("Conversation cleared successfully");
+    }
+    setShowMenu(false);
+    setIsHovered(false);
+  };
+
+  // Auto-clear messages based on privacy settings - EXACT same
   useEffect(() => {
     if (privacySettings?.autoClearDays && privacySettings.autoClearDays > 0) {
       const clearOldMessages = () => {
@@ -289,17 +353,13 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           cutoffDate.getDate() - (privacySettings.autoClearDays ?? 0)
         );
 
-        // This would require a new action to clear messages older than cutoffDate
-        // For now, let's just clear all messages if they're older than the specified days
-        // In a real implementation, you'd want to check message timestamps
         console.log(
           `Auto-clear enabled: clearing messages older than ${privacySettings.autoClearDays} days`
         );
       };
 
-      // Check for old messages on mount and then periodically
       clearOldMessages();
-      const interval = setInterval(clearOldMessages, 24 * 60 * 60 * 1000); // Check daily
+      const interval = setInterval(clearOldMessages, 24 * 60 * 60 * 1000);
 
       return () => clearInterval(interval);
     }
@@ -319,15 +379,13 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
         fontFamily: "system-ui, -apple-system, sans-serif",
       }}
     >
-      {/* Chat Panel Position */}
-      {/* Floating Button */}
+      {/* Floating Button - Using CSS Custom Properties */}
       <FloatingButton
         position={position}
         isDragging={isDragging}
         isHovered={isHovered}
         isPanelOpen={isPanelOpen}
         showMenu={showMenu}
-        connectionStatus={connectionStatus}
         buttonSize={buttonSize}
         accessibilitySettings={accessibilitySettings}
         onMouseDown={handleMouseDown}
@@ -336,6 +394,7 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
         onMouseLeave={handleMouseLeave}
         onMenuClick={handleMenuClick}
       />
+
       {/* Dropdown Menu */}
       {showMenu && (
         <DropdownMenu
@@ -349,67 +408,17 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
               // Open chat if it's closed - keep menu open to show state change
               setIsPanelOpen(true);
             }
-            // Don't close menu - let user see the button change and interact more            // setShowMenu(false);
-            // setIsHovered(false);
+            // Don't close menu - let user see the button change and interact more
           }}
-          onSettingsClick={() => {
-            // Check extension context and handle errors gracefully
-            if (!ExtensionContext.isValid()) {
-              ExtensionContext.showContextError();
-              setShowMenu(false);
-              setIsHovered(false);
-              return;
-            }
-
-            // Send message to background script to open popup with error handling
-            if (typeof chrome !== "undefined" && chrome.runtime) {
-              try {
-                chrome.runtime.sendMessage({ action: "openPopup" }, () => {
-                  if (chrome.runtime.lastError) {
-                    // Handle extension context invalidated error
-                    if (
-                      chrome.runtime.lastError.message?.includes(
-                        "Extension context invalidated"
-                      )
-                    ) {
-                      ExtensionContext.showContextError();
-                    } else {
-                      console.warn(
-                        "Could not open popup:",
-                        chrome.runtime.lastError.message
-                      );
-                    }
-                  } else {
-                    // Success - popup opened
-                  }
-                });
-              } catch (error) {
-                console.warn("Chrome runtime error:", error);
-                ExtensionContext.showContextError();
-              }
-            } else {
-              console.warn("Chrome extension API not available");
-            }
-            setShowMenu(false);
-            setIsHovered(false);
-          }}
-          onKeyboardShortcutsClick={() => {
-            setShowMenu(false);
-            setIsHovered(false);
-          }}
-          onClearConversation={() => {
-            dispatch(clearConversation());
-            setShowMenu(false);
-            setIsHovered(false);
-          }}
-          onClose={() => {
-            setShowMenu(false);
-            setIsHovered(false);
-          }}
+          onSettingsClick={handleSettingsClick}
+          onKeyboardShortcutsClick={handleKeyboardShortcutsClick}
+          onClearConversation={handleClearConversation}
+          onClose={handleCloseMenu}
           onMouseEnter={handleMenuMouseEnter}
           onMouseLeave={handleMenuMouseLeave}
         />
-      )}{" "}
+      )}
+
       {/* Chat Panel */}
       {isPanelOpen && (
         <ChatPanel
@@ -420,16 +429,18 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
           chatPanelRef={chatPanelRef}
         />
       )}
-      {/* Click outside to close */}
+
+      {/* Click outside to close - EXACT same */}
       {(isPanelOpen || showMenu) && (
         <div
           style={{
             position: "fixed",
             inset: 0,
             pointerEvents: "auto",
-            zIndex: zIndex.overlay,
+            zIndex: 2147483643,
           }}
           onClick={() => {
+            console.log("Click outside detected");
             if (isPanelOpen) setIsPanelOpen(false);
             if (showMenu) {
               setShowMenu(false);
@@ -442,13 +453,13 @@ const OptimizedFloatingWidgetInner: React.FC = () => {
   );
 };
 
-// Wrapper component with Redux Provider
-const OptimizedFloatingWidget: React.FC = () => {
+// Wrapper component with Redux Provider - EXACT same
+const FloatingWidget: React.FC = () => {
   return (
     <Providers>
-      <OptimizedFloatingWidgetInner />
+      <FloatingWidgetInner />
     </Providers>
   );
 };
 
-export default OptimizedFloatingWidget;
+export default FloatingWidget;

@@ -1,0 +1,140 @@
+/* FloatingButton.module.css */
+.buttonContainer {
+  position: fixed;
+  left: var(--button-x);
+  top: var(--button-y);
+  width: var(--button-size);
+  height: var(--button-size);
+  z-index: 2147483647;
+  pointer-events: auto;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  cursor: var(--container-cursor);
+  user-select: var(--user-select);
+}
+
+.floatingButton {
+  position: relative;
+  width: var(--button-size);
+  height: var(--button-size);
+  background: var(--button-background);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  cursor: var(--cursor-type);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--button-shadow);
+  transform: var(--transform-scale);
+  transition: var(--transition-type);
+  opacity: 1;
+  visibility: visible;
+}
+
+.floatingButton:active {
+  transform: scale(0.95);
+}
+
+.floatingButton:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.pulseRing {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.4);
+  animation: var(--pulse-animation);
+  pointer-events: none;
+}
+
+.chatIcon {
+  width: var(--icon-size);
+  height: var(--icon-size);
+  color: #ffffff;
+  fill: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.menuButton {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  background: var(--menu-background);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: var(--menu-opacity);
+  transform: var(--menu-scale);
+  pointer-events: var(--menu-events);
+  transition: all 0.2s ease;
+}
+
+.menuButton svg {
+  width: 12px;
+  height: 12px;
+  color: #6b7280;
+}
+
+.menuButton:hover {
+  background: #ffffff;
+  transform: scale(1.1);
+  animation: wiggle 0.8s ease-in-out;
+}
+
+.menuButton:active {
+  transform: scale(0.9);
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes wiggle {
+  0%, 7% {
+    transform: rotateZ(0);
+  }
+  15% {
+    transform: rotateZ(-15deg);
+  }
+  20% {
+    transform: rotateZ(10deg);
+  }
+  25% {
+    transform: rotateZ(-10deg);
+  }
+  30% {
+    transform: rotateZ(6deg);
+  }
+  35% {
+    transform: rotateZ(-4deg);
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+  }
+}
