@@ -211,17 +211,17 @@ const FloatingWidgetInner: React.FC = () => {
     const panelHeight = 280;
     
     const actualButtonSize = getButtonSizeInPixels(buttonSize);
-    const padding = 20;
+    const padding = 15;
 
-    let x = position.x - panelWidth + actualButtonSize;
-    let y = position.y - panelHeight - 12;
+    let x = position.x - panelWidth ;
+    let y = position.y - panelHeight - 10;
 
     if (x < padding) {
-      x = position.x + actualButtonSize + 12;
+      x = position.x + actualButtonSize;
     }
 
     if (y < padding) {
-      y = position.y + actualButtonSize + 12;
+      y = position.y + actualButtonSize + 10;
     }
 
     if (x + panelWidth > window.innerWidth - padding) {
@@ -242,7 +242,7 @@ const FloatingWidgetInner: React.FC = () => {
     
     const actualButtonSize = getButtonSizeInPixels(buttonSize);
     const padding = 10;
-    const gap = 1;
+    const gap = 2;
 
     let x = position.x + actualButtonSize + gap;
     let y = position.y + actualButtonSize + gap;
@@ -252,7 +252,7 @@ const FloatingWidgetInner: React.FC = () => {
     }
 
     if (y + menuHeight > window.innerHeight - padding) {
-      y = position.y - menuHeight - gap;
+      y = position.y - menuHeight - gap + 30;
     }
 
     if (x < padding) x = padding;

@@ -41,7 +41,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
   onMouseLeave,
   onMenuClick,
 }) => {
-  // Helper function to get size values (EXACT same as styled-components)
+  // Helper function to get size values 
   const getSizeValues = (size: ButtonSize = 'medium') => {
     const sizeMap = {
       small: { size: 44, iconSize: 18 },
@@ -53,7 +53,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
 
   const sizeValues = getSizeValues(buttonSize);
 
-  // Button styling (EXACT same as styled-components - button always uses primary gradient)
+  // Button styling logic
   const getButtonStyling = () => {
     const baseGradient = 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)';
     const baseShadow = '0 4px 20px rgba(59, 130, 246, 0.3)';
@@ -67,7 +67,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
 
   const buttonStyling = getButtonStyling();
 
-  // CSS Custom Properties (EXACT same behavior as styled-components)
+  // CSS Custom Properties 
   const customProperties = {
     // Position
     '--button-x': `${position.x}px`,
@@ -117,8 +117,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
         {!isDragging && !accessibilitySettings.reducedMotion && (
           <div className={styles.pulseRing} />
         )}
-
-        {/* Chat Icon - EXACT same as styled-components */}
+        {/* Chat Icon */}
         <div className={styles.chatIcon}>
           <svg
             fill="none"
@@ -137,7 +136,7 @@ const FloatingButton: React.FC<FloatingButtonProps> = ({
         </div>
       </button>
 
-      {/* Menu Button - EXACT same as styled-components */}
+      {/* Menu Button */}
       <button
         className={styles.menuButton}
         onClick={onMenuClick}
