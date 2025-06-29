@@ -44,7 +44,7 @@
 /* --- Reset and Base Styles --- */
 * {
   box-sizing: border-box;
-  margin: 0;
+  /* margin: 0; */
   padding: 0;
 }
 body {
@@ -69,7 +69,7 @@ body {
 /* --- Settings Panel --- */
 .settings-panel {
   width: 380px;
-  max-height: 600px;
+  /* max-height: 600px; */
   overflow-y: auto;
   padding: 20px;
   background: var(--background-primary);
@@ -99,12 +99,12 @@ body {
 
 /* --- Header Styles --- */
 .settings-header {
-  display: flex;
+  /* display: flex; */
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center; /* changed from flex-start to center */
   border-bottom: 1px solid var(--border-color);
-  padding-bottom: 16px;
-  margin-bottom: 20px;
+  padding-bottom: 12px;
+  /* margin-bottom: 20px; */
 }
 .header-left {
   flex: 1;
@@ -132,6 +132,30 @@ body {
   transform: scale(1.05);
 }
 
+/* --- Toolbar Row --- */
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--background-primary);
+}
+/* --- Toolbar Button --- */
+.toolbar-button {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+.toolbar-button:hover {
+  background: var(--background-primary);
+  border-color: var(--primary-color);
+  transform: scale(1.05);
+}
 /* --- Status Indicator --- */
 .status-indicator {
   display: flex;
@@ -139,7 +163,7 @@ body {
   gap: 8px;
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 4px;
+  margin-bottom: 12px;
   padding: 12px;
   border-radius: var(--radius-md);
 }
