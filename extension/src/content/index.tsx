@@ -1,6 +1,5 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-// import FloatingWidget from "../../../src/components/FloatingWidget";
 import FloatingWidgetOOP from "../../../src/components/FloatingWidgetOOP";
 declare const chrome: typeof globalThis.chrome;
 

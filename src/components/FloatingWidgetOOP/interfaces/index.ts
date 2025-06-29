@@ -72,7 +72,7 @@ export interface IEventService {
 
 export interface IStorageService {
   loadSettings(): Promise<void>;
-  watchStorageChanges(): () => void; // Returns cleanup function
+  watchStorageChanges(): () => void;
 }
 
 export interface IChatService {
@@ -104,7 +104,13 @@ export interface WidgetConfiguration {
   buttonSizes: Record<string, number>;
 }
 
-// Configuration interfacesexport interface WidgetConfiguration {
+
+
+
+
+
+
+// 
 export interface AccessibilitySettings {
   highContrast: boolean;
   reducedMotion: boolean;

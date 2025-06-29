@@ -31,8 +31,6 @@ export const useWidgetNotifications = () => {
   return notificationService;
 };
 
-// Re-export the main hook
-export { useWidgetServices } from './useWidgetServices';
 
 // New refactored hooks
 export { usePositionCalculations } from './usePositionCalculations';
