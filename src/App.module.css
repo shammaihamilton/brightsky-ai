@@ -1,0 +1,13 @@
+.appRoot {
+  min-height: 100vh;
+  background-color: #f3f4f6; /* Tailwind's bg-gray-100 */
+}
+
+.pageContent {
+  padding: 2rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}

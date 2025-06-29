@@ -1,12 +1,13 @@
+import styles from './App.module.css';
 import FloatingChatWidget from './components/FloatingWidget';
 
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className={styles.appRoot}>
       {/* Simple page with just the floating widget */}
-      <div className="p-8">
-        <h1 className="text-2xl font-bold">Test Page</h1>
+      <div className={styles.pageContent}>
+        <h1 className={styles.title}>Test Page</h1>
         <p>The floating widget should appear on this page.</p>
       </div>
 
