@@ -29,8 +29,6 @@ import ChatPanel from './components/ChatPanel';
 import DropdownMenu from './components/DropdownMenu';
 
 /**
- * SOLID FloatingWidget Implementation - Clean & Focused
- * 
  * This component now follows the Single Responsibility Principle:
  * - Only handles UI orchestration and rendering
  * - All business logic moved to custom hooks
@@ -58,6 +56,10 @@ const FloatingWidgetOOPInner: React.FC = () => {
   usePrivacySettings();
   useNotificationService();
   if (!isVisible) {
+    return null;
+  }
+
+  if (!connectionStatus) {
     return null;
   }
 

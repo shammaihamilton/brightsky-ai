@@ -104,7 +104,6 @@ export interface WidgetConfiguration {
   buttonSizes: Record<string, number>;
 }
 
-
 // Configuration interfacesexport interface WidgetConfiguration {
 export interface AccessibilitySettings {
   highContrast: boolean;
@@ -221,7 +220,7 @@ export interface CustomUserPreferences {
 }
 
 export interface WidgetSettings {
-    storageKey: string;
+  storageKey: string;
   panelDimensions: WidgetDimensions;
   menuDimensions: WidgetDimensions;
   buttonSizes: Record<string, number>;
