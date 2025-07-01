@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+## Development Guidelines
+- Use TypeScript for all components with proper typing
+- Follow React hooks best practices
+- Use CSS modules (`.module.scss` or `.module.css`) for styling components
+- Organize SCSS files by component or feature for maintainability
+- Prefer BEM or similar naming conventions for class names in SCSS
+- **Keep SOLID principles** (Single Responsibility, Open/Closed, Liskov Substitution, Interface Segregation, Dependency Inversion) in all code and architecture decisions
+- Ensure accessibility with proper ARIA labels and keyboard navigation
+- Maintain responsive design principles
+
+- Keep components modular and reusable

@@ -51,7 +51,7 @@ export const PopupHeader: React.FC<PopupHeaderProps> = ({
       </div>
       <div className="toolbar-row">
         <button
-          className="theme-toggle"
+          className="toolbar-button"
           onClick={onThemeToggle}
           title={`Switch to ${getNextTheme()} theme`}
           type="button"

@@ -87,7 +87,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
       <div 
         className={`${styles.connectionStatusIndicator} ${styles[`status-${connectionStatus}`]}`}
       >
-        {getStatusText()}
+        {/* {getStatusText()} */}
+        
       </div>
 
       <div className={styles.inputWrapper}>
