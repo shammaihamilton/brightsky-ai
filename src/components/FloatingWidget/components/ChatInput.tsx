@@ -50,7 +50,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   
   const isDisabled = connectionStatus !== "connected";
   const isOverLimit = message.length > maxLength * 0.9;
-  const canSend = message.trim().length > 0 && connectionStatus === "connected";
+  const canSend = message.trim().length > 0;
 
   const getPlaceholder = () => {
     switch (connectionStatus) {
@@ -87,7 +87,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
       <div 
         className={`${styles.connectionStatusIndicator} ${styles[`status-${connectionStatus}`]}`}
       >
-        {getStatusText()}
+        {/* {getStatusText()} */}
+        
       </div>
 
       <div className={styles.inputWrapper}>

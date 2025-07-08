@@ -68,6 +68,11 @@ export const selectProvider = createSelector(
   (settings) => settings.provider
 );
 
+export const selectorTools = createSelector(
+  [selectSettingsState],
+  (settings) => ({...settings, tools: settings.tools})
+);
+
 export const selectApiSettings = createSelector(
   [selectSettingsState],
   (settings) => ({
@@ -76,6 +81,7 @@ export const selectApiSettings = createSelector(
     maxTokens: settings.maxTokens,
     temperature: settings.temperature,
     isConfigured: settings.isConfigured,
+    tools: settings.tools
   })
 );
 
@@ -104,6 +110,9 @@ export const selectAllSettings = createSelector(
     maxTokens: apiSettings.maxTokens,
     temperature: apiSettings.temperature,
     isConfigured: apiSettings.isConfigured,
+    tools: apiSettings.tools,
+
+
     
     // Chat UI/UX settings
     assistantName: chatSettings.assistantName,

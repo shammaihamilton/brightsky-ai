@@ -7,7 +7,8 @@ export default mergeConfig(
   defineConfig({
     build: {
       rollupOptions: {
-        input: resolve(__dirname, "src/popup/index.tsx"),
+        // input: resolve(__dirname, "src/components/popupTabbed/index.tsx"),
+        input: resolve(__dirname, "src/components/popup/index.tsx"),
         output: {
           entryFileNames: "popup.js",
           chunkFileNames: "chunks/[name]-[hash].js",

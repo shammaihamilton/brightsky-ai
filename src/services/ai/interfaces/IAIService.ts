@@ -1,4 +1,5 @@
-import type { ChatMessage, StreamChunk } from "./types";
+import type { ChatMessage } from "../interfaces/types";
+import type { StreamChunk } from "./types";
 
 
 

@@ -21,14 +21,31 @@ interface WeatherData {
   };
 }
 
+interface LocationInfo {
+  displayName: string;
+  coordinates: { latitude: number; longitude: number };
+}
+
 @Injectable()
 export class WeatherService {
   async getWeather(location: string): Promise<WeatherData> {
     try {
-      // Clean up the location query - extract just the location name
       const cleanLocation = this.extractLocationFromQuery(location);
+      const coords = await this.getCoordinates(cleanLocation);
 
-      // 1. Geocode the location to get coordinates
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.latitude}&longitude=${coords.longitude}&current_weather=true`;
+      const weatherResponse = await axios.get<WeatherData>(weatherUrl);
+
+      return weatherResponse.data;
+    } catch (error) {
+      console.error('Weather service error:', error);
+      throw error;
+    }
+  }
+
+  async getLocationInfo(location: string): Promise<LocationInfo> {
+    try {
+      const cleanLocation = this.extractLocationFromQuery(location);
       const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
         cleanLocation,
       )}&count=1`;
@@ -38,18 +55,25 @@ export class WeatherService {
         throw new Error(`Location "${cleanLocation}" not found`);
       }
 
-      const { latitude, longitude } = geoResponse.data.results[0];
-
-      // 2. Get weather data using coordinates
-      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
-      const weatherResponse = await axios.get<WeatherData>(weatherUrl);
-
-      return weatherResponse.data;
+      const result = geoResponse.data.results[0];
+      return {
+        displayName: `${result.name}, ${result.country}`,
+        coordinates: {
+          latitude: result.latitude,
+          longitude: result.longitude,
+        },
+      };
     } catch (error) {
-      console.error('Weather service error:', error);
-      // Re-throw the error to be caught by the McpService
+      console.error('Location info error:', error);
       throw error;
     }
+  }
+
+  private async getCoordinates(
+    location: string,
+  ): Promise<{ latitude: number; longitude: number }> {
+    const locationInfo = await this.getLocationInfo(location);
+    return locationInfo.coordinates;
   }
 
   private extractLocationFromQuery(query: string): string {

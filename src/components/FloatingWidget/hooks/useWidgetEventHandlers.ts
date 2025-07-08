@@ -2,11 +2,13 @@ import { useAppDispatch } from '../../../store/hooks';
 import { clearConversation } from '../../../store/slices/chatSlice';
 import { useWidgetEvents } from './index';
 import { useWidgetStateIntegration } from './useWidgetStateIntegration';
+import { useAIChat } from '../../../hooks/useAIChat';
 
 export const useWidgetEventHandlers = () => {
   const dispatch = useAppDispatch();
   const eventService = useWidgetEvents();
   const widgetState = useWidgetStateIntegration();
+  const { sendMessage } = useAIChat();
 
   const handleClearConversationClick = () => {
     console.log("Clear conversation clicked!");
@@ -33,10 +35,15 @@ export const useWidgetEventHandlers = () => {
     }
   };
 
+  const handleSendMessage = async (message: string) => {
+    await sendMessage(message);
+  };
+
   return {
     handleClearConversationClick,
     handleChatToggle,
     handleClickOutside,
+    handleSendMessage,
     eventService,
   };
 };

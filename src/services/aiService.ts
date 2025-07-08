@@ -1,4 +1,3 @@
-
 import { 
   AIServiceRouter, 
   AIProvider, 
@@ -12,11 +11,46 @@ import type {
 } from "./ai";
 
 export interface AIServiceConfig {
-  provider: "openai" | "claude" | "gemini";
+  provider: "openai" | "claude" | "gemini" | AIProvider | string ; // Allow legacy string or enum
   apiKey: string;
   maxTokens?: number;
   temperature?: number;
   tone?: string;
+  /**
+   * Optional custom endpoint for the AI provider
+   * Useful for self-hosted or alternative providers
+   */
+  endpoint?: string;
+  /**
+   * Optional model name to use for the AI provider
+   * If not provided, defaults to the provider's default model
+   */
+  model?: string;
+  /**
+   * Optional custom headers to include in the request
+   * Useful for additional authentication or metadata
+   */
+  headers?: Record<string, string>;
+  /**
+   * Optional timeout for the request in milliseconds
+   * Defaults to 30000 (30 seconds)
+   */
+  timeout?: number;
+  /**
+   * Optional flag to enable/disable streaming responses
+   * Defaults to false
+   */
+  enableStreaming?: boolean;
+  /**
+   * Optional flag to enable/disable conversation history
+   * Defaults to true
+   */
+  enableConversationHistory?: boolean;
+  /**
+   * Optional flag to enable/disable error handling
+   * Defaults to true
+   */
+  enableErrorHandling?: boolean;
 }
 export type { ChatMessage, StreamChunk };
 
@@ -89,5 +123,17 @@ export class AIService {
       temperature: legacyConfig.temperature,
       tone,
     };
+  }
+
+  getSystemMessage(): string {
+    return "You are a helpful AI assistant.";
+  }
+
+  validateApiKey(apiKey: string): boolean {
+    return typeof apiKey === "string" && apiKey.length > 0;
+  }
+
+  getProviderName(): string {
+    return this.config.provider;
   }
 }

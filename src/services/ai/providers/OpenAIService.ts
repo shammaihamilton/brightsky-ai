@@ -34,26 +34,28 @@ export class OpenAIService extends BaseAIService {
           role: "system",
           content: this.getSystemMessage(),
         },
-        ...conversationHistory.slice(-10), // Keep last 10 messages for context
+        ...conversationHistory.slice(-10), 
         {
           role: "user",
           content: message,
         },
       ];
 
+      const payload = {
+        model: "gpt-4",
+        messages,
+        max_tokens: this.config.maxTokens,
+        temperature: this.config.temperature,
+        stream: !!onChunk,
+      };
+      console.log("[OpenAIService] Sending payload to OpenAI:", payload);
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages,
-          max_tokens: this.config.maxTokens,
-          temperature: this.config.temperature,
-          stream: !!onChunk,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

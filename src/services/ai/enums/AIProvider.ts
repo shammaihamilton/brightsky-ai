@@ -1,13 +1,19 @@
 /**
  * Supported AI providers
  */
-export const AIProvider = {
-  OPENAI: "openai",
-  CLAUDE: "claude",
-  GEMINI: "gemini",
-} as const;
+// export const AIProvider = {
+//   OPENAI: "openai",
+//   CLAUDE: "claude",
+//   GEMINI: "gemini",
+// } as const;
 
-export type AIProvider = typeof AIProvider[keyof typeof AIProvider];
+export enum AIProvider {
+  OPENAI = "openai",
+  CLAUDE = "claude",
+  GEMINI = "gemini",
+}
+
+export type AIProviderList = typeof AIProvider[keyof typeof AIProvider];
 
 /**
  * Conversation tones

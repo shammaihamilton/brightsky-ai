@@ -1,13 +1,14 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-
 interface SettingsState {
   apiKey: string;
-  provider: 'openai' | 'claude' | 'gemini';
+  provider: 'openai' | 'claude' | 'gemini'; 
   theme: 'light' | 'dark' | 'auto';
   autoSave: boolean;
   maxTokens: number;
   temperature: number;
   isConfigured: boolean;
+  tone?: string;
+  tools: string[]
 }
 
 const initialState: SettingsState = {
@@ -18,6 +19,8 @@ const initialState: SettingsState = {
   maxTokens: 4000,
   temperature: 0.7,
   isConfigured: false,
+  tone: 'professional',
+  tools: ['weather'],
 };
 
 const settingsSlice = createSlice({
@@ -50,6 +53,12 @@ const settingsSlice = createSlice({
       Object.assign(state, action.payload);
       state.isConfigured = (action.payload.apiKey?.length ?? 0) > 0;
     },
+    setTone: (state, action: PayloadAction<string>) => {
+      state.tone = action.payload;
+    },
+    setTools: (state, action: PayloadAction<string[]>) => {
+      state.tools = Array.isArray(action.payload) ? action.payload : [];
+    },
   },
 });
 
@@ -62,6 +71,8 @@ export const {
   setTemperature,
   resetSettings,
   loadSettings,
+  setTone,
+  setTools
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

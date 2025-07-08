@@ -5,7 +5,10 @@ import {
   addAiResponseChunk,
   dequeueMessage,
 } from "../slices/chatSlice"; 
-import { AIService } from "../../services/aiService"; 
+import { AIService, type ChatMessage } from "../../services/aiService"; 
+import { MCPClient } from "../../services/mcp/MCPClient";
+// import { MCPManager } from "../../services/mcp/MCPManager";
+import { isValidConversationTone } from "../../services/ai/enums/AIProvider";
 
 interface SendMessagePayload {
   userMessage: string;
@@ -32,34 +35,51 @@ export const sendMessageToServer = createAsyncThunk<
     const { userMessage } = payload;
 
     const state = getState();
+    // console.log('[Thunk] state.settings.tools:', state.settings, userMessage);
     const tone = state.chatSettings.tone;
-    const { apiKey, provider, maxTokens, temperature } = state.settings;
+    const { apiKey, provider, maxTokens, temperature, tools: enabledToolIds } = state.settings;
     
     // Check if AI service is configured
     if (!apiKey || !provider) {
       return rejectWithValue("AI service not configured. Please set up your API key and provider in settings.");
     }
 
-    const history = state.chat.conversationHistory
-      .slice(-10)
-      .map((msg) => ({ 
-        role: msg.sender === 'user' ? 'user' as const : 'assistant' as const, 
-        content: msg.text 
-      }));
+    const chatHistory: ChatMessage[] = state.chat.conversationHistory
+     .slice(-10)
+     .map((msg) => ({
+       role: msg.sender === 'user' ? 'user' : 'assistant',
+       content: msg.text,
+     }));
 
     try {
-      const aiService = new AIService({
-        provider,
-        apiKey,
-        maxTokens,
-        temperature,
-        tone,
-      });
+      let aiService: AIService;
+      const aiTone = isValidConversationTone(tone) ? tone : undefined;
+      // Only pass tone if valid
+      if (enabledToolIds.length > 0) {
+        const baseAI = new AIService({
+          provider,
+          apiKey,
+          maxTokens,
+          temperature,
+          tone: aiTone,
+        });
+        // const mcpManager = new MCPManager(enabledToolIds);
+        aiService = new MCPClient(baseAI) as unknown as AIService;
+      } else {
+        aiService = new AIService({
+          provider,
+          apiKey,
+          maxTokens,
+          temperature,
+          tone: aiTone,
+        });
+      }
 
-      const aiResponse = await aiService.sendMessage(userMessage, history);
+      const aiResponse = await aiService.sendMessage(userMessage, chatHistory);
 
       if (aiResponse) {
         const aiMessageId = uuidv4();
+        // console.log('[Thunk] Final aiResponse to display:', aiResponse);
         dispatch(
           addAiResponseChunk({
             messageId: aiMessageId,

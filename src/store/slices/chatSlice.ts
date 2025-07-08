@@ -3,6 +3,7 @@ import type {
   Message,
   ConnectionStatus,
   ButtonPositionState,
+  Tone,
 } from "../../types/chat.types";
 import { safeLocalStorage } from "../../utils/safeLocalStorage";
 import {
@@ -28,6 +29,7 @@ export interface ChatState {
   messageQueue: Message[];
   isAiLoading: boolean;
   currentError: string | null;
+  tone: Tone;
 }
 
 const loadInitialButtonPosition = (): ButtonPositionState | null => {
@@ -65,6 +67,7 @@ const createInitialState = (): ChatState => {
     messageQueue: [],
     isAiLoading: false,
     currentError: null,
+    tone: "Professional",
   };
 };
 
@@ -233,6 +236,9 @@ export const chatSlice = createSlice({
         state.messageQueue.splice(queueIndex, 1);
       }
     },
+    setTone: (state, action: PayloadAction<Tone>) => {
+      state.tone = action.payload;
+    },
   },
 });
 
@@ -250,6 +256,7 @@ export const {
   setCurrentError,
   queueMessage,
   dequeueMessage,
+  setTone,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

@@ -18,14 +18,11 @@ export const useStorageIntegration = () => {
             return;
           }
 
-          console.log('Loading settings from storage:', result);
-
           if (result.apiSettings) {
             dispatch(loadSettings(result.apiSettings));
           }
           
           if (result.chatSettings) {
-            console.log('Loading chat settings:', result.chatSettings);
             dispatch(updateChatSettings(result.chatSettings));
           }
         });
@@ -41,12 +38,10 @@ export const useStorageIntegration = () => {
       console.log('Storage changed:', changes);
       
       if (changes.chatSettings) {
-        console.log('Chat settings changed, updating widget:', changes.chatSettings.newValue);
         dispatch(updateChatSettings(changes.chatSettings.newValue));
       }
       
       if (changes.apiSettings) {
-        console.log('API settings changed, updating widget:', changes.apiSettings.newValue);
         dispatch(loadSettings(changes.apiSettings.newValue));
       }
     }

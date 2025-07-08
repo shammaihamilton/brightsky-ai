@@ -1,5 +1,5 @@
 import styles from './App.module.css';
-import FloatingWidgetOOP from './components/FloatingWidgetOOP';
+import FloatingWidget from './components/FloatingWidget';
 
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
       </div>
 
       {/* Floating Widget */}
-      <FloatingWidgetOOP />
+      <FloatingWidget />
     </div>
   );
 }
