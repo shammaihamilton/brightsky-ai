@@ -101,8 +101,6 @@ export const useChromeStorage = (): UseChromeStorageReturn => {
           chrome.storage.sync.set({ chatSettings: newChatSettings }, () => {
             if (chrome.runtime.lastError) {
               console.error('Chrome storage error:', chrome.runtime.lastError);
-            } else {
-              console.log('Chat settings saved to storage');
             }
             resolve();
           });

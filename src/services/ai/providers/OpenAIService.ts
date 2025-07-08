@@ -48,7 +48,7 @@ export class OpenAIService extends BaseAIService {
         temperature: this.config.temperature,
         stream: !!onChunk,
       };
-      console.log("[OpenAIService] Sending payload to OpenAI:", payload);
+      
       const response = await fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: {

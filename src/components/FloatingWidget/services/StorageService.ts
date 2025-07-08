@@ -23,8 +23,6 @@ export class StorageService implements IStorageService {
             return;
           }
 
-          console.log('Loading settings from storage:', result);
-
           if (this.onSettingsChange) {
             this.onSettingsChange(result);
           }
@@ -39,17 +37,13 @@ export class StorageService implements IStorageService {
       areaName: string
     ) => {
       if (areaName === 'sync') {
-        console.log('Storage changed:', changes);
-        
         const updatedSettings: StorageSettings = {};
         
         if (changes.chatSettings) {
-          console.log('Chat settings changed, updating widget:', changes.chatSettings.newValue);
           updatedSettings.chatSettings = changes.chatSettings.newValue;
         }
         
         if (changes.apiSettings) {
-          console.log('API settings changed, updating widget:', changes.apiSettings.newValue);
           updatedSettings.apiSettings = changes.apiSettings.newValue;
         }
 

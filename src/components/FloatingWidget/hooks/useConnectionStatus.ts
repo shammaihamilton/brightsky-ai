@@ -10,10 +10,8 @@ export const useConnectionStatus = () => {
   useEffect(() => {
     if (chatService.isConfigured) {
       dispatch(setConnectionStatus("connected"));
-      console.log("AI is configured - connection status set to connected");
     } else {
       dispatch(setConnectionStatus("disconnected"));
-      console.log("AI is not configured - connection status set to disconnected");
     }
   }, [chatService.isConfigured, dispatch]);
 };

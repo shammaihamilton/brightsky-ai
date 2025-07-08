@@ -22,14 +22,19 @@ export class ExtensionContext {
   ): Promise<T | undefined> {
     try {
       if (!this.isValid()) {
-        console.warn('Extension context is invalid, skipping operation');
+        // Only log in development mode to reduce noise
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Extension context is invalid, skipping operation');
+        }
         return fallback;
       }
       
       return await operation();
     } catch (error) {
       if (error instanceof Error && error.message.includes('Extension context invalidated')) {
-        console.warn('Extension context invalidated during operation');
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Extension context invalidated during operation');
+        }
         return fallback;
       }
       

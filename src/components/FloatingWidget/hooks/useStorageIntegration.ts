@@ -35,8 +35,6 @@ export const useStorageIntegration = () => {
     areaName: string
   ) => {
     if (areaName === 'sync') {
-      console.log('Storage changed:', changes);
-      
       if (changes.chatSettings) {
         dispatch(updateChatSettings(changes.chatSettings.newValue));
       }

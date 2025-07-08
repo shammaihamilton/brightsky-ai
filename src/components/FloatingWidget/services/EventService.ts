@@ -86,17 +86,14 @@ export class EventService implements IEventService {
   }
 
   handleClearConversation(): void {
-    console.log("Clear conversation clicked!");
     if (window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
       // TODO: This should be injected as a Redux service dependency
       // For now, we'll handle this in the component level
-      console.log("Conversation clear confirmed - to be handled by component");
     }
     this.handleCloseMenu();
   }
 
   handleCloseMenu(): void {
-    console.log("Menu close button clicked!");
     this.stateService.closeMenu();
     this.stateService.setHovered(false);
   }

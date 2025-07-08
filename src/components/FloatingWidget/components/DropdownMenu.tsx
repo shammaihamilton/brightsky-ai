@@ -137,7 +137,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         <button 
           className={styles.menuCloseButton} 
           onClick={(e) => {
-            console.log("Close button clicked!");
             e.preventDefault();
             e.stopPropagation();
             onClose();
@@ -166,7 +165,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                     : styles.menuItemDefault
                 }`}
                 onClick={(e) => {
-                  console.log(`Menu item clicked: ${item.label}`);
                   e.preventDefault();
                   e.stopPropagation();
                   item.onClick();

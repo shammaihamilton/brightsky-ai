@@ -1,15 +1,7 @@
 // MCPClientAIService.ts
 import type { IAIService } from "../ai/interfaces/IAIService";
 import type { ChatMessage } from "../ai/interfaces/types";
-
-interface WeatherResult {
-  location?: string;
-  temperature?: number;
-  condition?: number;
-  time?: number;
-  windspeed?: number;
-  description?: string;
-}
+import { ResponseProcessorRegistry } from "./processors";
 
 interface ToolResult<T = unknown> {
   success: boolean;
@@ -19,8 +11,37 @@ interface ToolResult<T = unknown> {
   error?: string;
 }
 
+interface MCPClientConfig {
+  backendUrl: string;
+  timeout: number;
+  maxRetries: number;
+  retryDelay: number;
+}
+
+type LoadingCallback = (loading: boolean, toolName?: string) => void;
+
 export class MCPClient implements IAIService {
-  constructor(private primaryAI: IAIService) {}
+  private config: MCPClientConfig;
+  private onLoadingChange?: LoadingCallback;
+  private responseProcessorRegistry: ResponseProcessorRegistry;
+
+  constructor(
+    private primaryAI: IAIService,
+    config: Partial<MCPClientConfig> = {}
+  ) {
+    this.config = {
+      backendUrl: config.backendUrl || "http://localhost:3001",
+      timeout: config.timeout || 10000, // 10 seconds
+      maxRetries: config.maxRetries || 3,
+      retryDelay: config.retryDelay || 1000, // 1 second
+    };
+    
+    this.responseProcessorRegistry = new ResponseProcessorRegistry(this.primaryAI);
+  }
+
+  setLoadingCallback(callback: LoadingCallback): void {
+    this.onLoadingChange = callback;
+  }
 
   async sendMessage(message: string, history: ChatMessage[]): Promise<string> {
     try {
@@ -36,50 +57,116 @@ export class MCPClient implements IAIService {
 
       if (toolRequest) {
         const { toolName, query } = toolRequest;
-        // Always call backend MCP endpoint for tool execution
-        console.log(
-          "[MCPClient] Sending tool request to backend:",
-          toolName,
-          query
-        );
-        // For weather, use ToolResult<WeatherResult>, otherwise ToolResult
-        let toolResult: ToolResult;
-        if (toolName === "weather" || toolName === "weather_tool") {
-          toolResult = (await fetch("http://localhost:3001/mcp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tool: toolName, query }),
-          }).then((res) => res.json())) as ToolResult<WeatherResult>;
-        } else {
-          toolResult = (await fetch("http://localhost:3001/mcp", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tool: toolName, query }),
-          }).then((res) => res.json())) as ToolResult;
+        
+        // Set loading state
+        this.onLoadingChange?.(true, toolName);
+        
+        try {
+          // Call backend MCP endpoint
+          const toolResult = await this.callBackendTool(toolName, query);
+          
+          // Process the tool result
+          aiResponse = await this.processToolResult(
+            toolName,
+            toolResult,
+            message,
+            history
+          );
+        } finally {
+          // Clear loading state
+          this.onLoadingChange?.(false);
         }
-        console.log(
-          "[MCPClient] Received tool result from backend:",
-          toolResult
-        );
-        aiResponse = await this.processToolResult(
-          toolName,
-          toolResult,
-          message,
-          history
-        );
       }
-      console.log("[MCPClient] Returning final response:", aiResponse);
+      
       return aiResponse;
     } catch (error) {
       console.error("[MCPClient] Error in sendMessage:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Unknown error occurred";
+      const errorMessage = this.getErrorMessage(error);
       return `I encountered an error while processing your request: ${errorMessage}`;
     }
   }
 
+  private async callBackendTool(toolName: string, query: string): Promise<ToolResult> {
+    let lastError: Error | null = null;
+    
+    for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
+        
+        const response = await fetch(`${this.config.backendUrl}/mcp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tool: toolName, query }),
+          signal: controller.signal,
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`Backend error: ${response.status} ${response.statusText}`);
+        }
+        
+        const result = await response.json() as ToolResult;
+        return result;
+        
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        if (attempt === this.config.maxRetries) {
+          break;
+        }
+        
+        await this.delay(this.config.retryDelay);
+      }
+    }
+    
+    throw this.enhanceError(lastError!);
+  }
+
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private enhanceError(error: Error): Error {
+    if (error.name === 'AbortError') {
+      return new Error(`Request timed out after ${this.config.timeout}ms. Please check if the backend server is running.`);
+    }
+    
+    if (error.message.includes('fetch')) {
+      return new Error('Unable to connect to backend service. Please check if the server is running.');
+    }
+    
+    if (error.message.includes('Backend error')) {
+      return new Error(`Backend service error: ${error.message}`);
+    }
+    
+    return error;
+  }
+
+  private getErrorMessage(error: unknown): string {
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return "Unknown error occurred";
+  }
+
   private buildToolPrompt(): string {
-    return `You are an assistant with access to various tools.\nIMPORTANT INSTRUCTIONS:\n- When you need to use a tool, respond ONLY in this format: [TOOL: weather, query: location_name]\n- For weather queries, extract ONLY the location name (e.g., "Israel", "New York", "London")\n- Use weather tool for weather-related queries\n- Do NOT answer directly if a tool is available and needed for the user's request\n- If you do not need a tool, answer normally without using the [TOOL:] format`;
+    return `You are an assistant with access to various tools.
+
+AVAILABLE TOOLS:
+- weather: Get current weather information for any location
+
+IMPORTANT INSTRUCTIONS:
+- When you need to use a tool, respond ONLY in this format: [TOOL: tool_name, query: your_query]
+- For weather queries, extract ONLY the location name (e.g., "Israel", "New York", "London")
+- Do NOT answer directly if a tool is available and needed
+- If no tool is needed, answer normally without using the [TOOL:] format
+
+Examples:
+- "What's the weather in Paris?" → [TOOL: weather, query: Paris]
+- "How are you?" → Normal response (no tool needed)
+- "Tell me about the weather in Tokyo" → [TOOL: weather, query: Tokyo]`;
   }
 
   private parseToolRequest(
@@ -106,70 +193,17 @@ export class MCPClient implements IAIService {
     history: ChatMessage[]
   ): Promise<string> {
     if (!toolResult.success) {
-      return `I tried to use the ${toolName} tool but encountered an error: ${toolResult.error}`;
+      const errorMsg = toolResult.error || "Unknown tool error";
+      return `I tried to use the ${toolName} tool but encountered an error: ${errorMsg}. Please try again or contact support if the issue persists.`;
     }
-    if (toolName === "weather" || toolName === "weather_tool") {
-      return this.processWeatherResult(
-        toolResult as ToolResult<WeatherResult>,
-        originalMessage,
-        history
-      );
-    }
-    return this.processGenericResult(toolResult);
-  }
-
-  private async processWeatherResult(
-    toolResult: ToolResult<WeatherResult>,
-    originalMessage: string,
-    history: ChatMessage[]
-  ): Promise<string> {
-    const weather = toolResult.data.results;
-    const resultPrompt = `The user asked: ${originalMessage}\n\nHere is the current, real-time weather information for the user's location:\n- Location: ${
-      weather.location || "Unknown"
-    }\n- Temperature: ${
-      weather.temperature || "N/A"
-    }°C\n- Weather condition code: ${
-      weather.condition || "N/A"
-    }\n- Description: ${weather.description || "N/A"}\n- Windspeed: ${
-      weather.windspeed || "N/A"
-    }\n- Time: ${
-      weather.time || "N/A"
-    } \n\nIMPORTANT:\n- Use ONLY the data above to answer the user's question about the weather.\n- Do NOT say you can't access real-time data or that you don't have access to current weather if there was a tool provided.\n- Do NOT use [TOOL:] format in your answer.\n- Respond as a helpful weather assistant, giving a natural, conversational summary of the weather for the user using all the data above and explaining each parameter.`;
-
-    try {
-      const response = await this.primaryAI.sendMessage(resultPrompt, history);
-      if (
-        /\[TOOL:/i.test(response) ||
-        /I don't have real-time capabilities|I can't provide current weather|I do not have access to real-time weather|I am unable to provide current weather/i.test(
-          response
-        )
-      ) {
-        return `The current weather for ${
-          weather.location || "the requested location"
-        } is ${weather.temperature || "N/A"}°C with condition code ${
-          weather.condition || "N/A"
-        }.`;
-      }
-      return response;
-    } catch (error) {
-      console.error(
-        "[ClientAIService] Error processing weather result:",
-        error
-      );
-      return `The current weather for ${
-        weather.location || "the requested location"
-      } is ${weather.temperature || "N/A"}°C.`;
-    }
-  }
-
-  private processGenericResult(toolResult: ToolResult): string {
-    try {
-      return JSON.stringify(toolResult.data.results, null, 2);
-    } catch {
-      return `Tool executed successfully but results couldn't be formatted: ${String(
-        toolResult.data.results
-      )}`;
-    }
+    
+    // Delegate to appropriate response processor
+    return this.responseProcessorRegistry.processToolResult(
+      toolName,
+      toolResult,
+      originalMessage,
+      history
+    );
   }
 
   getSystemMessage(): string {

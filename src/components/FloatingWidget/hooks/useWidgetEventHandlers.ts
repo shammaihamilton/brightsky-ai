@@ -11,10 +11,8 @@ export const useWidgetEventHandlers = () => {
   const { sendMessage } = useAIChat();
 
   const handleClearConversationClick = () => {
-    console.log("Clear conversation clicked!");
     if (window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
       dispatch(clearConversation());
-      console.log("Conversation cleared successfully");
     }
     widgetState.closeMenu();
   };
@@ -28,7 +26,6 @@ export const useWidgetEventHandlers = () => {
   };
 
   const handleClickOutside = () => {
-    console.log("Click outside detected");
     if (widgetState.isPanelOpen) widgetState.closePanel();
     if (widgetState.showMenu) {
       widgetState.closeMenu();

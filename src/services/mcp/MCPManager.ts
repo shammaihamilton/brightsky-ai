@@ -5,14 +5,13 @@ export class MCPManager {
   private tools: Map<string, MCPTool> = new Map();
 
   constructor(enabledToolIds: string[]) {
-    console.log('[MCPManager] Initializing tools with:', enabledToolIds);
     this.initializeTools(enabledToolIds);
   }
 
   // Register only enabled tools
-  private initializeTools(enabledToolIds: string[]) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  private initializeTools(_enabledToolIds: string[]) {
     // TODO: Add weather tool
-    console.log('[MCPManager] Initializing tools:', enabledToolIds);
     // Weather tool removed - now handled by backend
     // if (enabledToolIds.includes('weather')) {
     //   this.registerTool(new WeatherTool());
@@ -22,7 +21,6 @@ export class MCPManager {
   }
 
   registerTool(tool: MCPTool) {
-    console.log('[MCPManager] Registered tool:', tool.name);
     this.tools.set(tool.name, tool);
   }
 

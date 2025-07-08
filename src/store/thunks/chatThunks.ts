@@ -35,7 +35,6 @@ export const sendMessageToServer = createAsyncThunk<
     const { userMessage } = payload;
 
     const state = getState();
-    // console.log('[Thunk] state.settings.tools:', state.settings, userMessage);
     const tone = state.chatSettings.tone;
     const { apiKey, provider, maxTokens, temperature, tools: enabledToolIds } = state.settings;
     
@@ -79,7 +78,6 @@ export const sendMessageToServer = createAsyncThunk<
 
       if (aiResponse) {
         const aiMessageId = uuidv4();
-        // console.log('[Thunk] Final aiResponse to display:', aiResponse);
         dispatch(
           addAiResponseChunk({
             messageId: aiMessageId,

@@ -13,9 +13,6 @@ export const usePrivacySettings = () => {
           cutoffDate.getDate() - (privacySettings.autoClearDays ?? 0)
         );
 
-        console.log(
-          `Auto-clear enabled: clearing messages older than ${privacySettings.autoClearDays} days`
-        );
         // This could be moved to a dedicated service
       };
 

@@ -20,8 +20,8 @@ export class NotificationService implements INotificationService {
     // Could integrate with the base notification service here
   }
 
-  showSuccess(message: string): void {
-    console.log('[Widget Success]:', message);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  showSuccess(_message: string): void {
     // Could integrate with the base notification service here
   }
 }
