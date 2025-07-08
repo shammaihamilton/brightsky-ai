@@ -12,6 +12,27 @@ dist
 dist-ssr
 *.local
 
+# Environment variables - NEVER commit these!
+.env
+.env.*
+!.env.example
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backend specific
+chatAI-backend/.env
+chatAI-backend/.env.*
+!chatAI-backend/.env.example
+chatAI-backend/node_modules
+chatAI-backend/dist
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

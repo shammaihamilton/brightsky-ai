@@ -1,0 +1,1 @@
+export { PopupTabbedPanel } from './index.tsx'; 

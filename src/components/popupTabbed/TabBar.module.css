@@ -1,0 +1,62 @@
+.tabBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-bg, #fff);
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 8px;
+  height: 44px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  z-index: 2;
+}
+
+.tabButton {
+  flex: 1 1 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: var(--color-text, #333);
+  padding: 10px 0;
+  cursor: pointer;
+  transition: color 0.2s, border-bottom 0.2s;
+  border-bottom: 2px solid transparent;
+  margin: 0 2px;
+}
+
+.tabButton:hover {
+  color: var(--color-primary, #0078d4);
+}
+
+.active {
+  color: var(--color-primary, #0078d4);
+  border-bottom: 2px solid var(--color-primary, #0078d4);
+  font-weight: 600;
+}
+
+@media (max-width: 400px) {
+  .tabBar {
+    font-size: 0.95rem;
+    height: 38px;
+  }
+  .tabButton {
+    font-size: 0.95rem;
+    padding: 7px 0;
+  }
+}
+
+/* Fade/slide animation for tab content */
+.tabContent {
+  animation: fadeInSlide 0.25s cubic-bezier(0.4,0,0.2,1);
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+} 
