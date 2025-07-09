@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/ChatSettingsSection.module.scss';
+import styles from './ChatSettingsSection.module.scss';
 
 export const ChatSettingsSection: React.FC = () => {
   return (

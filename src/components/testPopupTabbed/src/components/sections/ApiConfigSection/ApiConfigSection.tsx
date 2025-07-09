@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/ApiConfigSection.module.scss';
+import styles from './ApiConfigSection.module.scss';
 
 export const ApiConfigSection: React.FC = () => {
   return (

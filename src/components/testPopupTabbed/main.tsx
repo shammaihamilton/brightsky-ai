@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { TestPopupTabbed } from './index';
+import { TestPopupTabbed } from './src/components';
 
 // Find the root element
 const container = document.getElementById('popup-root');

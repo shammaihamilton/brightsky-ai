@@ -1,0 +1,1 @@
+export { TestPopupTabbed } from './TestPopupTabbed';

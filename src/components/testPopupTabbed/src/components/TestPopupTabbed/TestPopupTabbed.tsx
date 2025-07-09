@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { TestTabBar, type TabKey } from './TestTabBar';
-import { TestContent } from './TestContent';
-import styles from './TestPopup.module.scss';
+import { TestTabBar, type TabKey } from '../TestTabBar';
+import { TestContent } from '../TestContent';
+import styles from './TestPopupTabbed.module.scss';
 
 const TAB_STORAGE_KEY = 'testPopupTabbed.activeTab';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/AdvancedSettingsSection.module.scss';
+import styles from './AdvancedSettingsSection.module.scss';
 
 export const AdvancedSettingsSection: React.FC = () => {
   return (

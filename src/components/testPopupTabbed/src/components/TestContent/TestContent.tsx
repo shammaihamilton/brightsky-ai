@@ -1,12 +1,12 @@
 import React from 'react';
-import { type TabKey } from './TestTabBar';
+import { type TabKey } from '../TestTabBar';
 import styles from './TestContent.module.scss';
 import { 
   ApiConfigSection, 
   ChatSettingsSection, 
   ToolSelectionSection, 
   AdvancedSettingsSection 
-} from './sections';
+} from '../sections';
 
 interface TestContentProps {
   activeTab: TabKey;

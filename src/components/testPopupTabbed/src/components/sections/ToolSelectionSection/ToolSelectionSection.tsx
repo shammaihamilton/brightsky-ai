@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/ToolSelectionSection.module.scss';
+import styles from './ToolSelectionSection.module.scss';
 
 export const ToolSelectionSection: React.FC = () => {
   return (
