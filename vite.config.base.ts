@@ -10,6 +10,17 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
+  css: {
+    modules: {
+      localsConvention: 'camelCaseOnly',
+      generateScopedName: '[name]__[local]___[hash:base64:5]',
+    },
+    preprocessorOptions: {
+      scss: {
+        silenceDeprecations: ['legacy-js-api'],
+      },
+    },
+  },
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
   },

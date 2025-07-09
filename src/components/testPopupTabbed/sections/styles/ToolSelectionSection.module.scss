@@ -1,0 +1,137 @@
+// ToolSelectionSection.module.scss
+.section {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sectionTitle {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 8px;
+}
+
+.sectionText {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.toolsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.toolItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: #667eea;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
+  }
+}
+
+.toolHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.toolIcon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.toolInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toolName {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.toolDescription {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.3;
+}
+
+.toolActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolButton {
+  padding: 6px 12px;
+  background: #f0f0f0;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+  }
+  
+  &.enabled {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+    
+    &:hover {
+      background: #218838;
+      border-color: #1e7e34;
+    }
+  }
+}
+
+.configButton {
+  padding: 6px 8px;
+  background: #f8f9fa;
+  color: #666;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #e9ecef;
+    color: #333;
+  }
+  
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
+  }
+}

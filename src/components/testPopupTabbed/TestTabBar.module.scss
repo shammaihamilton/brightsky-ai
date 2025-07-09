@@ -1,0 +1,61 @@
+// TestTabBar.module.scss
+.tabBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #ffffff;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 0 8px;
+  height: 50px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  z-index: 2;
+}
+
+.tabButton {
+  flex: 1 1 0;
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  color: #555;
+  padding: 8px 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 3px solid transparent;
+  margin: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex-direction: column;
+  position: relative;
+  
+  &:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.03);
+  }
+  
+  &:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.3);
+    outline-offset: 2px;
+  }
+  
+  &.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.04);
+    font-weight: 500;
+  }
+}
+
+.tabIcon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.tabLabel {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  text-align: center;
+}
