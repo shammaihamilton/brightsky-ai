@@ -1,6 +1,6 @@
 import React from 'react';
-import { type TabKey } from '../TestTabBar';
-import styles from './TestContent.module.scss';
+import { type TabKey } from '../TabBar';
+import styles from './TabContent.module.scss';
 import { 
   ApiConfigSection, 
   ChatSettingsSection, 
@@ -8,11 +8,11 @@ import {
   AdvancedSettingsSection 
 } from '../sections';
 
-interface TestContentProps {
+interface TabContentProps {
   activeTab: TabKey;
 }
 
-export const TestContent: React.FC<TestContentProps> = ({ activeTab }) => {
+export const TabContent: React.FC<TabContentProps> = ({ activeTab }) => {
   const renderContent = () => {
     switch (activeTab) {
       case 'tab1':

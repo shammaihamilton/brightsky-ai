@@ -1,1 +1,0 @@
-export { TestPopupTabbed } from './TestPopupTabbed';

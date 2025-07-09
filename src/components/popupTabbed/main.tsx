@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { TestPopupTabbed } from './src/components';
+import { PopupTabbed } from './src/components';
 
 // Find the root element
 const container = document.getElementById('popup-root');
@@ -9,4 +9,4 @@ if (!container) {
 
 // Create root and render
 const root = createRoot(container);
-root.render(<TestPopupTabbed />);
+root.render(<PopupTabbed />);

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { TestTabBar, type TabKey } from '../TestTabBar';
-import { TestContent } from '../TestContent';
-import styles from './TestPopupTabbed.module.scss';
+import { TabBar, type TabKey } from '../TabBar';
+import { TabContent } from '../TabContent';
+import styles from './PopupTabbed.module.scss';
 
 const TAB_STORAGE_KEY = 'testPopupTabbed.activeTab';
 
-export const TestPopupTabbed: React.FC = () => {
+export const PopupTabbed: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('tab1');
 
   // Load last active tab from localStorage
@@ -27,7 +27,7 @@ export const TestPopupTabbed: React.FC = () => {
         <h2 className={styles.title}>Test Popup Tabbed</h2>
       </div>
       
-      <TestTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
       
       <div 
         className={styles.content}
@@ -35,7 +35,7 @@ export const TestPopupTabbed: React.FC = () => {
         id={`${activeTab}-panel`}
         aria-labelledby={`${activeTab}-tab`}
       >
-        <TestContent activeTab={activeTab} />
+        <TabContent activeTab={activeTab} />
       </div>
     </div>
   );

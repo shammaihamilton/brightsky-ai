@@ -10,12 +10,12 @@ const TABS: Array<{ key: TabKey; label: string; icon: string }> = [
   { key: 'tab4', label: 'Advanced', icon: '🔧' }
 ];
 
-interface TestTabBarProps {
+interface TabBarProps {
   activeTab: TabKey;
   onTabChange: (tab: TabKey) => void;
 }
 
-export const TestTabBar: React.FC<TestTabBarProps> = ({ activeTab, onTabChange }) => {
+export const TabBar: React.FC<TabBarProps> = ({ activeTab, onTabChange }) => {
   return (
     <div className={styles.tabBar} role="tablist">
       {TABS.map((tab) => (

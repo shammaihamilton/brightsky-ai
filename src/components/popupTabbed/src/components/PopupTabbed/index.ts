@@ -1,0 +1,1 @@
+export { PopupTabbed } from './PopupTabbed';

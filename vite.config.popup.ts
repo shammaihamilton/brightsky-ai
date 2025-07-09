@@ -7,7 +7,7 @@ export default mergeConfig(
   defineConfig({
     build: {
       rollupOptions: {
-        input: resolve(__dirname, "src/components/testPopupTabbed/main.tsx"),
+        input: resolve(__dirname, "src/components/popupTabbed/main.tsx"),
         // input: resolve(__dirname, "src/components/popup/index.tsx"),
         output: {
           entryFileNames: "popup.js",
