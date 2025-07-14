@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
-import { useAppSelector } from '../../../store/hooks';
-import { selectPrivacySettings } from '../../../store/selectors/settingsSelectors';
+import { useEffect } from "react";
+import { useAppSelector } from "../../../store/hooks";
+import { selectPrivacySettings } from "../../../store/selectors/settingsSelectors";
 
 export const usePrivacySettings = () => {
   const privacySettings = useAppSelector(selectPrivacySettings);
@@ -10,7 +10,7 @@ export const usePrivacySettings = () => {
       const clearOldMessages = () => {
         const cutoffDate = new Date();
         cutoffDate.setDate(
-          cutoffDate.getDate() - (privacySettings.autoClearDays ?? 0)
+          cutoffDate.getDate() - (privacySettings.autoClearDays ?? 0),
         );
 
         // This could be moved to a dedicated service

@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import type { WidgetState } from '../interfaces';
-import { useWidgetState } from './index';
+import { useState, useEffect } from "react";
+import type { WidgetState } from "../interfaces";
+import { useWidgetState } from "./index";
 
 export const useWidgetStateIntegration = () => {
   const stateService = useWidgetState();
@@ -21,7 +21,7 @@ export const useWidgetStateIntegration = () => {
     showMenu: state.showMenu,
     isHovered: state.isHovered,
     isDragging: state.isDragging,
-    
+
     // State actions
     togglePanel: () => stateService.togglePanel(),
     openPanel: () => stateService.openPanel(),

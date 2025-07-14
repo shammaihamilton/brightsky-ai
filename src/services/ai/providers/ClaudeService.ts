@@ -1,5 +1,9 @@
 import { BaseAIService } from "../base/BaseAIService";
-import type { ChatMessage, StreamChunk, BaseAIConfig } from "../interfaces/types";
+import type {
+  ChatMessage,
+  StreamChunk,
+  BaseAIConfig,
+} from "../interfaces/types";
 import { AIProvider } from "../enums/AIProvider";
 
 /**
@@ -24,7 +28,7 @@ export class ClaudeService extends BaseAIService {
   async sendMessage(
     message: string,
     conversationHistory: ChatMessage[] = [],
-    onChunk?: (chunk: StreamChunk) => void
+    onChunk?: (chunk: StreamChunk) => void,
   ): Promise<string> {
     try {
       const apiKey = this.getDeobfuscatedApiKey();
@@ -68,7 +72,7 @@ export class ClaudeService extends BaseAIService {
 
   private async handleClaudeStream(
     response: Response,
-    onChunk: (chunk: StreamChunk) => void
+    onChunk: (chunk: StreamChunk) => void,
   ): Promise<string> {
     return this.handleStream(response, onChunk, (data: string) => {
       const parsed = JSON.parse(data);

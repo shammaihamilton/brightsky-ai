@@ -1,5 +1,5 @@
-import type { INotificationService } from '../interfaces';
-import { NotificationService as BaseNotificationService } from '../../../services/notificationService';
+import type { INotificationService } from "../interfaces";
+import { NotificationService as BaseNotificationService } from "../../../services/notificationService";
 
 export class NotificationService implements INotificationService {
   private static instance: NotificationService;
@@ -16,7 +16,7 @@ export class NotificationService implements INotificationService {
   }
 
   showError(message: string): void {
-    console.error('[Widget Error]:', message);
+    console.error("[Widget Error]:", message);
     // Could integrate with the base notification service here
   }
 

@@ -1,5 +1,5 @@
-import type { IChatService } from '../interfaces';
-import { useAIChat } from '../../../hooks/useAIChat';
+import type { IChatService } from "../interfaces";
+import { useAIChat } from "../../../hooks/useAIChat";
 
 export class ChatService implements IChatService {
   private aiChat: ReturnType<typeof useAIChat>;
@@ -17,6 +17,6 @@ export class ChatService implements IChatService {
   }
 
   get connectionStatus(): string {
-    return this.aiChat.isConfigured ? 'connected' : 'disconnected';
+    return this.aiChat.isConfigured ? "connected" : "disconnected";
   }
 }

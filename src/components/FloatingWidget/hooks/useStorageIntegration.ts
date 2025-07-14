@@ -1,9 +1,9 @@
-import { useEffect, useCallback } from 'react';
-import { useAppDispatch } from '../../../store/hooks';
-import { loadSettings } from '../../../store/slices/settingsSlice';
-import { updateChatSettings } from '../../../store/slices/chatSettingsSlice';
-import { ExtensionContext } from '../../../utils/extensionContext';
-import { useWidgetStorage } from './index';
+import { useEffect, useCallback } from "react";
+import { useAppDispatch } from "../../../store/hooks";
+import { loadSettings } from "../../../store/slices/settingsSlice";
+import { updateChatSettings } from "../../../store/slices/chatSettingsSlice";
+import { ExtensionContext } from "../../../utils/extensionContext";
+import { useWidgetStorage } from "./index";
 
 export const useStorageIntegration = () => {
   const dispatch = useAppDispatch();
@@ -21,7 +21,7 @@ export const useStorageIntegration = () => {
           if (result.apiSettings) {
             dispatch(loadSettings(result.apiSettings));
           }
-          
+
           if (result.chatSettings) {
             dispatch(updateChatSettings(result.chatSettings));
           }
@@ -30,20 +30,23 @@ export const useStorageIntegration = () => {
     });
   }, [dispatch]);
 
-  const handleStorageChange = useCallback((
-    changes: Record<string, chrome.storage.StorageChange>, 
-    areaName: string
-  ) => {
-    if (areaName === 'sync') {
-      if (changes.chatSettings) {
-        dispatch(updateChatSettings(changes.chatSettings.newValue));
+  const handleStorageChange = useCallback(
+    (
+      changes: Record<string, chrome.storage.StorageChange>,
+      areaName: string,
+    ) => {
+      if (areaName === "sync") {
+        if (changes.chatSettings) {
+          dispatch(updateChatSettings(changes.chatSettings.newValue));
+        }
+
+        if (changes.apiSettings) {
+          dispatch(loadSettings(changes.apiSettings.newValue));
+        }
       }
-      
-      if (changes.apiSettings) {
-        dispatch(loadSettings(changes.apiSettings.newValue));
-      }
-    }
-  }, [dispatch]);
+    },
+    [dispatch],
+  );
 
   // Initialize storage services and load settings from Chrome storage
   useEffect(() => {
@@ -56,9 +59,13 @@ export const useStorageIntegration = () => {
 
   // Chrome storage change listener for real-time updates
   useEffect(() => {
-    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.onChanged
+    ) {
       chrome.storage.onChanged.addListener(handleStorageChange);
-      
+
       return () => {
         chrome.storage.onChanged.removeListener(handleStorageChange);
       };

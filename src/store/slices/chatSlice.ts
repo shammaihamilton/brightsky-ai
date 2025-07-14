@@ -86,20 +86,20 @@ export const chatSlice = createSlice({
     },
     toggleButtonVisibility: (
       state,
-      action: PayloadAction<boolean | undefined>
+      action: PayloadAction<boolean | undefined>,
     ) => {
       state.isButtonVisible =
         action.payload !== undefined ? action.payload : !state.isButtonVisible;
     },
     updateButtonPositionState: (
       state,
-      action: PayloadAction<ButtonPositionState | null>
+      action: PayloadAction<ButtonPositionState | null>,
     ) => {
       state.buttonPosition = action.payload;
       if (action.payload) {
         safeLocalStorage.setItem(
           "chatButtonPosition",
-          JSON.stringify(action.payload)
+          JSON.stringify(action.payload),
         );
       } else {
         safeLocalStorage.removeItem("chatButtonPosition");
@@ -107,11 +107,12 @@ export const chatSlice = createSlice({
     },
     setConnectionStatus: (state, action: PayloadAction<ConnectionStatus>) => {
       state.connectionStatus = action.payload;
-      if (action.payload === "connected") state.currentError = null
-      
-
+      if (action.payload === "connected") state.currentError = null;
     },
-    addMessageOptimistic: (state, action: PayloadAction<OptimisticMessageInput>) => {
+    addMessageOptimistic: (
+      state,
+      action: PayloadAction<OptimisticMessageInput>,
+    ) => {
       const newMessage = createUserMessage(action.payload.text);
       state.conversationHistory.push(newMessage);
       state.currentError = null;
@@ -124,7 +125,7 @@ export const chatSlice = createSlice({
         status: Message["status"];
         newText?: string;
         newTimestamp?: string;
-      }>
+      }>,
     ) => {
       const msgIndex = findMessageIndex(state, action.payload.messageId);
 
@@ -149,7 +150,10 @@ export const chatSlice = createSlice({
           }
         }
       }
-      const queueIndex = findQueuedMessageIndex(state, action.payload.messageId);
+      const queueIndex = findQueuedMessageIndex(
+        state,
+        action.payload.messageId,
+      );
       if (queueIndex !== -1) {
         if (action.payload.status === "sent") {
           state.messageQueue.splice(queueIndex, 1);
@@ -164,7 +168,7 @@ export const chatSlice = createSlice({
         messageId: string;
         chunk: string;
         isFinal?: boolean;
-      }>
+      }>,
     ) => {
       const { messageId, chunk, isFinal } = action.payload;
 
@@ -231,7 +235,10 @@ export const chatSlice = createSlice({
       state.conversationHistory.push(historyMessage);
     },
     dequeueMessage: (state, action: PayloadAction<{ messageId: string }>) => {
-      const queueIndex = findQueuedMessageIndex(state, action.payload.messageId);
+      const queueIndex = findQueuedMessageIndex(
+        state,
+        action.payload.messageId,
+      );
       if (queueIndex !== -1) {
         state.messageQueue.splice(queueIndex, 1);
       }

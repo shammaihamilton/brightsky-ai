@@ -1,4 +1,4 @@
-import type { IWidgetStateService, WidgetState } from '../interfaces';
+import type { IWidgetStateService, WidgetState } from "../interfaces";
 
 export class WidgetStateService implements IWidgetStateService {
   private state: WidgetState = {
@@ -72,7 +72,7 @@ export class WidgetStateService implements IWidgetStateService {
   private updateState(partialState: Partial<WidgetState>): void {
     const previousState = { ...this.state };
     this.state = { ...this.state, ...partialState };
-    
+
     // Notify subscribers if state actually changed
     if (this.hasStateChanged(previousState, this.state)) {
       this.notifySubscribers();
@@ -81,17 +81,18 @@ export class WidgetStateService implements IWidgetStateService {
 
   private hasStateChanged(prev: WidgetState, current: WidgetState): boolean {
     return Object.keys(current).some(
-      key => prev[key as keyof WidgetState] !== current[key as keyof WidgetState]
+      (key) =>
+        prev[key as keyof WidgetState] !== current[key as keyof WidgetState],
     );
   }
 
   private notifySubscribers(): void {
     const currentState = this.getState();
-    this.subscribers.forEach(callback => {
+    this.subscribers.forEach((callback) => {
       try {
         callback(currentState);
       } catch (error) {
-        console.error('Error in state subscriber:', error);
+        console.error("Error in state subscriber:", error);
       }
     });
   }

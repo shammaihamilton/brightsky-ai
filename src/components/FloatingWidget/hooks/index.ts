@@ -1,4 +1,4 @@
-import { useWidgetServices } from './useWidgetServices';
+import { useWidgetServices } from "./useWidgetServices";
 
 // Specific service hooks for convenience
 export const useWidgetState = () => {
@@ -31,11 +31,10 @@ export const useWidgetNotifications = () => {
   return notificationService;
 };
 
-
 // New refactored hooks
-export { usePositionCalculations } from './usePositionCalculations';
-export { useStorageIntegration } from './useStorageIntegration';
-export { useWidgetEventHandlers } from './useWidgetEventHandlers';
-export { useConnectionStatus } from './useConnectionStatus';
-export { usePrivacySettings } from './usePrivacySettings';
-export { useNotificationService } from './useNotificationService';
+export { usePositionCalculations } from "./usePositionCalculations";
+export { useStorageIntegration } from "./useStorageIntegration";
+export { useWidgetEventHandlers } from "./useWidgetEventHandlers";
+export { useConnectionStatus } from "./useConnectionStatus";
+export { usePrivacySettings } from "./usePrivacySettings";
+export { useNotificationService } from "./useNotificationService";

@@ -54,7 +54,7 @@ const loadInitialSettings = (): ChatSettingsState => {
       if (parsed.defaultPosition !== undefined) {
         if (
           ALLOWED_DEFAULT_POSITIONS.includes(
-            parsed.defaultPosition as AllowedDefaultPositionType
+            parsed.defaultPosition as AllowedDefaultPositionType,
           )
         ) {
           validatedDefaultPosition =
@@ -62,14 +62,14 @@ const loadInitialSettings = (): ChatSettingsState => {
         } else {
           console.warn(
             `Invalid defaultPosition value "${parsed.defaultPosition}" found in localStorage. ` +
-              `Using default value "${DEFAULT_CHAT_SETTINGS.defaultPosition}".`
+              `Using default value "${DEFAULT_CHAT_SETTINGS.defaultPosition}".`,
           );
           // validatedDefaultPosition remains DEFAULT_CHAT_SETTINGS.defaultPosition
         }
       }
       const mergedSettings = {
-          ...DEFAULT_CHAT_SETTINGS, // Spread the rest of parsed settings
-          ...parsed,
+        ...DEFAULT_CHAT_SETTINGS, // Spread the rest of parsed settings
+        ...parsed,
         defaultPosition: validatedDefaultPosition,
         notifications: {
           ...DEFAULT_CHAT_SETTINGS.notifications,
@@ -103,7 +103,7 @@ export const chatSettingsSlice = createSlice({
   reducers: {
     updateChatSettings: (
       state,
-      action: PayloadAction<Partial<ChatSettingsState>>
+      action: PayloadAction<Partial<ChatSettingsState>>,
     ) => {
       const newState = {
         ...state,
@@ -124,33 +124,37 @@ export const chatSettingsSlice = createSlice({
     resetChatSettings: (state) => {
       Object.assign(state, DEFAULT_CHAT_SETTINGS); // Use the canonical defaults
       safeLocalStorage.removeItem("chatSettings"); // Remove instead of setting defaults
-    },    importChatSettings: (state, action: PayloadAction<ChatSettingsState>) => {
+    },
+    importChatSettings: (state, action: PayloadAction<ChatSettingsState>) => {
       const validatedSettings = action.payload;
       Object.assign(state, validatedSettings);
       safeLocalStorage.setItem(
         "chatSettings",
-        JSON.stringify(validatedSettings)
+        JSON.stringify(validatedSettings),
       );
     },
     // Sync theme from API settings to chat settings
-    syncThemeFromApiSettings: (state, action: PayloadAction<'light' | 'dark' | 'auto'>) => {
+    syncThemeFromApiSettings: (
+      state,
+      action: PayloadAction<"light" | "dark" | "auto">,
+    ) => {
       const themeMap = {
-        'auto': 'system',
-        'light': 'light', 
-        'dark': 'dark'
+        auto: "system",
+        light: "light",
+        dark: "dark",
       } as const;
-      
-      state.theme = themeMap[action.payload] || 'system';
+
+      state.theme = themeMap[action.payload] || "system";
       const newState = { ...state };
       safeLocalStorage.setItem("chatSettings", JSON.stringify(newState));
     },
   },
 });
 
-export const { 
-  updateChatSettings, 
-  resetChatSettings, 
+export const {
+  updateChatSettings,
+  resetChatSettings,
   importChatSettings,
-  syncThemeFromApiSettings 
+  syncThemeFromApiSettings,
 } = chatSettingsSlice.actions;
 export default chatSettingsSlice.reducer;

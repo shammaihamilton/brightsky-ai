@@ -1,14 +1,15 @@
-import type { IEventService, IWidgetStateService, IChatService } from '../interfaces';
-import { ExtensionContext } from '../../../utils/extensionContext';
+import type {
+  IEventService,
+  IWidgetStateService,
+  IChatService,
+} from "../interfaces";
+import { ExtensionContext } from "../../../utils/extensionContext";
 
 export class EventService implements IEventService {
   private stateService: IWidgetStateService;
   private chatService: IChatService;
 
-  constructor(
-    stateService: IWidgetStateService,
-    chatService: IChatService
-  ) {
+  constructor(stateService: IWidgetStateService, chatService: IChatService) {
     this.stateService = stateService;
     this.chatService = chatService;
   }
@@ -55,14 +56,14 @@ export class EventService implements IEventService {
             // Handle extension context invalidated error
             if (
               chrome.runtime.lastError.message?.includes(
-                "Extension context invalidated"
+                "Extension context invalidated",
               )
             ) {
               ExtensionContext.showContextError();
             } else {
               console.warn(
                 "Could not open popup:",
-                chrome.runtime.lastError.message
+                chrome.runtime.lastError.message,
               );
             }
           }
@@ -74,19 +75,23 @@ export class EventService implements IEventService {
     } else {
       console.warn("Chrome extension API not available");
     }
-    
+
     this.handleCloseMenu();
   }
 
   handleKeyboardShortcutsClick(): void {
     alert(
-      "Keyboard Shortcuts:\n• Ctrl+Shift+A: Toggle widget\n• Enter: Send message\n• Shift+Enter: New line\n• Esc: Close chat"
+      "Keyboard Shortcuts:\n• Ctrl+Shift+A: Toggle widget\n• Enter: Send message\n• Shift+Enter: New line\n• Esc: Close chat",
     );
     this.handleCloseMenu();
   }
 
   handleClearConversation(): void {
-    if (window.confirm("Are you sure you want to clear all messages? This cannot be undone.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to clear all messages? This cannot be undone.",
+      )
+    ) {
       // TODO: This should be injected as a Redux service dependency
       // For now, we'll handle this in the component level
     }

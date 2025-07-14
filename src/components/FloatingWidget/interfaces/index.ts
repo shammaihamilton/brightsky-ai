@@ -18,13 +18,13 @@ export interface IPositionService {
   getDefaultPosition(): Position;
   calculateChatPanelPosition(
     buttonPosition: Position,
-    buttonSize: number
+    buttonSize: number,
   ): Position;
   calculateMenuPosition(
     buttonPosition: Position,
     buttonSize: number,
     isPanelOpen: boolean,
-    chatPanelPosition?: Position
+    chatPanelPosition?: Position,
   ): Position;
 }
 
@@ -104,13 +104,7 @@ export interface WidgetConfiguration {
   buttonSizes: Record<string, number>;
 }
 
-
-
-
-
-
-
-// 
+//
 export interface AccessibilitySettings {
   highContrast: boolean;
   reducedMotion: boolean;

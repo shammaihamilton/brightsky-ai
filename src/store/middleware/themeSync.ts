@@ -1,7 +1,7 @@
 // src/store/middleware/themeSync.ts
-import { createListenerMiddleware } from '@reduxjs/toolkit';
-import { setTheme } from '../slices/settingsSlice';
-import { syncThemeFromApiSettings } from '../slices/chatSettingsSlice';
+import { createListenerMiddleware } from "@reduxjs/toolkit";
+import { setTheme } from "../slices/settingsSlice";
+import { syncThemeFromApiSettings } from "../slices/chatSettingsSlice";
 
 // Create middleware to sync themes between settings slices
 export const themeSyncMiddleware = createListenerMiddleware();

@@ -1,5 +1,10 @@
 import type { IAIService } from "../interfaces/IAIService";
-import type { ChatMessage, StreamChunk, BaseAIConfig, AIServiceError } from "../interfaces/types";
+import type {
+  ChatMessage,
+  StreamChunk,
+  BaseAIConfig,
+  AIServiceError,
+} from "../interfaces/types";
 import { ConversationTone, AIProvider } from "../enums/AIProvider";
 import { ApiKeySecurity } from "../../../utils/apiKeySecurity";
 
@@ -22,7 +27,7 @@ export abstract class BaseAIService implements IAIService {
   abstract sendMessage(
     message: string,
     conversationHistory?: ChatMessage[],
-    onChunk?: (chunk: StreamChunk) => void
+    onChunk?: (chunk: StreamChunk) => void,
   ): Promise<string>;
 
   abstract validateApiKey(apiKey: string): boolean;
@@ -54,7 +59,7 @@ export abstract class BaseAIService implements IAIService {
    */
   protected getDeobfuscatedApiKey(): string {
     const deobfuscatedApiKey = ApiKeySecurity.deobfuscate(this.config.apiKey);
-    
+
     if (!deobfuscatedApiKey) {
       throw this.createError("Invalid API key", 401);
     }
@@ -72,7 +77,11 @@ export abstract class BaseAIService implements IAIService {
   /**
    * Create a provider-specific error
    */
-  protected createError(message: string, statusCode?: number, originalError?: unknown): AIServiceError {
+  protected createError(
+    message: string,
+    statusCode?: number,
+    originalError?: unknown,
+  ): AIServiceError {
     const error = new Error(message) as AIServiceError;
     error.provider = this.provider;
     error.statusCode = statusCode;
@@ -115,7 +124,7 @@ export abstract class BaseAIService implements IAIService {
   protected async handleStream(
     response: Response,
     onChunk: (chunk: StreamChunk) => void,
-    parseChunk: (data: string) => string | null
+    parseChunk: (data: string) => string | null,
   ): Promise<string> {
     const reader = response.body!.getReader();
     const decoder = new TextDecoder();
@@ -150,7 +159,10 @@ export abstract class BaseAIService implements IAIService {
               onChunk({ messageId, chunk: content, isFinal: false });
             }
           } catch (parseError) {
-            console.warn(`Failed to parse ${this.getProviderName()} stream chunk:`, parseError);
+            console.warn(
+              `Failed to parse ${this.getProviderName()} stream chunk:`,
+              parseError,
+            );
           }
         }
       }

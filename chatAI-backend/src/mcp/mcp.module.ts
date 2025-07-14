@@ -1,26 +1,44 @@
 import { Module } from '@nestjs/common';
+import { ToolOrchestrationService } from './mcp.service';
 import { McpController } from './mcp.controller';
-import { McpService } from './mcp.service';
-import { ToolRegistry } from './registry/ToolRegistry';
-import { WeatherTool } from './tools/WeatherTool';
-import { WeatherModule } from '../weather/weather.module';
+import { InMemoryToolRegistry } from './registry/tool.registry';
+import { JsonSchemaValidator } from './validators/parameter.validator';
+import { WeatherTool } from './tools/weather.tool';
+import { CalendarTool } from './tools/calendar.tool';
 
 @Module({
-  imports: [WeatherModule],
   controllers: [McpController],
   providers: [
-    McpService,
-    ToolRegistry,
-    WeatherTool,
+    // Registry
     {
-      provide: 'TOOL_REGISTRY_SETUP',
-      useFactory: (registry: ToolRegistry, weatherTool: WeatherTool) => {
-        registry.registerTool(weatherTool);
+      provide: 'TOOL_REGISTRY',
+      useClass: InMemoryToolRegistry,
+    },
+    // Validator
+    {
+      provide: 'PARAMETER_VALIDATOR',
+      useClass: JsonSchemaValidator,
+    },
+    // Tools
+    WeatherTool,
+    CalendarTool,
+    // Main service
+    ToolOrchestrationService,
+    // Tool registration
+    {
+      provide: 'TOOL_REGISTRATION',
+      useFactory: (
+        registry: InMemoryToolRegistry,
+        weatherTool: WeatherTool,
+        calendarTool: CalendarTool,
+      ) => {
+        registry.register(weatherTool.toDefinition());
+        registry.register(calendarTool.toDefinition());
         return registry;
       },
-      inject: [ToolRegistry, WeatherTool],
+      inject: ['TOOL_REGISTRY', WeatherTool, CalendarTool],
     },
   ],
-  exports: [McpService, ToolRegistry],
+  exports: [ToolOrchestrationService],
 })
 export class McpModule {}

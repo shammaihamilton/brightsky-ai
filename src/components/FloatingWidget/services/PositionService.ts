@@ -1,4 +1,8 @@
-import type { Position, IPositionService, WidgetDimensions } from '../interfaces';
+import type {
+  Position,
+  IPositionService,
+  WidgetDimensions,
+} from "../interfaces";
 
 export class PositionService implements IPositionService {
   private currentPosition: Position;
@@ -9,7 +13,7 @@ export class PositionService implements IPositionService {
   constructor(
     storageKey: string,
     panelDimensions: WidgetDimensions,
-    menuDimensions: WidgetDimensions
+    menuDimensions: WidgetDimensions,
   ) {
     this.storageKey = storageKey;
     this.panelDimensions = panelDimensions;
@@ -33,7 +37,10 @@ export class PositionService implements IPositionService {
     };
   }
 
-  calculateChatPanelPosition(buttonPosition: Position, buttonSize: number): Position {
+  calculateChatPanelPosition(
+    buttonPosition: Position,
+    buttonSize: number,
+  ): Position {
     const { width: panelWidth, height: panelHeight } = this.panelDimensions;
     const padding = 15;
 
@@ -61,10 +68,10 @@ export class PositionService implements IPositionService {
   }
 
   calculateMenuPosition(
-    buttonPosition: Position, 
-    buttonSize: number, 
-    isPanelOpen: boolean, 
-    chatPanelPosition?: Position
+    buttonPosition: Position,
+    buttonSize: number,
+    isPanelOpen: boolean,
+    chatPanelPosition?: Position,
   ): Position {
     const { width: menuWidth, height: menuHeight } = this.menuDimensions;
     const padding = 10;
@@ -95,7 +102,7 @@ export class PositionService implements IPositionService {
       ) {
         x = Math.min(
           window.innerWidth - menuWidth - padding,
-          chatPanelPosition.x + this.panelDimensions.width + 10
+          chatPanelPosition.x + this.panelDimensions.width + 10,
         );
       }
     }
@@ -108,7 +115,7 @@ export class PositionService implements IPositionService {
       const stored = localStorage.getItem(this.storageKey);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
-      console.warn('Failed to load position from storage:', error);
+      console.warn("Failed to load position from storage:", error);
       return null;
     }
   }
@@ -117,7 +124,7 @@ export class PositionService implements IPositionService {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(position));
     } catch (error) {
-      console.warn('Failed to save position to storage:', error);
+      console.warn("Failed to save position to storage:", error);
     }
   }
 }

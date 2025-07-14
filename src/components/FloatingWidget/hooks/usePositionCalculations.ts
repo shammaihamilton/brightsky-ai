@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
 interface Position {
   x: number;
@@ -8,7 +8,7 @@ interface Position {
 export const usePositionCalculations = (
   position: Position,
   actualButtonSize: number,
-  isPanelOpen: boolean
+  isPanelOpen: boolean,
 ) => {
   const chatPanelPosition = useMemo(() => {
     const panelWidth = 320;
@@ -67,7 +67,7 @@ export const usePositionCalculations = (
       ) {
         x = Math.min(
           window.innerWidth - menuWidth - padding,
-          chatPanelPosition.x + 320 + 10
+          chatPanelPosition.x + 320 + 10,
         );
       }
     }

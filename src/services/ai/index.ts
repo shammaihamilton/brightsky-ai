@@ -1,13 +1,22 @@
 // Main exports for the AI services module
 import { AIServiceRouter } from "./router/AIServiceRouter";
-import type { AIServiceConfig, ChatMessage, StreamChunk } from "./interfaces/types";
+import type {
+  AIServiceConfig,
+  ChatMessage,
+  StreamChunk,
+} from "./interfaces/types";
 import { AIProvider } from "./enums/AIProvider";
 
 export { AIServiceRouter } from "./router/AIServiceRouter";
 export { AIServiceFactory } from "./factory/AIServiceFactory";
 
 // Enum exports
-export { AIProvider, ConversationTone, isValidAIProvider, isValidConversationTone } from "./enums/AIProvider";
+export {
+  AIProvider,
+  ConversationTone,
+  isValidAIProvider,
+  isValidConversationTone,
+} from "./enums/AIProvider";
 
 // Type exports
 export type {
@@ -36,9 +45,14 @@ export async function sendAIMessage(
   config: AIServiceConfig,
   message: string,
   conversationHistory?: ChatMessage[],
-  onChunk?: (chunk: StreamChunk) => void
+  onChunk?: (chunk: StreamChunk) => void,
 ): Promise<string> {
-  return defaultAIRouter.sendMessage(config, message, conversationHistory, onChunk);
+  return defaultAIRouter.sendMessage(
+    config,
+    message,
+    conversationHistory,
+    onChunk,
+  );
 }
 
 /**
@@ -51,6 +65,9 @@ export function getAISystemMessage(config: AIServiceConfig): string {
 /**
  * Convenience function to validate API key using the default router
  */
-export function validateAIApiKey(provider: AIProvider, apiKey: string): boolean {
+export function validateAIApiKey(
+  provider: AIProvider,
+  apiKey: string,
+): boolean {
   return defaultAIRouter.validateApiKey(provider, apiKey);
 }

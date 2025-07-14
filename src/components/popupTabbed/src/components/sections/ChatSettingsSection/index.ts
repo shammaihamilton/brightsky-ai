@@ -1,1 +1,1 @@
-export { ChatSettingsSection } from './ChatSettingsSection';
+export { ChatSettingsSection } from "./ChatSettingsSection";

@@ -1,15 +1,11 @@
 import type { ChatMessage } from "../interfaces/types";
 import type { StreamChunk } from "./types";
 
-
-
-
 export interface IAIService {
-
   sendMessage(
     message: string,
     conversationHistory?: ChatMessage[],
-    onChunk?: (chunk: StreamChunk) => void
+    onChunk?: (chunk: StreamChunk) => void,
   ): Promise<string>;
 
   /**

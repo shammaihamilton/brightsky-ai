@@ -1,1 +1,1 @@
-export { PopupTabbed } from './PopupTabbed';
+export { PopupTabbed } from "./PopupTabbed";

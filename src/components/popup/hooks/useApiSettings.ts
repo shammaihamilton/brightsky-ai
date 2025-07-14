@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { useState, useEffect, useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import {
   setApiKey,
   setProvider,
@@ -7,7 +7,7 @@ import {
   setMaxTokens,
   setTemperature,
   loadSettings as loadSettingsAction,
-} from '../../../store/slices/settingsSlice';
+} from "../../../store/slices/settingsSlice";
 import {
   selectApiKey,
   selectProvider,
@@ -15,52 +15,50 @@ import {
   selectIsConfigured,
   selectMaxTokens,
   selectTemperature,
-} from '../../../store/selectors/settingsSelectors';
-import { ApiKeySecurity } from '../../../utils/apiKeySecurity';
-import { useChromeStorage } from './useChromeStorage';
+} from "../../../store/selectors/settingsSelectors";
+import { ApiKeySecurity } from "../../../utils/apiKeySecurity";
+import { useChromeStorage } from "./useChromeStorage";
 
 export interface UseApiSettingsReturn {
   apiSettings: {
     apiKey: string;
-    provider: 'openai' | 'claude' | 'gemini';
-    theme: 'light' | 'dark' | 'auto';
+    provider: "openai" | "claude" | "gemini";
+    theme: "light" | "dark" | "auto";
     maxTokens: number;
     temperature: number;
     isConfigured: boolean;
-
   };
-  
+
   // Local UI state
   localApiKey: string;
   showApiKey: boolean;
   showAdvanced: boolean;
   isSaving: boolean;
   keyValidationError: string | null;
-  
+
   // Actions
   actions: {
     setLocalApiKey: (key: string) => void;
     toggleApiKeyVisibility: () => void;
     handleSaveApiKey: () => Promise<void>;
-    handleProviderChange: (provider: 'openai' | 'claude' | 'gemini') => void;
-    handleThemeChange: (theme: 'light' | 'dark' | 'auto') => void;
+    handleProviderChange: (provider: "openai" | "claude" | "gemini") => void;
+    handleThemeChange: (theme: "light" | "dark" | "auto") => void;
     handleMaxTokensChange: (tokens: number) => void;
     handleTemperatureChange: (temp: number) => void;
     toggleAdvanced: () => void;
-
   };
-  
+
   // Utilities
   utils: {
     getProviderHelp: () => string;
-    applyTheme: (theme: 'light' | 'dark' | 'auto') => void;
+    applyTheme: (theme: "light" | "dark" | "auto") => void;
   };
 }
 
 export const useApiSettings = (): UseApiSettingsReturn => {
   const dispatch = useAppDispatch();
   const { loadApiSettings, saveApiSettings } = useChromeStorage();
-  
+
   // Redux selectors
   const apiKey = useAppSelector(selectApiKey);
   const provider = useAppSelector(selectProvider);
@@ -68,13 +66,15 @@ export const useApiSettings = (): UseApiSettingsReturn => {
   const isConfigured = useAppSelector(selectIsConfigured);
   const maxTokens = useAppSelector(selectMaxTokens);
   const temperature = useAppSelector(selectTemperature);
-  
+
   // Local state
   const [localApiKey, setLocalApiKey] = useState(apiKey);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [keyValidationError, setKeyValidationError] = useState<string | null>(null);
+  const [keyValidationError, setKeyValidationError] = useState<string | null>(
+    null,
+  );
 
   // Load settings from Chrome storage on mount
   useEffect(() => {
@@ -82,41 +82,50 @@ export const useApiSettings = (): UseApiSettingsReturn => {
       const settings = await loadApiSettings();
       if (settings) {
         dispatch(loadSettingsAction(settings));
-        setLocalApiKey(settings.apiKey || '');
+        setLocalApiKey(settings.apiKey || "");
       }
     };
-    
+
     loadSettingsFromStorage();
   }, [dispatch, loadApiSettings]);
 
   // Apply theme when it changes
-  const applyTheme = useCallback((themeValue: 'light' | 'dark' | 'auto') => {
+  const applyTheme = useCallback((themeValue: "light" | "dark" | "auto") => {
     const root = document.documentElement;
-    if (themeValue === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    if (themeValue === "auto") {
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
+      root.setAttribute("data-theme", prefersDark ? "dark" : "light");
     } else {
-      root.setAttribute('data-theme', themeValue);
+      root.setAttribute("data-theme", themeValue);
     }
   }, []);
 
   useEffect(() => {
-    applyTheme(theme as 'light' | 'dark' | 'auto');
+    applyTheme(theme as "light" | "dark" | "auto");
   }, [theme, applyTheme]);
 
   // Utility functions
   const getProviderHelp = useCallback(() => {
     switch (provider) {
-      case 'openai': return 'Get your API key from platform.openai.com';
-      case 'claude': return 'Get your API key from console.anthropic.com';
-      case 'gemini': return 'Get your API key from makersuite.google.com';
-      default: return 'Enter your API key';
+      case "openai":
+        return "Get your API key from platform.openai.com";
+      case "claude":
+        return "Get your API key from console.anthropic.com";
+      case "gemini":
+        return "Get your API key from makersuite.google.com";
+      default:
+        return "Enter your API key";
     }
   }, [provider]);
 
   // Action handlers
   const handleSaveApiKey = useCallback(async () => {
-    if (localApiKey && !ApiKeySecurity.validateKeyFormat(localApiKey, provider)) {
+    if (
+      localApiKey &&
+      !ApiKeySecurity.validateKeyFormat(localApiKey, provider)
+    ) {
       setKeyValidationError(`Invalid ${provider} API key format`);
       return;
     }
@@ -132,35 +141,54 @@ export const useApiSettings = (): UseApiSettingsReturn => {
         theme,
         maxTokens,
         temperature,
-
       });
       setIsSaving(false);
     } catch (error) {
-      console.error('Failed to save API settings:', error);
+      console.error("Failed to save API settings:", error);
       setIsSaving(false);
     }
-  }, [localApiKey, provider, theme, maxTokens, temperature, dispatch, saveApiSettings]);
+  }, [
+    localApiKey,
+    provider,
+    theme,
+    maxTokens,
+    temperature,
+    dispatch,
+    saveApiSettings,
+  ]);
 
-  const handleProviderChange = useCallback(async (newProvider: 'openai' | 'claude' | 'gemini') => {
-    dispatch(setProvider(newProvider));
-    await saveApiSettings({ provider: newProvider });
-  }, [dispatch, saveApiSettings]);
+  const handleProviderChange = useCallback(
+    async (newProvider: "openai" | "claude" | "gemini") => {
+      dispatch(setProvider(newProvider));
+      await saveApiSettings({ provider: newProvider });
+    },
+    [dispatch, saveApiSettings],
+  );
 
-  const handleThemeChange = useCallback(async (newTheme: 'light' | 'dark' | 'auto') => {
-    dispatch(setTheme(newTheme));
-    await saveApiSettings({ theme: newTheme });
-    applyTheme(newTheme);
-  }, [dispatch, saveApiSettings, applyTheme]);
+  const handleThemeChange = useCallback(
+    async (newTheme: "light" | "dark" | "auto") => {
+      dispatch(setTheme(newTheme));
+      await saveApiSettings({ theme: newTheme });
+      applyTheme(newTheme);
+    },
+    [dispatch, saveApiSettings, applyTheme],
+  );
 
-  const handleMaxTokensChange = useCallback(async (newMaxTokens: number) => {
-    dispatch(setMaxTokens(newMaxTokens));
-    await saveApiSettings({ maxTokens: newMaxTokens });
-  }, [dispatch, saveApiSettings]);
+  const handleMaxTokensChange = useCallback(
+    async (newMaxTokens: number) => {
+      dispatch(setMaxTokens(newMaxTokens));
+      await saveApiSettings({ maxTokens: newMaxTokens });
+    },
+    [dispatch, saveApiSettings],
+  );
 
-  const handleTemperatureChange = useCallback(async (newTemperature: number) => {
-    dispatch(setTemperature(newTemperature));
-    await saveApiSettings({ temperature: newTemperature });
-  }, [dispatch, saveApiSettings]);
+  const handleTemperatureChange = useCallback(
+    async (newTemperature: number) => {
+      dispatch(setTemperature(newTemperature));
+      await saveApiSettings({ temperature: newTemperature });
+    },
+    [dispatch, saveApiSettings],
+  );
 
   return {
     apiSettings: {

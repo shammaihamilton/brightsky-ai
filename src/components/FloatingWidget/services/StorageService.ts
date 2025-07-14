@@ -1,5 +1,5 @@
-import type { IStorageService } from '../interfaces';
-import { ExtensionContext } from '../../../utils/extensionContext';
+import type { IStorageService } from "../interfaces";
+import { ExtensionContext } from "../../../utils/extensionContext";
 
 interface StorageSettings {
   apiSettings?: unknown;
@@ -34,15 +34,15 @@ export class StorageService implements IStorageService {
   watchStorageChanges(): () => void {
     const handleStorageChange = (
       changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string
+      areaName: string,
     ) => {
-      if (areaName === 'sync') {
+      if (areaName === "sync") {
         const updatedSettings: StorageSettings = {};
-        
+
         if (changes.chatSettings) {
           updatedSettings.chatSettings = changes.chatSettings.newValue;
         }
-        
+
         if (changes.apiSettings) {
           updatedSettings.apiSettings = changes.apiSettings.newValue;
         }
@@ -53,13 +53,17 @@ export class StorageService implements IStorageService {
       }
     };
 
-    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.onChanged) {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.onChanged
+    ) {
       chrome.storage.onChanged.addListener(handleStorageChange);
-      
+
       this.cleanupStorageListener = () => {
         chrome.storage.onChanged.removeListener(handleStorageChange);
       };
-      
+
       return this.cleanupStorageListener;
     }
 

@@ -1,5 +1,9 @@
 import type { IAIService } from "../interfaces/IAIService";
-import type { AIServiceConfig, ChatMessage, StreamChunk } from "../interfaces/types";
+import type {
+  AIServiceConfig,
+  ChatMessage,
+  StreamChunk,
+} from "../interfaces/types";
 import { AIProvider, isValidAIProvider } from "../enums/AIProvider";
 import { AIServiceFactory } from "../factory/AIServiceFactory";
 
@@ -21,7 +25,7 @@ export class AIServiceRouter {
     config: AIServiceConfig,
     message: string,
     conversationHistory: ChatMessage[] = [],
-    onChunk?: (chunk: StreamChunk) => void
+    onChunk?: (chunk: StreamChunk) => void,
   ): Promise<string> {
     try {
       // Validate provider
@@ -83,7 +87,7 @@ export class AIServiceRouter {
    */
   private getService(config: AIServiceConfig): IAIService {
     const cacheKey = this.createCacheKey(config);
-    
+
     if (!this.services.has(cacheKey)) {
       const service = AIServiceFactory.createService(config.provider, {
         apiKey: config.apiKey,
@@ -91,7 +95,7 @@ export class AIServiceRouter {
         temperature: config.temperature,
         tone: config.tone,
       });
-      
+
       this.services.set(cacheKey, service);
     }
 
@@ -103,7 +107,7 @@ export class AIServiceRouter {
    */
   private createCacheKey(config: AIServiceConfig): string {
     // Use a combination of provider and settings for a unique key
-    return `${config.provider}-${config.apiKey}-${config.temperature || ''}-${config.tone || ''}`;
+    return `${config.provider}-${config.apiKey}-${config.temperature || ""}-${config.tone || ""}`;
   }
 
   /**

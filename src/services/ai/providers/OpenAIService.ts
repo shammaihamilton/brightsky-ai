@@ -1,5 +1,9 @@
 import { BaseAIService } from "../base/BaseAIService";
-import type { ChatMessage, StreamChunk, BaseAIConfig } from "../interfaces/types";
+import type {
+  ChatMessage,
+  StreamChunk,
+  BaseAIConfig,
+} from "../interfaces/types";
 import { AIProvider } from "../enums/AIProvider";
 
 /**
@@ -24,7 +28,7 @@ export class OpenAIService extends BaseAIService {
   async sendMessage(
     message: string,
     conversationHistory: ChatMessage[] = [],
-    onChunk?: (chunk: StreamChunk) => void
+    onChunk?: (chunk: StreamChunk) => void,
   ): Promise<string> {
     try {
       const apiKey = this.getDeobfuscatedApiKey();
@@ -34,7 +38,7 @@ export class OpenAIService extends BaseAIService {
           role: "system",
           content: this.getSystemMessage(),
         },
-        ...conversationHistory.slice(-10), 
+        ...conversationHistory.slice(-10),
         {
           role: "user",
           content: message,
@@ -48,15 +52,18 @@ export class OpenAIService extends BaseAIService {
         temperature: this.config.temperature,
         stream: !!onChunk,
       };
-      
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
+
+      const response = await fetch(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       if (!response.ok) {
         await this.handleFetchError(response);
@@ -76,7 +83,7 @@ export class OpenAIService extends BaseAIService {
 
   private async handleOpenAIStream(
     response: Response,
-    onChunk: (chunk: StreamChunk) => void
+    onChunk: (chunk: StreamChunk) => void,
   ): Promise<string> {
     return this.handleStream(response, onChunk, (data: string) => {
       const parsed = JSON.parse(data);

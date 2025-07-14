@@ -51,7 +51,7 @@ export class NotificationService {
       gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(
         0.01,
-        audioContext.currentTime + 0.2
+        audioContext.currentTime + 0.2,
       );
 
       // Play the sound
@@ -65,7 +65,7 @@ export class NotificationService {
   // Show desktop notification
   static showDesktopNotification(
     message: string,
-    assistantName = "AI Assistant"
+    assistantName = "AI Assistant",
   ): void {
     if (!this.hasPermission) {
       console.warn("Desktop notifications not permitted");
@@ -100,7 +100,7 @@ export class NotificationService {
   static notify(
     message: string,
     settings: NotificationSettings,
-    assistantName = "AI Assistant"
+    assistantName = "AI Assistant",
   ): void {
     if (settings.soundEnabled) {
       this.playNotificationSound();

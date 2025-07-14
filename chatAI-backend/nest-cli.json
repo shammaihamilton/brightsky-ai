@@ -4,5 +4,16 @@
   "sourceRoot": "src",
   "compilerOptions": {
     "deleteOutDir": true
+  },
+  "projects": {
+    "chatAI-backend": {
+      "type": "application",
+      "root": "",
+      "entryFile": "main",
+      "sourceRoot": "src",
+      "compilerOptions": {
+        "tsConfigPath": "tsconfig.json"
+      }
+    }
   }
 }

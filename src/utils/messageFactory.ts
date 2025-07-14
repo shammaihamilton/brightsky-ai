@@ -1,7 +1,7 @@
 // /utils/messageFactory.ts
 
-import { v4 as uuidv4 } from 'uuid';
-import type { Message } from '../types/chat.types';
+import { v4 as uuidv4 } from "uuid";
+import type { Message } from "../types/chat.types";
 
 /**
  * Create a new user message with a default structure.
@@ -12,9 +12,9 @@ export const createUserMessage = (text: string): Message => {
   return {
     id: uuidv4(),
     text,
-    sender: 'user',
+    sender: "user",
     timestamp: new Date().toISOString(),
-    status: 'sending',
+    status: "sending",
   };
 };
 
@@ -37,15 +37,15 @@ export const createQueuedMessage = (text: string): Message => {
  * @returns A new AI Message object.
  */
 export const createAiMessage = (chunk: string, id?: string): Message => {
-  const safeChunk = chunk ?? '';
+  const safeChunk = chunk ?? "";
   return {
     id: id ?? uuidv4(),
     text: safeChunk,
     tokens: [safeChunk],
     seenChunks: [safeChunk],
-    sender: 'ai',
+    sender: "ai",
     timestamp: new Date().toISOString(),
-    status: 'sent',
+    status: "sent",
   };
 };
 
@@ -58,11 +58,11 @@ export const createAiMessage = (chunk: string, id?: string): Message => {
 export const createEmptyAiMessage = (id: string): Message => {
   return {
     id,
-    text: '',
+    text: "",
     tokens: [],
     seenChunks: [],
-    sender: 'ai',
+    sender: "ai",
     timestamp: new Date().toISOString(),
-    status: 'sending',
+    status: "sending",
   };
 };

@@ -7,52 +7,52 @@ export const selectChatSettingsState = (state: RootState) => state.chatSettings;
 // Basic settings
 export const selectAssistantName = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.assistantName
+  (settings) => settings.assistantName,
 );
 
 export const selectAssistantAvatar = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.assistantAvatar
+  (settings) => settings.assistantAvatar,
 );
 
 export const selectTheme = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.theme
+  (settings) => settings.theme,
 );
 
 export const selectTone = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.tone
+  (settings) => settings.tone,
 );
 
 export const selectPrivacySettings = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.privacy
+  (settings) => settings.privacy,
 );
 
 export const selectAccessibilitySettings = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.accessibility
+  (settings) => settings.accessibility,
 );
 
 export const selectBubbleStyle = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.bubbleStyle
+  (settings) => settings.bubbleStyle,
 );
 
 export const selectFontSize = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.fontSize
+  (settings) => settings.fontSize,
 );
 
 export const selectDefaultPosition = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.defaultPosition
+  (settings) => settings.defaultPosition,
 );
 
 export const selectButtonSize = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.buttonSize
+  (settings) => settings.buttonSize,
 );
 
 // API Settings selectors
@@ -60,17 +60,17 @@ export const selectSettingsState = (state: RootState) => state.settings;
 
 export const selectApiKey = createSelector(
   [selectSettingsState],
-  (settings) => settings.apiKey
+  (settings) => settings.apiKey,
 );
 
 export const selectProvider = createSelector(
   [selectSettingsState],
-  (settings) => settings.provider
+  (settings) => settings.provider,
 );
 
 export const selectorTools = createSelector(
   [selectSettingsState],
-  (settings) => ({...settings, tools: settings.tools})
+  (settings) => ({ ...settings, tools: settings.tools }),
 );
 
 export const selectApiSettings = createSelector(
@@ -81,23 +81,23 @@ export const selectApiSettings = createSelector(
     maxTokens: settings.maxTokens,
     temperature: settings.temperature,
     isConfigured: settings.isConfigured,
-    tools: settings.tools
-  })
+    tools: settings.tools,
+  }),
 );
 
 export const selectIsConfigured = createSelector(
   [selectSettingsState],
-  (settings) => settings.isConfigured
+  (settings) => settings.isConfigured,
 );
 
 export const selectMaxTokens = createSelector(
   [selectSettingsState],
-  (settings) => settings.maxTokens
+  (settings) => settings.maxTokens,
 );
 
 export const selectTemperature = createSelector(
   [selectSettingsState],
-  (settings) => settings.temperature
+  (settings) => settings.temperature,
 );
 
 // Combined selectors that merge both settings slices
@@ -112,8 +112,6 @@ export const selectAllSettings = createSelector(
     isConfigured: apiSettings.isConfigured,
     tools: apiSettings.tools,
 
-
-    
     // Chat UI/UX settings
     assistantName: chatSettings.assistantName,
     tone: chatSettings.tone,
@@ -124,7 +122,7 @@ export const selectAllSettings = createSelector(
     notifications: chatSettings.notifications,
     accessibility: chatSettings.accessibility,
     privacy: chatSettings.privacy,
-  })
+  }),
 );
 
 // Helper to get current effective theme
@@ -134,34 +132,38 @@ export const selectEffectiveTheme = createSelector(
     // API theme takes precedence, but fallback to chat theme
     const apiTheme = apiSettings.theme;
     const chatTheme = chatSettings.theme;
-    
+
     // Check API theme first
-    if (apiTheme === 'auto') {
-      if (typeof window !== 'undefined') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (apiTheme === "auto") {
+      if (typeof window !== "undefined") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
       }
-      return 'light';
+      return "light";
     }
-    
+
     // Check chat theme for system preference
-    if (chatTheme === 'system') {
-      if (typeof window !== 'undefined') {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    if (chatTheme === "system") {
+      if (typeof window !== "undefined") {
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
       }
-      return 'light';
+      return "light";
     }
-    
+
     // Return explicit theme preference
-    return apiTheme || chatTheme || 'light';
-  }
+    return apiTheme || chatTheme || "light";
+  },
 );
 
 export const selectApiTheme = createSelector(
   [selectSettingsState],
-  (settings) => settings.theme
+  (settings) => settings.theme,
 );
 
 export const selectNotificationSettings = createSelector(
   [selectChatSettingsState],
-  (settings) => settings.notifications
+  (settings) => settings.notifications,
 );

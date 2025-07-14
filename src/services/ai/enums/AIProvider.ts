@@ -13,7 +13,7 @@ export enum AIProvider {
   GEMINI = "gemini",
 }
 
-export type AIProviderList = typeof AIProvider[keyof typeof AIProvider];
+export type AIProviderList = (typeof AIProvider)[keyof typeof AIProvider];
 
 /**
  * Conversation tones
@@ -26,7 +26,8 @@ export const ConversationTone = {
   ANALYTICAL: "Analytical",
 } as const;
 
-export type ConversationTone = typeof ConversationTone[keyof typeof ConversationTone];
+export type ConversationTone =
+  (typeof ConversationTone)[keyof typeof ConversationTone];
 
 /**
  * Type guard to check if a string is a valid AI provider
@@ -38,6 +39,8 @@ export function isValidAIProvider(provider: string): provider is AIProvider {
 /**
  * Type guard to check if a string is a valid conversation tone
  */
-export function isValidConversationTone(tone: string): tone is ConversationTone {
+export function isValidConversationTone(
+  tone: string,
+): tone is ConversationTone {
   return Object.values(ConversationTone).includes(tone as ConversationTone);
 }
