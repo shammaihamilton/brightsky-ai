@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 
@@ -19,11 +19,17 @@ export interface ToolExecutionData {
 @Injectable()
 export class QueueService {
   constructor(
-    @InjectQueue('agent-processing') private agentQueue: Queue,
-    @InjectQueue('tool-execution') private toolQueue: Queue,
+    @Optional() @InjectQueue('agent-processing') private agentQueue?: Queue,
+    @Optional() @InjectQueue('tool-execution') private toolQueue?: Queue,
   ) {}
 
   async addAgentProcessingJob(data: MessageProcessingData): Promise<void> {
+    if (!this.agentQueue) {
+      // Process immediately if no queue available
+      console.log('No Redis queue available, processing immediately:', data);
+      return;
+    }
+
     await this.agentQueue.add('process-message', data, {
       priority: 10,
       attempts: 3,
@@ -34,6 +40,12 @@ export class QueueService {
   }
 
   async addToolExecutionJob(data: ToolExecutionData): Promise<void> {
+    if (!this.toolQueue) {
+      // Process immediately if no queue available
+      console.log('No Redis queue available, processing immediately:', data);
+      return;
+    }
+
     await this.toolQueue.add('execute-tool', data, {
       priority: 5,
       attempts: 2,

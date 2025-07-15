@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BullModule } from '@nestjs/bull';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
@@ -66,25 +65,9 @@ import { SessionModule } from './session/session.module';
       },
     ]),
 
-    // Message Queue (simplified)
-    BullModule.forRootAsync({
-      useFactory: (config: ConfigService) => ({
-        redis: {
-          host: config.get<string>('REDIS_HOST', 'localhost'),
-          port: config.get<number>('REDIS_PORT', 6379),
-          password: config.get<string>('REDIS_PASSWORD'),
-        },
-        defaultJobOptions: {
-          removeOnComplete: 100,
-          removeOnFail: 50,
-        },
-      }),
-      inject: [ConfigService],
-    }),
-
     // Core modules
     RedisModule,
-    QueueModule,
+    QueueModule.forRoot(),
     AuthModule,
     SessionModule,
     HealthModule,

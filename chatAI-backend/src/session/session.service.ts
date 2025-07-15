@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Optional } from '@nestjs/common';
 import { Redis } from 'ioredis';
 import { REDIS_CLIENT } from '../redis/redis.module';
 
@@ -28,11 +28,19 @@ export class SessionService {
   private readonly inMemoryFallback = new Map<string, SessionData>();
   private redisAvailable = false;
 
-  constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {
+  constructor(
+    @Optional() @Inject(REDIS_CLIENT) private readonly redis: Redis | null,
+  ) {
     void this.checkRedisConnection();
   }
 
   private async checkRedisConnection(): Promise<void> {
+    if (!this.redis) {
+      console.log('⚠️ Redis not configured, using in-memory session storage');
+      this.redisAvailable = false;
+      return;
+    }
+
     try {
       await this.redis.ping();
       this.redisAvailable = true;
@@ -40,7 +48,7 @@ export class SessionService {
     } catch (error) {
       console.warn(
         '⚠️ Redis not available, using in-memory session storage:',
-        error.message,
+        error,
       );
       this.redisAvailable = false;
     }
@@ -63,7 +71,7 @@ export class SessionService {
       try {
         await this.saveSession(sessionId, sessionData);
       } catch (error) {
-        console.warn('Redis save failed, using in-memory fallback');
+        console.warn('Redis save failed, using in-memory fallback', error);
         this.inMemoryFallback.set(sessionId, sessionData);
       }
     } else {
@@ -101,7 +109,7 @@ export class SessionService {
       }
 
       return this.parseSessionData(data);
-    } catch (error) {
+    } catch {
       console.warn('Redis get failed, checking in-memory fallback');
       const session = this.inMemoryFallback.get(sessionId);
       if (session) {
@@ -123,7 +131,7 @@ export class SessionService {
         const key = this.getSessionKey(sessionId);
         const serializedData = JSON.stringify(sessionData);
         await this.redis.setex(key, this.DEFAULT_TTL, serializedData);
-      } catch (error) {
+      } catch {
         console.warn('Redis save failed, using in-memory fallback');
         this.inMemoryFallback.set(sessionId, sessionData);
       }
