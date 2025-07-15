@@ -228,6 +228,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  @SubscribeMessage('message')
+  async handleMessage(
+    @MessageBody() data: string | UserMessageDto,
+    @ConnectedSocket() client: Socket,
+  ) {
+    // Handle both string and object formats
+    const messageData: UserMessageDto =
+      typeof data === 'string'
+        ? { content: data, metadata: {} }
+        : data;
+
+    return this.handleUserMessage(messageData, client);
+  }
+
   // Method to send messages to specific session
   async sendToSession(sessionId: string, event: string, data: any) {
     this.server.to(sessionId).emit(event, data);

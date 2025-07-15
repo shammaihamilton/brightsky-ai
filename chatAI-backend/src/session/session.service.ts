@@ -25,8 +25,26 @@ export interface SessionData {
 export class SessionService {
   private readonly SESSION_PREFIX = 'session:';
   private readonly DEFAULT_TTL = 3600; // 1 hour
+  private readonly inMemoryFallback = new Map<string, SessionData>();
+  private redisAvailable = false;
 
-  constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {}
+  constructor(@Inject(REDIS_CLIENT) private readonly redis: Redis) {
+    void this.checkRedisConnection();
+  }
+
+  private async checkRedisConnection(): Promise<void> {
+    try {
+      await this.redis.ping();
+      this.redisAvailable = true;
+      console.log('✅ Redis connection established');
+    } catch (error) {
+      console.warn(
+        '⚠️ Redis not available, using in-memory session storage:',
+        error.message,
+      );
+      this.redisAvailable = false;
+    }
+  }
 
   async createSession(
     sessionId: string,
@@ -41,28 +59,77 @@ export class SessionService {
       ...initialData,
     };
 
-    await this.saveSession(sessionId, sessionData);
+    if (this.redisAvailable) {
+      try {
+        await this.saveSession(sessionId, sessionData);
+      } catch (error) {
+        console.warn('Redis save failed, using in-memory fallback');
+        this.inMemoryFallback.set(sessionId, sessionData);
+      }
+    } else {
+      this.inMemoryFallback.set(sessionId, sessionData);
+      console.log(`✅ Created in-memory session: ${sessionId}`);
+    }
+
     return sessionData;
   }
 
   async getSession(sessionId: string): Promise<SessionData | null> {
-    const key = this.getSessionKey(sessionId);
-    const data = await this.redis.get(key);
-
-    if (!data) {
+    // Try in-memory fallback first
+    if (!this.redisAvailable) {
+      const session = this.inMemoryFallback.get(sessionId);
+      if (session) {
+        session.lastActivity = new Date();
+        return session;
+      }
       return null;
     }
 
-    return this.parseSessionData(data);
+    // Try Redis
+    try {
+      const key = this.getSessionKey(sessionId);
+      const data = await this.redis.get(key);
+
+      if (!data) {
+        // Check in-memory fallback
+        const session = this.inMemoryFallback.get(sessionId);
+        if (session) {
+          session.lastActivity = new Date();
+          return session;
+        }
+        return null;
+      }
+
+      return this.parseSessionData(data);
+    } catch (error) {
+      console.warn('Redis get failed, checking in-memory fallback');
+      const session = this.inMemoryFallback.get(sessionId);
+      if (session) {
+        session.lastActivity = new Date();
+        return session;
+      }
+      return null;
+    }
   }
 
   async saveSession(
     sessionId: string,
     sessionData: SessionData,
   ): Promise<void> {
-    const key = this.getSessionKey(sessionId);
-    const serializedData = JSON.stringify(sessionData);
-    await this.redis.setex(key, this.DEFAULT_TTL, serializedData);
+    sessionData.lastActivity = new Date();
+
+    if (this.redisAvailable) {
+      try {
+        const key = this.getSessionKey(sessionId);
+        const serializedData = JSON.stringify(sessionData);
+        await this.redis.setex(key, this.DEFAULT_TTL, serializedData);
+      } catch (error) {
+        console.warn('Redis save failed, using in-memory fallback');
+        this.inMemoryFallback.set(sessionId, sessionData);
+      }
+    } else {
+      this.inMemoryFallback.set(sessionId, sessionData);
+    }
   }
 
   async updateSession(

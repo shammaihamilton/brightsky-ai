@@ -68,13 +68,16 @@ export class WeatherTool extends BaseTool {
     const { location, units = 'celsius' } = params as unknown as WeatherParams;
 
     this.logger.log(`Getting weather for ${location} in ${units}`);
+    this.logger.log(`Received params:`, params);
 
     try {
       // Get coordinates for the location
       const coords = await this.getCoordinates(location);
+      this.logger.log(`Coordinates for ${location}:`, coords);
 
       // Get weather data from Open-Meteo API
       const weatherData = await this.getWeatherData(coords, units);
+      this.logger.log(`Weather data:`, weatherData);
 
       // Convert weather code to description
       const description = this.getWeatherDescription(
@@ -84,7 +87,7 @@ export class WeatherTool extends BaseTool {
       // Temperature is already in the requested unit from the API
       const temperature = weatherData.current_weather.temperature;
 
-      return {
+      const result = {
         location,
         temperature: Math.round(temperature * 10) / 10, // Round to 1 decimal place
         description,
@@ -98,6 +101,9 @@ export class WeatherTool extends BaseTool {
         },
         timestamp: weatherData.current_weather.time,
       };
+
+      this.logger.log(`Weather result to return:`, result);
+      return result;
     } catch (error) {
       this.logger.error(`Weather API error for ${location}:`, error);
       throw new Error(

@@ -46,7 +46,7 @@ export class ToolOrchestrationService implements ToolExecutor {
         executionTime,
       });
 
-      return {
+      const response = {
         success: true,
         result: result as T,
         executionTime,
@@ -55,6 +55,9 @@ export class ToolOrchestrationService implements ToolExecutor {
           timestamp: new Date().toISOString(),
         },
       };
+
+      this.logger.log(`Tool response object:`, response);
+      return response;
     } catch (error) {
       const executionTime = Date.now() - startTime;
       const errorMessage =

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolOrchestrationService } from '../mcp/mcp.service';
 import { SessionData } from '../session/session.service';
+import { AIService } from '../services/ai.service';
 
 export interface AgentResponse {
   content: string;
@@ -27,6 +28,7 @@ export class AgentService {
 
   constructor(
     private readonly toolOrchestrationService: ToolOrchestrationService,
+    private readonly aiService: AIService,
   ) {}
 
   async processMessage(
@@ -165,9 +167,12 @@ export class AgentService {
           tool.toolName,
           tool.params,
         );
+        
+        this.logger.log(`Tool execution result for ${tool.toolName}:`, result);
+        
         results.push({
           toolName: tool.toolName,
-          result,
+          result: result.result, // Extract the actual result from the response
           confidence: tool.confidence,
         });
       } catch (error) {
@@ -190,35 +195,67 @@ export class AgentService {
     conversationHistory: SessionData['conversationHistory'],
     context: Record<string, any>,
   ): Promise<AgentResponse> {
-    // Simple response synthesis - in production, use LLM
-    let content = '';
     const toolsUsed: string[] = [];
+    let content = '';
 
+    // If we have tool results, use AI to process them
     if (toolResults.length > 0) {
       for (const result of toolResults) {
         toolsUsed.push(result.toolName);
+        
+        this.logger.log(
+          `Processing tool result for ${result.toolName}:`,
+          result,
+        );
 
         if (result.error) {
           content += `I encountered an error with the ${result.toolName} tool: ${result.error}\n`;
-        } else {
-          switch (result.toolName) {
-            case 'weather':
-              content += this.formatWeatherResponse(result.result);
-              break;
-            case 'calendar':
-              content += this.formatCalendarResponse(result.result);
-              break;
-            default:
-              content += `${result.toolName} result: ${JSON.stringify(result.result)}\n`;
-          }
         }
       }
+
+      // Use AI service to process the tool results and generate a natural response
+      try {
+        const aiResult = await this.aiService.processWithContext(
+          originalMessage,
+          toolResults,
+          conversationHistory,
+          {
+            temperature: 0.7,
+            maxTokens: 500,
+          },
+        );
+
+        content = aiResult.response;
+        this.logger.log('AI processed response:', {
+          originalMessage,
+          toolsUsed,
+          responseLength: content.length,
+        });
+      } catch (error) {
+        this.logger.error('Error processing with AI:', error);
+        content =
+          'I apologize, but I encountered an error while processing your request. Please try again.';
+      }
     } else {
-      // General conversation response
-      content = this.generateGeneralResponse(
-        originalMessage,
-        conversationHistory,
-      );
+      // General conversation response - still use AI for consistency
+      try {
+        const aiResult = await this.aiService.processWithContext(
+          originalMessage,
+          [],
+          conversationHistory,
+          {
+            temperature: 0.8,
+            maxTokens: 300,
+          },
+        );
+        content = aiResult.response;
+      } catch (error) {
+        this.logger.error('Error processing general conversation:', error);
+        content = this.generateGeneralResponse(
+          originalMessage,
+          conversationHistory,
+        );
+      }
     }
 
     return {
@@ -254,32 +291,6 @@ export class AgentService {
     }
 
     return {};
-  }
-
-  private formatWeatherResponse(weatherData: any): string {
-    if (!weatherData) return 'Weather information is not available.\n';
-
-    return (
-      `Current weather: ${weatherData.temperature}°C, ${weatherData.description}. ` +
-      `Humidity: ${weatherData.humidity}%.\n`
-    );
-  }
-
-  private formatCalendarResponse(calendarData: any): string {
-    if (
-      !calendarData ||
-      !calendarData.events ||
-      calendarData.events.length === 0
-    ) {
-      return 'No calendar events found.\n';
-    }
-
-    let response = 'Here are your upcoming events:\n';
-    for (const event of calendarData.events.slice(0, 5)) {
-      response += `• ${event.summary} at ${event.start.dateTime || event.start.date}\n`;
-    }
-
-    return response;
   }
 
   private generateGeneralResponse(
