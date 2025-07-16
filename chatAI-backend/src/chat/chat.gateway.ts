@@ -98,7 +98,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  async handleDisconnect(client: Socket) {
+  handleDisconnect(client: Socket): void {
     const wsSession = this.sessions.get(client.id);
     if (wsSession) {
       this.sessions.delete(client.id);
@@ -181,7 +181,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('agent_response', {
           type: 'error',
           content: 'Sorry, I encountered an error processing your message.',
-          metadata: { error: processingError.message },
+          metadata: {
+            error:
+              processingError instanceof Error
+                ? processingError.message
+                : 'Unknown error',
+          },
         });
       }
     } catch (error) {
@@ -191,7 +196,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('typing_start')
-  async handleTypingStart(@ConnectedSocket() client: Socket) {
+  handleTypingStart(@ConnectedSocket() client: Socket): void {
     const wsSession = this.sessions.get(client.id);
     if (wsSession) {
       client.to(wsSession.sessionId).emit('user_typing', { typing: true });
@@ -199,7 +204,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('typing_stop')
-  async handleTypingStop(@ConnectedSocket() client: Socket) {
+  handleTypingStop(@ConnectedSocket() client: Socket): void {
     const wsSession = this.sessions.get(client.id);
     if (wsSession) {
       client.to(wsSession.sessionId).emit('user_typing', { typing: false });
@@ -235,31 +240,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     // Handle both string and object formats
     const messageData: UserMessageDto =
-      typeof data === 'string'
-        ? { content: data, metadata: {} }
-        : data;
+      typeof data === 'string' ? { content: data, metadata: {} } : data;
 
     return this.handleUserMessage(messageData, client);
   }
 
   // Method to send messages to specific session
-  async sendToSession(sessionId: string, event: string, data: any) {
+  sendToSession(sessionId: string, event: string, data: any): void {
     this.server.to(sessionId).emit(event, data);
   }
 
   // Method to send agent response
-  async sendAgentResponse(sessionId: string, response: AgentResponseDto) {
-    await this.sendToSession(sessionId, 'agent_response', response);
+  sendAgentResponse(sessionId: string, response: AgentResponseDto): void {
+    this.sendToSession(sessionId, 'agent_response', response);
   }
 
   // Method to send agent thinking status
-  async sendAgentThinking(sessionId: string, thinking: boolean) {
-    await this.sendToSession(sessionId, 'agent_thinking', { thinking });
+  sendAgentThinking(sessionId: string, thinking: boolean): void {
+    this.sendToSession(sessionId, 'agent_thinking', { thinking });
   }
 
   // Method to send tool call notification
-  async sendToolCall(sessionId: string, toolName: string, toolData: any) {
-    await this.sendToSession(sessionId, 'tool_call', {
+  sendToolCall(sessionId: string, toolName: string, toolData: unknown): void {
+    this.sendToSession(sessionId, 'tool_call', {
       tool: toolName,
       data: toolData,
     });

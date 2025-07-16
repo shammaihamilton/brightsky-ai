@@ -4,6 +4,8 @@ import { selectConversationHistory } from '../../../store/selectors/chatSelector
 import styles from '../styles/ChatPanel.module.css';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
+import { ConnectionStatusIndicator } from './ConnectionStatusIndicator';
+import { TypingIndicator } from './TypingIndicator';
 
 interface ChatPanelProps {
   position: { x: number; y: number };
@@ -11,6 +13,7 @@ interface ChatPanelProps {
   onClose: () => void;
   onSend: (message: string) => void;
   chatPanelRef: React.RefObject<HTMLDivElement | null>;
+  isTyping?: boolean;
 }
 
 const ChatPanel: React.FC<ChatPanelProps> = ({
@@ -19,6 +22,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onClose,
   onSend,
   chatPanelRef,
+  isTyping = false,
 }) => {
   const messages = useAppSelector(selectConversationHistory);
 
@@ -69,7 +73,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             <h3 className={styles.headerTitle}>AI Assistant</h3>
           </div>
           <div className={styles.headerRight}>
-            <div className={styles.connectionStatus} />
+            <ConnectionStatusIndicator showText={true} size="small" />
             <button 
               className={styles.closeButton} 
               onClick={onClose} 
@@ -91,11 +95,21 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         {/* Messages Container */}
         <div className={styles.messagesContainer}>
           <MessageList messages={messages} />
+          <TypingIndicator isVisible={isTyping} />
         </div>
 
         {/* Input Area */}
         <div className={styles.inputContainer}>
-          <ChatInput onSend={onSend} connectionStatus={connectionStatus} />
+          <ChatInput 
+            onSend={onSend} 
+            connectionStatus={connectionStatus}
+            disabled={connectionStatus !== 'connected'}
+            placeholder={
+              connectionStatus === 'connecting' ? 'Connecting...' :
+              connectionStatus === 'connected' ? 'Type a message...' :
+              'Connection required to send messages'
+            }
+          />
         </div>
       </div>
     </div>

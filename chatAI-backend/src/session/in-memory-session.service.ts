@@ -24,10 +24,10 @@ export class InMemorySessionService {
   private sessions = new Map<string, SessionData>();
   private readonly DEFAULT_TTL = 3600000; // 1 hour in milliseconds
 
-  async createSession(
+  createSession(
     sessionId: string,
     initialData?: Partial<SessionData>,
-  ): Promise<SessionData> {
+  ): SessionData {
     const sessionData: SessionData = {
       conversationHistory: [],
       context: {},
@@ -48,7 +48,7 @@ export class InMemorySessionService {
     return sessionData;
   }
 
-  async getSession(sessionId: string): Promise<SessionData | null> {
+  getSession(sessionId: string): SessionData | null {
     const session = this.sessions.get(sessionId);
     if (session) {
       // Update last activity
@@ -58,66 +58,63 @@ export class InMemorySessionService {
     return null;
   }
 
-  async saveSession(sessionId: string, data: SessionData): Promise<void> {
+  saveSession(sessionId: string, data: SessionData): void {
     data.lastActivity = new Date();
     this.sessions.set(sessionId, data);
   }
 
-  async deleteSession(sessionId: string): Promise<void> {
+  deleteSession(sessionId: string): void {
     this.sessions.delete(sessionId);
   }
 
-  async addMessage(
+  addMessage(
     sessionId: string,
     message: SessionData['conversationHistory'][0],
-  ): Promise<void> {
-    const session = await this.getSession(sessionId);
+  ): void {
+    const session = this.getSession(sessionId);
     if (session) {
       session.conversationHistory.push(message);
-      await this.saveSession(sessionId, session);
+      this.saveSession(sessionId, session);
     }
   }
 
-  async getMessages(
+  getMessages(
     sessionId: string,
     limit?: number,
-  ): Promise<SessionData['conversationHistory']> {
-    const session = await this.getSession(sessionId);
+  ): SessionData['conversationHistory'] {
+    const session = this.getSession(sessionId);
     if (!session) return [];
 
     const messages = session.conversationHistory;
     return limit ? messages.slice(-limit) : messages;
   }
 
-  async updateContext(
-    sessionId: string,
-    context: Record<string, any>,
-  ): Promise<void> {
-    const session = await this.getSession(sessionId);
+  updateContext(sessionId: string, context: Record<string, any>): void {
+    const session = this.getSession(sessionId);
     if (session) {
       session.context = { ...session.context, ...context };
-      await this.saveSession(sessionId, session);
+      this.saveSession(sessionId, session);
     }
   }
 
-  async getContext(sessionId: string): Promise<Record<string, any>> {
-    const session = await this.getSession(sessionId);
+  getContext(sessionId: string): Record<string, any> {
+    const session = this.getSession(sessionId);
     return session?.context || {};
   }
 
-  async updatePreferences(
+  updatePreferences(
     sessionId: string,
     preferences: Partial<SessionData['preferences']>,
-  ): Promise<void> {
-    const session = await this.getSession(sessionId);
+  ): void {
+    const session = this.getSession(sessionId);
     if (session) {
       session.preferences = { ...session.preferences, ...preferences };
-      await this.saveSession(sessionId, session);
+      this.saveSession(sessionId, session);
     }
   }
 
-  async getPreferences(sessionId: string): Promise<SessionData['preferences']> {
-    const session = await this.getSession(sessionId);
+  getPreferences(sessionId: string): SessionData['preferences'] {
+    const session = this.getSession(sessionId);
     return session?.preferences || {};
   }
 
@@ -130,7 +127,7 @@ export class InMemorySessionService {
     return Array.from(this.sessions.keys());
   }
 
-  async cleanupExpiredSessions(): Promise<void> {
+  cleanupExpiredSessions(): void {
     const now = new Date();
     const expiredSessions: string[] = [];
 

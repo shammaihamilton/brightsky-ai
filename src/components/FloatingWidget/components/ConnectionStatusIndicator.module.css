@@ -1,0 +1,60 @@
+/* Connection Status Indicator Styles */
+.indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot {
+  border-radius: 50%;
+  transition: background-color 0.3s ease;
+}
+
+/* Size variations */
+.small .dot {
+  width: 8px;
+  height: 8px;
+}
+
+.medium .dot {
+  width: 12px;
+  height: 12px;
+}
+
+.large .dot {
+  width: 16px;
+  height: 16px;
+}
+
+/* Status colors */
+.connected {
+  background-color: #10b981; /* Green */
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.connecting {
+  background-color: #f59e0b; /* Yellow */
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+  animation: pulse 1.5s infinite;
+}
+
+.disconnected {
+  background-color: #ef4444; /* Red */
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+.statusText {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary, #6b7280);
+}
+
+/* Pulse animation for connecting state */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

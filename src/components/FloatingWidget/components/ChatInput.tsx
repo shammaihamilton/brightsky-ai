@@ -4,19 +4,23 @@ import styles from '../styles/ChatInput.module.css';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
-  connectionStatus: "connected" | "disconnected" | "connecting" | "error";
+  connectionStatus?: "connected" | "disconnected" | "connecting" | "error";
+  disabled?: boolean;
+  placeholder?: string;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
-  connectionStatus,
+  connectionStatus = "disconnected",
+  disabled = false,
+  placeholder = "Type a message...",
 }) => {
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const maxLength = 2000;
   
   const handleSend = useCallback(() => {
-    if (message.trim() && connectionStatus === "connected") {
+    if (message.trim() && !disabled && connectionStatus === "connected") {
       onSend(message.trim());
       setMessage(""); // Reset textarea height after sending
       if (inputRef.current) {
@@ -24,7 +28,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
         inputRef.current.style.height = "16px";
       }
     }
-  }, [message, connectionStatus, onSend]);
+  }, [message, disabled, connectionStatus, onSend]);
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -48,11 +52,13 @@ const ChatInput: React.FC<ChatInputProps> = ({
     [maxLength]
   );
   
-  const isDisabled = connectionStatus !== "connected";
+  const isDisabled = disabled || connectionStatus !== "connected";
   const isOverLimit = message.length > maxLength * 0.9;
   const canSend = message.trim().length > 0;
 
   const getPlaceholder = () => {
+    if (disabled) return placeholder;
+    
     switch (connectionStatus) {
       case "connected":
         return "Type your message...";

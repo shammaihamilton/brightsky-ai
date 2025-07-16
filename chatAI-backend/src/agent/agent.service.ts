@@ -22,6 +22,13 @@ export interface ToolSelection {
   params: Record<string, any>;
 }
 
+export interface ToolResult {
+  toolName: string;
+  result: unknown;
+  error?: string;
+  confidence: number;
+}
+
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
@@ -35,19 +42,19 @@ export class AgentService {
     content: string,
     conversationHistory: SessionData['conversationHistory'],
     context: Record<string, any>,
-    metadata?: Record<string, any>,
+    _metadata?: Record<string, any>,
   ): Promise<AgentResponse> {
     try {
       // 1. Intent recognition
-      const intents = await this.recognizeIntents(content, conversationHistory);
+      const intents = this.recognizeIntents(content, conversationHistory);
       this.logger.debug('Recognized intents:', intents);
 
       // 2. Tool selection
-      const toolPlan = await this.selectTools(intents, context);
+      const toolPlan = this.selectTools(intents, context);
       this.logger.debug('Selected tools:', toolPlan);
 
       // 3. Execute tools if needed
-      let toolResults: any[] = [];
+      let toolResults: ToolResult[] = [];
       if (toolPlan.length > 0) {
         toolResults = await this.executeToolPlan(toolPlan, context);
       }
@@ -68,10 +75,10 @@ export class AgentService {
     }
   }
 
-  private async recognizeIntents(
+  private recognizeIntents(
     content: string,
-    conversationHistory: SessionData['conversationHistory'],
-  ): Promise<IntentRecognition[]> {
+    _conversationHistory: SessionData['conversationHistory'],
+  ): IntentRecognition[] {
     const intents: IntentRecognition[] = [];
 
     // Simple intent recognition - in production, use NLU service
@@ -115,10 +122,10 @@ export class AgentService {
     return intents;
   }
 
-  private async selectTools(
+  private selectTools(
     intents: IntentRecognition[],
-    context: Record<string, any>,
-  ): Promise<ToolSelection[]> {
+    _context: Record<string, any>,
+  ): ToolSelection[] {
     const toolPlan: ToolSelection[] = [];
 
     for (const intent of intents) {
@@ -128,7 +135,8 @@ export class AgentService {
             toolName: 'weather',
             confidence: intent.confidence,
             params: {
-              location: intent.entities.location || 'current location',
+              location:
+                (intent.entities.location as string) || 'current location',
             },
           });
           break;
@@ -138,9 +146,9 @@ export class AgentService {
             toolName: 'calendar',
             confidence: intent.confidence,
             params: {
-              startDate: intent.entities.startDate || new Date(),
+              startDate: (intent.entities.startDate as Date) || new Date(),
               endDate:
-                intent.entities.endDate ||
+                (intent.entities.endDate as Date) ||
                 new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
             },
           });
@@ -155,9 +163,9 @@ export class AgentService {
 
   private async executeToolPlan(
     toolPlan: ToolSelection[],
-    context: Record<string, any>,
-  ): Promise<any[]> {
-    const results: any[] = [];
+    _context: Record<string, any>,
+  ): Promise<ToolResult[]> {
+    const results: ToolResult[] = [];
 
     for (const tool of toolPlan) {
       try {
@@ -167,9 +175,9 @@ export class AgentService {
           tool.toolName,
           tool.params,
         );
-        
+
         this.logger.log(`Tool execution result for ${tool.toolName}:`, result);
-        
+
         results.push({
           toolName: tool.toolName,
           result: result.result, // Extract the actual result from the response
@@ -179,7 +187,8 @@ export class AgentService {
         this.logger.error(`Error executing tool ${tool.toolName}:`, error);
         results.push({
           toolName: tool.toolName,
-          error: error.message,
+          result: null,
+          error: error instanceof Error ? error.message : 'Unknown error',
           confidence: tool.confidence,
         });
       }
@@ -191,9 +200,9 @@ export class AgentService {
   private async synthesizeResponse(
     originalMessage: string,
     intents: IntentRecognition[],
-    toolResults: any[],
+    toolResults: ToolResult[],
     conversationHistory: SessionData['conversationHistory'],
-    context: Record<string, any>,
+    _context: Record<string, any>,
   ): Promise<AgentResponse> {
     const toolsUsed: string[] = [];
     let content = '';
@@ -202,7 +211,7 @@ export class AgentService {
     if (toolResults.length > 0) {
       for (const result of toolResults) {
         toolsUsed.push(result.toolName);
-        
+
         this.logger.log(
           `Processing tool result for ${result.toolName}:`,
           result,
@@ -295,7 +304,7 @@ export class AgentService {
 
   private generateGeneralResponse(
     message: string,
-    conversationHistory: SessionData['conversationHistory'],
+    _conversationHistory: SessionData['conversationHistory'],
   ): string {
     // Simple response generation - in production, use LLM
     const responses = [

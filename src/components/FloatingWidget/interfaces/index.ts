@@ -76,7 +76,9 @@ export interface IStorageService {
 }
 
 export interface IChatService {
-  sendMessage(message: string): void;
+  sendMessage(message: string): Promise<void>;
+  connect(): Promise<void>;
+  disconnect(): void;
   readonly isConfigured: boolean;
   readonly connectionStatus: string;
 }

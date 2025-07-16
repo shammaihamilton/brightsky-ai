@@ -28,6 +28,7 @@ export interface ChatState {
   conversationHistory: Message[];
   messageQueue: Message[];
   isAiLoading: boolean;
+  isTyping: boolean;
   currentError: string | null;
   tone: Tone;
 }
@@ -66,6 +67,7 @@ const createInitialState = (): ChatState => {
     conversationHistory: [],
     messageQueue: [],
     isAiLoading: false,
+    isTyping: false,
     currentError: null,
     tone: "Professional",
   };
@@ -108,6 +110,9 @@ export const chatSlice = createSlice({
     setConnectionStatus: (state, action: PayloadAction<ConnectionStatus>) => {
       state.connectionStatus = action.payload;
       if (action.payload === "connected") state.currentError = null;
+    },
+    setTyping: (state, action: PayloadAction<boolean>) => {
+      state.isTyping = action.payload;
     },
     addMessageOptimistic: (
       state,
@@ -255,6 +260,7 @@ export const {
   toggleButtonVisibility,
   updateButtonPositionState,
   setConnectionStatus,
+  setTyping,
   addMessageOptimistic,
   updateMessageStatus,
   addAiResponseChunk,
@@ -267,3 +273,9 @@ export const {
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
+
+// Selectors
+export const selectConnectionStatus = (state: { chat: ChatState }) => state.chat.connectionStatus;
+export const selectIsConnected = (state: { chat: ChatState }) => state.chat.connectionStatus === 'connected';
+export const selectIsConnecting = (state: { chat: ChatState }) => state.chat.connectionStatus === 'connecting';
+export const selectIsTyping = (state: { chat: ChatState }) => state.chat.isTyping;

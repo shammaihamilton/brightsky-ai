@@ -66,7 +66,7 @@ export class CalendarTool extends BaseTool {
 
     // Mock calendar data - in production, integrate with Google Calendar API
     const allEvents = this.generateMockEvents();
-    const filteredEvents = allEvents.slice(0, maxResults as number);
+    const filteredEvents = allEvents.slice(0, maxResults);
 
     return {
       events: filteredEvents,

@@ -6,10 +6,10 @@ import {
   WidgetStateService,
   EventService,
   StorageService,
-  ChatService,
+  WebSocketChatService,
   NotificationService,
 } from "../services";
-import { useAIChat } from "../../../hooks/useAIChat";
+import { useAppDispatch } from "../../../store/hooks";
 
 interface StorageSettings {
   apiSettings?: unknown;
@@ -39,7 +39,7 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
   config = {},
   onSettingsChange,
 }) => {
-  const aiChat = useAIChat();
+  const dispatch = useAppDispatch();
 
   const services = useMemo<IWidgetServices>(() => {
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
@@ -52,7 +52,7 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
     );
 
     const stateService = new WidgetStateService();
-    const chatService = new ChatService(aiChat);
+    const chatService = new WebSocketChatService(dispatch);
     const notificationService = NotificationService.getInstance();
     const storageService = new StorageService(onSettingsChange);
 
@@ -66,7 +66,7 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
       chatService,
       notificationService,
     };
-  }, [config, aiChat, onSettingsChange]);
+  }, [config, onSettingsChange, dispatch]);
 
   return (
     <WidgetContext.Provider value={services}>{children}</WidgetContext.Provider>

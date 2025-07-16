@@ -1,5 +1,6 @@
 import styles from './App.module.css';
 import FloatingWidget from './components/FloatingWidget';
+import { WebSocketDebugger } from './components/FloatingWidget/components/WebSocketDebugger';
 
 
 function App() {
@@ -13,6 +14,9 @@ function App() {
 
       {/* Floating Widget */}
       <FloatingWidget />
+      
+      {/* WebSocket Debugger for testing */}
+      <WebSocketDebugger />
     </div>
   );
 }

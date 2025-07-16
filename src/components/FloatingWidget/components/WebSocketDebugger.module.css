@@ -1,0 +1,192 @@
+/* WebSocket Debugger Styles */
+.debugger {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 400px;
+  max-height: 80vh;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 10000;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.header {
+  padding: 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.status {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.connected {
+  color: #10b981;
+}
+
+.connecting {
+  color: #f59e0b;
+}
+
+.disconnected {
+  color: #ef4444;
+}
+
+.error {
+  color: #dc2626;
+}
+
+.controls {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+}
+
+.controls button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.controls button:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.messageTest {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  gap: 8px;
+}
+
+.messageInput {
+  flex: 1;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+}
+
+.messageTest button {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background: #3b82f6;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.messageTest button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.messageTest button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.info {
+  padding: 12px 16px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 12px;
+}
+
+.infoItem {
+  margin-bottom: 4px;
+}
+
+.infoItem strong {
+  color: #374151;
+}
+
+.logs, .messages {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logs h4, .messages h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.logContainer, .messageContainer {
+  max-height: 150px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.logEntry {
+  margin-bottom: 2px;
+  padding: 2px 4px;
+  background: #f9fafb;
+  border-radius: 2px;
+  font-family: monospace;
+  color: #374151;
+}
+
+.messageEntry {
+  margin-bottom: 4px;
+  padding: 4px 6px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.messageEntry strong {
+  color: #3b82f6;
+}
+
+/* Scrollbar styling */
+.logContainer::-webkit-scrollbar,
+.messageContainer::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logContainer::-webkit-scrollbar-track,
+.messageContainer::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.logContainer::-webkit-scrollbar-thumb,
+.messageContainer::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.logContainer::-webkit-scrollbar-thumb:hover,
+.messageContainer::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

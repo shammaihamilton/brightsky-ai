@@ -4,6 +4,7 @@
   import {
     selectConnectionStatus,
     selectIsButtonVisible,
+    selectIsTyping,
   } from '../../store/selectors/chatSelectors';
   import {
     selectButtonSize,
@@ -41,6 +42,7 @@
     const connectionStatus = useAppSelector(selectConnectionStatus);
     const isVisible = useAppSelector(selectIsButtonVisible);
     const buttonSize = useAppSelector(selectButtonSize);
+    const isTyping = useAppSelector(selectIsTyping);
     
     const accessibilitySettings = useAppSelector(selectAccessibilitySettings);
 
@@ -113,6 +115,7 @@
             onClose={() => eventService.handleCloseChat()}
             onSend={handleSendMessage}
             chatPanelRef={chatPanelRef}
+            isTyping={isTyping}
           />
         )}
 

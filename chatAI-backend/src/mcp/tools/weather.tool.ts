@@ -106,9 +106,8 @@ export class WeatherTool extends BaseTool {
       return result;
     } catch (error) {
       this.logger.error(`Weather API error for ${location}:`, error);
-      throw new Error(
-        `Failed to get weather data for ${location}: ${error.message}`,
-      );
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to get weather data for ${location}: ${message}`);
     }
   }
 

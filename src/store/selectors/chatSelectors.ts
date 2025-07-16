@@ -26,6 +26,11 @@ export const selectConnectionStatus = createSelector(
   (chat) => chat.connectionStatus,
 );
 
+export const selectIsTyping = createSelector(
+  [selectChatState],
+  (chat) => chat.isTyping,
+);
+
 export const selectCurrentError = createSelector(
   [selectChatState],
   (chat) => chat.currentError,
