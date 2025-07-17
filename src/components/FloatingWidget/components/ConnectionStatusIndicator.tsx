@@ -1,6 +1,6 @@
 import React from 'react';
 import { useConnectionStatus } from '../hooks/useConnectionStatus';
-import styles from './ConnectionStatusIndicator.module.css';
+import styles from '../styles/ConnectionStatusIndicator.module.css';
 
 interface ConnectionStatusIndicatorProps {
   showText?: boolean;

@@ -9,9 +9,8 @@ import { safeLocalStorage } from "../../utils/safeLocalStorage";
 import {
   createAiMessage,
   createQueuedMessage,
-  createUserMessage,
 } from "../../utils/messageFactory";
-type OptimisticMessageInput = { text: string };
+type OptimisticMessageInput = Message;
 type QueueMessageInput = { text: string };
 
 const findMessageIndex = (state: ChatState, id: string): number =>
@@ -118,10 +117,13 @@ export const chatSlice = createSlice({
       state,
       action: PayloadAction<OptimisticMessageInput>,
     ) => {
-      const newMessage = createUserMessage(action.payload.text);
+      const newMessage = action.payload; // Use the message directly
       state.conversationHistory.push(newMessage);
       state.currentError = null;
-      state.isAiLoading = true;
+      // Only set loading state for user messages
+      if (newMessage.sender === "user") {
+        state.isAiLoading = true;
+      }
     },
     updateMessageStatus: (
       state,

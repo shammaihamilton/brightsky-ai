@@ -3,7 +3,7 @@ import { useAppSelector } from '../../../store/hooks';
 import { useWidgetChat } from '../hooks';
 import { selectConnectionStatus } from '../../../store/slices/chatSlice';
 import { selectConversationHistory } from '../../../store/selectors/chatSelectors';
-import styles from './WebSocketDebugger.module.css';
+import styles from '../styles/WebSocketDebugger.module.css';
 
 export const WebSocketDebugger: React.FC = () => {
   const chatService = useWidgetChat();
