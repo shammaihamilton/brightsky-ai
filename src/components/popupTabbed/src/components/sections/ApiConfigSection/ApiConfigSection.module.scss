@@ -1,0 +1,264 @@
+// ApiConfigSection.module.scss - OpenAI Model Selection
+.section {
+  padding: 20px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionTitle {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #667eea;
+  padding-bottom: 8px;
+}
+
+.sectionText {
+  margin: 0;
+  font-size: 14px;
+  color: #666;
+  line-height: 1.5;
+}
+
+.serviceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.serviceStatus {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #495057;
+  font-weight: 500;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #28a745;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.serviceNote {
+  font-size: 12px;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.modelGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.modelCard {
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  position: relative;
+  
+  &:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  &.selected {
+    border-color: #667eea;
+    background: #e3f2fd;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+  
+  &.recommended {
+    border-color: #28a745;
+    
+    &:hover {
+      border-color: #1e7e34;
+    }
+    
+    &.selected {
+      border-color: #28a745;
+      background: #d4edda;
+      box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+    }
+  }
+}
+
+.modelHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.modelIcon {
+  font-size: 2rem;
+  width: 40px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.modelTitle {
+  flex: 1;
+  
+  h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.3;
+  }
+}
+
+.recommendedBadge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #28a745;
+  color: white;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.modelMetrics {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.metricLabel {
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.metricValue {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.capabilities {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.capabilitiesLabel {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+}
+
+.capabilityTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.capabilityTag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #667eea;
+  color: white;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.selectedModelInfo {
+  padding: 16px;
+  background: #e8f5e8;
+  border-radius: 6px;
+  border: 1px solid #c3e6cb;
+  margin-top: auto;
+  
+  h4 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #155724;
+  }
+  
+  p {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #155724;
+  }
+}
+
+.modelDetails {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #155724;
+  
+  span {
+    font-weight: 500;
+  }
+}
+
+// Mobile responsive
+@media (max-width: 768px) {
+  .modelGrid {
+    max-height: 250px;
+  }
+  
+  .modelCard {
+    padding: 12px;
+  }
+  
+  .modelIcon {
+    font-size: 1.5rem;
+    width: 32px;
+  }
+  
+  .modelMetrics {
+    gap: 12px;
+  }
+  
+  .modelDetails {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
