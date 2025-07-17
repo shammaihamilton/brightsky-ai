@@ -6,6 +6,9 @@
   gap: 8px;
   margin-bottom: 16px;
   animation: slideInFromRight 0.3s ease-out;
+  /* Ensure container doesn't overflow */
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .messageContainer.senderUser {
@@ -24,13 +27,18 @@
 }
 
 .messageBubble {
-  max-width: 80%;
+  max-width: 80%; /* Reduce from 80% to leave more margin */
   padding: 12px;
   border-radius: 12px;
   font-size: 14px;
   line-height: 1.5;
   word-wrap: break-word;
+  word-break: break-word; /* Force break long words */
+  overflow-wrap: break-word; /* Modern property for word breaking */
+  hyphens: auto; /* Add hyphenation for better breaking */
   position: relative;
+  /* Ensure content doesn't overflow */
+  overflow: hidden;
 }
 
 .messageBubble.bubbleUser {
@@ -103,10 +111,25 @@
 
 .messageContent {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure user messages align properly */
+.messageContainer.senderUser .messageContent {
+  align-items: flex-end; /* Align user content to the right */
+}
+
+.messageContainer.senderAi .messageContent {
+  align-items: flex-start; /* Align AI content to the left */
 }
 
 .messageText {
   margin: 0;
+  /* Ensure text wraps properly */
+  white-space: pre-wrap; /* Preserve line breaks but wrap text */
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .messageText p {
