@@ -7,8 +7,8 @@ import {
   EventService,
   StorageService,
   NotificationService,
-  WebSocketService,
 } from "../services";
+import { WebSocketService } from '../services/websocket';
 import { useAppDispatch } from "../../../store/hooks";
 
 interface StorageSettings {
