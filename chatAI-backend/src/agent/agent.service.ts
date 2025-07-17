@@ -42,9 +42,13 @@ export class AgentService {
     content: string,
     conversationHistory: SessionData['conversationHistory'],
     context: Record<string, any>,
-    _metadata?: Record<string, any>,
+    metadata?: Record<string, any>,
   ): Promise<AgentResponse> {
     try {
+      // Extract model preference from metadata
+      const modelPreference = (metadata?.modelPreference as string) || 'gpt-4';
+      this.logger.debug('Using model:', modelPreference);
+
       // 1. Intent recognition
       const intents = this.recognizeIntents(content, conversationHistory);
       this.logger.debug('Recognized intents:', intents);
@@ -66,6 +70,7 @@ export class AgentService {
         toolResults,
         conversationHistory,
         context,
+        modelPreference, // Pass model preference
       );
 
       return response;
@@ -203,6 +208,7 @@ export class AgentService {
     toolResults: ToolResult[],
     conversationHistory: SessionData['conversationHistory'],
     _context: Record<string, any>,
+    modelPreference = 'gpt-4',
   ): Promise<AgentResponse> {
     const toolsUsed: string[] = [];
     let content = '';
@@ -231,6 +237,7 @@ export class AgentService {
           {
             temperature: 0.7,
             maxTokens: 500,
+            model: modelPreference,
           },
         );
 
@@ -255,6 +262,7 @@ export class AgentService {
           {
             temperature: 0.8,
             maxTokens: 300,
+            model: modelPreference,
           },
         );
         content = aiResult.response;

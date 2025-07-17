@@ -3,8 +3,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
-import { IoAdapter } from '@nestjs/platform-socket.io';
-import * as dotenv from 'dotenv'; // Load .env
+import * as dotenv from 'dotenv';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
@@ -30,8 +29,8 @@ async function bootstrap() {
   const port = configService.get<number>('PORT', 3001);
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
 
-  // WebSocket adapter
-  app.useWebSocketAdapter(new IoAdapter(app));
+  // Remove this line - no Socket.IO adapter needed for raw WebSocket
+  // app.useWebSocketAdapter(new IoAdapter(app));
 
   // Global pipes
   app.useGlobalPipes(
@@ -68,7 +67,7 @@ async function bootstrap() {
   if (nodeEnv !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('BrightSky AI Agent API')
-      .setDescription('WebSocket-based AI agent with MCP integration')
+      .setDescription('Raw WebSocket-based AI agent with MCP integration')
       .setVersion('1.0')
       .addTag('chat', 'Chat and messaging endpoints')
       .addTag('mcp', 'Model Context Protocol endpoints')
@@ -93,6 +92,7 @@ async function bootstrap() {
 
   await app.listen(port);
   Logger.log(`Application is running on: http://localhost:${port}`);
+  Logger.log(`WebSocket server is running on: ws://localhost:3002/ws`);
   Logger.log(`Swagger documentation: http://localhost:${port}/api`);
 }
 

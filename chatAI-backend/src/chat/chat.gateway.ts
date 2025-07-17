@@ -1,50 +1,58 @@
 import {
   WebSocketGateway,
   WebSocketServer,
-  SubscribeMessage,
-  MessageBody,
-  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { OnModuleInit } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { SessionService } from '../session/session.service';
 import { AgentService } from '../agent/agent.service';
+import * as WebSocket from 'ws';
+import * as url from 'url';
+
+// Extend WebSocket to include connectionId
+interface ExtendedWebSocket extends WebSocket {
+  connectionId?: string;
+}
 
 export interface WebSocketSession {
   sessionId: string;
   userId?: string;
   connectedAt: Date;
   lastActivity: Date;
-  socket: Socket;
+  socket: ExtendedWebSocket;
+  connectionId: string;
 }
 
 export interface UserMessageDto {
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-export interface AgentResponseDto {
-  type: 'agent_thinking' | 'tool_call' | 'agent_response' | 'error';
+export interface ParsedMessage {
+  content?: string;
+  type?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AgentResponse {
   content: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
-@WebSocketGateway({
-  cors: {
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'chrome-extension://*',
-    ],
-    credentials: true,
-  },
-  namespace: '/ws',
-})
-export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export interface WebSocketMessage {
+  type: string;
+  content: string;
+  metadata?: Record<string, unknown>;
+}
+
+@WebSocketGateway()
+export class ChatGateway
+  implements OnGatewayConnection, OnGatewayDisconnect, OnModuleInit
+{
   @WebSocketServer()
-  server: Server;
+  server: WebSocket.Server;
 
   private readonly logger = new Logger(ChatGateway.name);
   private sessions = new Map<string, WebSocketSession>();
@@ -54,14 +62,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly agentService: AgentService,
   ) {}
 
-  async handleConnection(client: Socket) {
-    const sessionId = client.handshake.query.sessionId as string;
+  async handleConnection(
+    client: ExtendedWebSocket,
+    request: { url: string },
+  ): Promise<void> {
+    const query = url.parse(request.url, true).query;
+    const sessionId = query.sessionId as string;
 
     if (!sessionId) {
       this.logger.error('Connection rejected: No session ID provided');
-      client.disconnect();
+      client.close(4000, 'No session ID provided');
       return;
     }
+
+    const connectionId = `${sessionId}_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     try {
       // Get or create session
@@ -77,194 +93,292 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         connectedAt: new Date(),
         lastActivity: new Date(),
         socket: client,
+        connectionId,
       };
 
-      this.sessions.set(client.id, wsSession);
+      this.sessions.set(connectionId, wsSession);
 
-      // Join session room
-      await client.join(sessionId);
+      // Store connection ID on the client for cleanup
+      client.connectionId = connectionId;
 
-      this.logger.log(`Client connected: ${client.id} (Session: ${sessionId})`);
+      this.logger.log(
+        `Client connected: ${connectionId} (Session: ${sessionId})`,
+      );
 
       // Send session info
-      client.emit('session_connected', {
-        sessionId,
-        conversationHistory: session.conversationHistory,
-        preferences: session.preferences,
+      this.sendMessage(client, {
+        type: 'session_connected',
+        content: '',
+        metadata: {
+          sessionId,
+          conversationHistory: session.conversationHistory,
+          preferences: session.preferences,
+        },
+      });
+
+      // Set up message handler
+      client.on('message', (data: WebSocket.Data) => {
+        void this.handleMessage(client, data, wsSession);
+      });
+
+      // Update last activity on ping
+      client.on('pong', () => {
+        wsSession.lastActivity = new Date();
       });
     } catch (error) {
       this.logger.error('Connection error:', error);
-      client.disconnect();
+      client.close(4000, 'Connection failed');
     }
   }
 
-  handleDisconnect(client: Socket): void {
-    const wsSession = this.sessions.get(client.id);
-    if (wsSession) {
-      this.sessions.delete(client.id);
+  handleDisconnect(client: ExtendedWebSocket): void {
+    const connectionId = client.connectionId;
+    if (connectionId) {
+      const wsSession = this.sessions.get(connectionId);
+      if (wsSession) {
+        this.sessions.delete(connectionId);
+        this.logger.log(
+          `Client disconnected: ${connectionId} (Session: ${wsSession.sessionId})`,
+        );
+      }
+    }
+  }
+
+  private async handleMessage(
+    client: ExtendedWebSocket,
+    data: WebSocket.Data,
+    wsSession: WebSocketSession,
+  ): Promise<void> {
+    try {
+      const dataString = Buffer.isBuffer(data)
+        ? data.toString()
+        : typeof data === 'string'
+          ? data
+          : Array.isArray(data)
+            ? Buffer.concat(data).toString()
+            : JSON.stringify(data);
+
+      const message = JSON.parse(dataString) as ParsedMessage;
+
       this.logger.log(
-        `Client disconnected: ${client.id} (Session: ${wsSession.sessionId})`,
+        `Processing message from session ${wsSession.sessionId}:`,
+        message,
       );
+
+      // Update last activity
+      wsSession.lastActivity = new Date();
+
+      // Handle different message types
+      if (message.content) {
+        await this.processUserMessage(
+          client,
+          message as UserMessageDto,
+          wsSession,
+        );
+      } else if (message.type === 'ping') {
+        // Handle ping messages
+        this.sendMessage(client, {
+          type: 'pong',
+          content: '',
+          metadata: {},
+        });
+      } else {
+        this.logger.warn('Unknown message format:', message);
+      }
+    } catch (error) {
+      this.logger.error('Error parsing message:', error);
+      this.sendMessage(client, {
+        type: 'error',
+        content: 'Invalid message format',
+        metadata: { error: 'Message parsing failed' },
+      });
     }
   }
 
-  @SubscribeMessage('user_message')
-  async handleUserMessage(
-    @MessageBody() data: UserMessageDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    const wsSession = this.sessions.get(client.id);
-    if (!wsSession) {
-      client.emit('error', { message: 'Session not found' });
-      return;
-    }
-
+  private async processUserMessage(
+    client: ExtendedWebSocket,
+    messageData: UserMessageDto,
+    wsSession: WebSocketSession,
+  ): Promise<void> {
     try {
       // Save user message to session
       const userMessage = {
         id: `msg_${Date.now()}`,
         role: 'user' as const,
-        content: data.content,
+        content: messageData.content,
         timestamp: new Date(),
-        metadata: data.metadata,
+        metadata: messageData.metadata || {},
       };
 
       await this.sessionService.addMessage(wsSession.sessionId, userMessage);
 
-      // Process message directly with agent
-      try {
-        // Send thinking status
-        client.emit('agent_thinking', { thinking: true });
+      // Send thinking status
+      this.sendMessage(client, {
+        type: 'agent_thinking',
+        content: '',
+        metadata: { thinking: true },
+      });
 
-        // Get session for context
-        const session = await this.sessionService.getSession(
-          wsSession.sessionId,
-        );
-        if (!session) {
-          throw new Error('Session not found');
-        }
-
-        // Process with agent
-        const agentResponse = await this.agentService.processMessage(
-          data.content,
-          session.conversationHistory,
-          session.context,
-          data.metadata,
-        );
-
-        // Save agent response to session
-        const responseMessage = {
-          id: `msg_${Date.now()}_response`,
-          role: 'assistant' as const,
-          content: agentResponse.content,
-          timestamp: new Date(),
-          metadata: agentResponse.metadata,
-        };
-
-        await this.sessionService.addMessage(
-          wsSession.sessionId,
-          responseMessage,
-        );
-
-        // Send response to client
-        client.emit('agent_response', {
-          type: 'agent_response',
-          content: agentResponse.content,
-          metadata: agentResponse.metadata,
-        });
-
-        // Stop thinking status
-        client.emit('agent_thinking', { thinking: false });
-      } catch (processingError) {
-        this.logger.error('Error processing message:', processingError);
-        client.emit('agent_thinking', { thinking: false });
-        client.emit('agent_response', {
-          type: 'error',
-          content: 'Sorry, I encountered an error processing your message.',
-          metadata: {
-            error:
-              processingError instanceof Error
-                ? processingError.message
-                : 'Unknown error',
-          },
-        });
-      }
-    } catch (error) {
-      this.logger.error('Error handling user message:', error);
-      client.emit('error', { message: 'Failed to process message' });
-    }
-  }
-
-  @SubscribeMessage('typing_start')
-  handleTypingStart(@ConnectedSocket() client: Socket): void {
-    const wsSession = this.sessions.get(client.id);
-    if (wsSession) {
-      client.to(wsSession.sessionId).emit('user_typing', { typing: true });
-    }
-  }
-
-  @SubscribeMessage('typing_stop')
-  handleTypingStop(@ConnectedSocket() client: Socket): void {
-    const wsSession = this.sessions.get(client.id);
-    if (wsSession) {
-      client.to(wsSession.sessionId).emit('user_typing', { typing: false });
-    }
-  }
-
-  @SubscribeMessage('get_history')
-  async handleGetHistory(@ConnectedSocket() client: Socket) {
-    const wsSession = this.sessions.get(client.id);
-    if (!wsSession) {
-      client.emit('error', { message: 'Session not found' });
-      return;
-    }
-
-    try {
+      // Get session for context
       const session = await this.sessionService.getSession(wsSession.sessionId);
-      if (session) {
-        client.emit('conversation_history', {
-          history: session.conversationHistory,
-          sessionId: wsSession.sessionId,
-        });
+      if (!session) {
+        throw new Error('Session not found');
       }
+
+      // Process with agent
+      const agentResponse = await this.agentService.processMessage(
+        messageData.content,
+        session.conversationHistory,
+        session.context,
+        messageData.metadata || {},
+      );
+
+      // Save agent response to session
+      const responseMessage = {
+        id: `msg_${Date.now()}_response`,
+        role: 'assistant' as const,
+        content: agentResponse.content,
+        timestamp: new Date(),
+        metadata: agentResponse.metadata || {},
+      };
+
+      await this.sessionService.addMessage(
+        wsSession.sessionId,
+        responseMessage,
+      );
+
+      // Send response to client
+      this.sendMessage(client, {
+        type: 'agent_response',
+        content: agentResponse.content,
+        metadata: agentResponse.metadata || {},
+      });
+
+      // Stop thinking status
+      this.sendMessage(client, {
+        type: 'agent_thinking',
+        content: '',
+        metadata: { thinking: false },
+      });
     } catch (error) {
-      this.logger.error('Error getting history:', error);
-      client.emit('error', { message: 'Failed to get history' });
+      this.logger.error('Error processing message:', error);
+
+      // Stop thinking status
+      this.sendMessage(client, {
+        type: 'agent_thinking',
+        content: '',
+        metadata: { thinking: false },
+      });
+
+      // Send error response
+      this.sendMessage(client, {
+        type: 'error',
+        content: 'Sorry, I encountered an error processing your message.',
+        metadata: {
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      });
     }
   }
 
-  @SubscribeMessage('message')
-  async handleMessage(
-    @MessageBody() data: string | UserMessageDto,
-    @ConnectedSocket() client: Socket,
-  ) {
-    // Handle both string and object formats
-    const messageData: UserMessageDto =
-      typeof data === 'string' ? { content: data, metadata: {} } : data;
-
-    return this.handleUserMessage(messageData, client);
+  private sendMessage(
+    client: ExtendedWebSocket,
+    message: WebSocketMessage,
+  ): void {
+    if (client.readyState === WebSocket.OPEN) {
+      try {
+        client.send(JSON.stringify(message));
+      } catch (error) {
+        this.logger.error('Error sending message:', error);
+      }
+    }
   }
 
-  // Method to send messages to specific session
-  sendToSession(sessionId: string, event: string, data: any): void {
-    this.server.to(sessionId).emit(event, data);
+  // Public methods for external use
+  sendToSession(sessionId: string, message: WebSocketMessage): void {
+    for (const [, wsSession] of this.sessions.entries()) {
+      if (wsSession.sessionId === sessionId) {
+        this.sendMessage(wsSession.socket, message);
+      }
+    }
   }
 
-  // Method to send agent response
-  sendAgentResponse(sessionId: string, response: AgentResponseDto): void {
-    this.sendToSession(sessionId, 'agent_response', response);
-  }
-
-  // Method to send agent thinking status
-  sendAgentThinking(sessionId: string, thinking: boolean): void {
-    this.sendToSession(sessionId, 'agent_thinking', { thinking });
-  }
-
-  // Method to send tool call notification
-  sendToolCall(sessionId: string, toolName: string, toolData: unknown): void {
-    this.sendToSession(sessionId, 'tool_call', {
-      tool: toolName,
-      data: toolData,
+  sendAgentResponse(sessionId: string, response: AgentResponse): void {
+    this.sendToSession(sessionId, {
+      type: 'agent_response',
+      content: response.content,
+      metadata: response.metadata,
     });
+  }
+
+  sendAgentThinking(sessionId: string, thinking: boolean): void {
+    this.sendToSession(sessionId, {
+      type: 'agent_thinking',
+      content: '',
+      metadata: { thinking },
+    });
+  }
+
+  sendToolCall(sessionId: string, toolName: string, toolData: unknown): void {
+    this.sendToSession(sessionId, {
+      type: 'tool_call',
+      content: '',
+      metadata: {
+        tool: toolName,
+        data: toolData,
+      },
+    });
+  }
+
+  // Health check and cleanup
+  startHealthCheck(): void {
+    setInterval(() => {
+      const now = new Date();
+      const timeout = 5 * 60 * 1000; // 5 minutes
+
+      for (const [connectionId, wsSession] of this.sessions.entries()) {
+        if (now.getTime() - wsSession.lastActivity.getTime() > timeout) {
+          this.logger.log(`Cleaning up inactive session: ${connectionId}`);
+          wsSession.socket.close(4001, 'Session timeout');
+          this.sessions.delete(connectionId);
+        }
+      }
+    }, 60000); // Check every minute
+  }
+
+  onModuleInit() {
+    this.initializeWebSocketServer();
+    this.startHealthCheck();
+  }
+
+  private initializeWebSocketServer() {
+    const port = 3002;
+    this.server = new WebSocket.Server({
+      port,
+      path: '/ws',
+      perMessageDeflate: false,
+    });
+
+    this.server.on('connection', (client: ExtendedWebSocket, request) => {
+      void this.handleConnection(client, { url: request.url || '' });
+    });
+
+    this.server.on('error', (error) => {
+      this.logger.error('WebSocket server error:', error);
+    });
+
+    this.logger.log(
+      `WebSocket server initialized on port ${port} with path /ws`,
+    );
+  }
+
+  // Method to get active sessions count
+  getActiveSessionsCount(): number {
+    return this.sessions.size;
+  }
+
+  // Method to get session info
+  getSessionInfo(connectionId: string): WebSocketSession | undefined {
+    return this.sessions.get(connectionId);
   }
 }

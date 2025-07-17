@@ -1,5 +1,10 @@
 // Utility to check if Chrome extension context is still valid
 export class ExtensionContext {
+  // Check if we're running in a Chrome extension context
+  static isExtensionContext(): boolean {
+    return typeof chrome !== "undefined" && !!chrome.runtime && !!chrome.runtime.id;
+  }
+
   // Check if the extension context is still valid
   static isValid(): boolean {
     try {

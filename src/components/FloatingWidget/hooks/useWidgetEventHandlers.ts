@@ -35,7 +35,7 @@ export const useWidgetEventHandlers = () => {
   };
 
   const handleSendMessage = async (message: string) => {
-    await eventService.handleSendMessage(message);
+    eventService.handleSendMessage(message);
   };
 
   return {

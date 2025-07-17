@@ -1,6 +1,6 @@
 import * as React from "react";
 import { createRoot } from "react-dom/client";
-import FloatingWidgetOOP from "../../../src/components/FloatingWidget";
+import FloatingWidget from "../../../src/components/FloatingWidget";
 declare const chrome: typeof globalThis.chrome;
 
 // Inject Tailwind CSS into the page
@@ -31,7 +31,7 @@ const createWidget = () => {
   `;
 
   document.body.appendChild(container);  const root = createRoot(container);
-  root.render(React.createElement(FloatingWidgetOOP));
+  root.render(React.createElement(FloatingWidget));
 };
 
 // Initialize

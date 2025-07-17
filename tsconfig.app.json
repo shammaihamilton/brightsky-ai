@@ -35,5 +35,9 @@
       "@/selectors/*": ["store/selectors/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/services/old/**/*",
+    "src/store/old-thunks/**/*"
+  ]
 }

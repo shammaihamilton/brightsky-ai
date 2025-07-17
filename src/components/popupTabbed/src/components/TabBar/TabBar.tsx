@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './TestTabBar.module.scss';
+import styles from './TabBar.module.scss';
 
 export type TabKey = 'tab1' | 'tab2' | 'tab3' | 'tab4';
 

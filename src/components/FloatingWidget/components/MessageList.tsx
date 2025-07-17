@@ -1,9 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { useAppSelector } from '../../../store/hooks';
-import { selectIsAiLoading } from '../../../store/selectors/chatSelectors';
-import type { Message } from '../../../types/chat.types';
-import styles from '../styles/MessageList.module.css';
-import MessageItem from './MessageItem';
+import React, { useEffect, useRef } from "react";
+import type { Message } from "../../../types/chat.types";
+import styles from "../styles/MessageList.module.css";
+import MessageItem from "./MessageItem";
 
 interface MessageListProps {
   messages: Message[];
@@ -11,22 +9,22 @@ interface MessageListProps {
 
 const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const isAiLoading = useAppSelector(selectIsAiLoading);
-  
+  // const isAiLoading = useAppSelector(selectIsAiLoading);
+
   const scrollToBottom = () => {
     // Use setTimeout to ensure DOM is updated before scrolling
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'end'
+      messagesEndRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
       });
     }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isAiLoading]);
-  
+  }, [messages]);
+
   // Also scroll when component mounts with existing messages
   useEffect(() => {
     if (messages.length > 0) {
@@ -51,19 +49,11 @@ const MessageList: React.FC<MessageListProps> = ({ messages }) => {
           <p className={styles.emptyStateTitle}>Start a conversation</p>
           <p className={styles.emptyStateSubtitle}>Ask me anything!</p>
         </div>
-      ) : (        
+      ) : (
         <>
           {messages.map((message) => (
             <MessageItem key={message.id} message={message} />
           ))}
-          {isAiLoading && (
-            <div className={styles.typingIndicatorContainer}>
-              <div className={`${styles.typingIndicatorDot} ${styles.dot1}`}></div>
-              <div className={`${styles.typingIndicatorDot} ${styles.dot2}`}></div>
-              <div className={`${styles.typingIndicatorDot} ${styles.dot3}`}></div>
-              <span className={styles.typingIndicatorText}>AI is typing...</span>
-            </div>
-          )}
           <div className={styles.scrollAnchor} ref={messagesEndRef} />
         </>
       )}

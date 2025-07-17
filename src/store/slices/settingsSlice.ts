@@ -2,6 +2,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 interface SettingsState {
   apiKey: string;
   provider: "openai" | "claude" | "gemini";
+  backendModel: string; // OpenAI model selection
   theme: "light" | "dark" | "auto";
   autoSave: boolean;
   maxTokens: number;
@@ -14,6 +15,7 @@ interface SettingsState {
 const initialState: SettingsState = {
   apiKey: "",
   provider: "openai",
+  backendModel: "gpt-4", // Default to GPT-4
   theme: "auto",
   autoSave: true,
   maxTokens: 4000,
@@ -36,6 +38,9 @@ const settingsSlice = createSlice({
       action: PayloadAction<"openai" | "claude" | "gemini">,
     ) => {
       state.provider = action.payload;
+    },
+    setBackendModel: (state, action: PayloadAction<string>) => {
+      state.backendModel = action.payload;
     },
     setTheme: (state, action: PayloadAction<"light" | "dark" | "auto">) => {
       state.theme = action.payload;
@@ -68,6 +73,7 @@ const settingsSlice = createSlice({
 export const {
   setApiKey,
   setProvider,
+  setBackendModel,
   setTheme,
   setAutoSave,
   setMaxTokens,

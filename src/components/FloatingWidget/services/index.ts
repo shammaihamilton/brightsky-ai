@@ -3,5 +3,5 @@ export { PositionService } from "./PositionService";
 export { WidgetStateService } from "./WidgetStateService";
 export { EventService } from "./EventService";
 export { StorageService } from "./StorageService";
-export { WebSocketChatService } from "./WebSocketChatService";
 export { NotificationService } from "./NotificationService";
+export { ChromeExtensionWebSocketService } from "./ChromeExtensionWebSocketService";

@@ -27,7 +27,7 @@ export class AgentProcessingProcessor {
       );
 
       // Send thinking status
-      await this.chatGateway.sendAgentThinking(sessionId, true);
+      this.chatGateway.sendAgentThinking(sessionId, true);
 
       // Get session context
       const session = await this.sessionService.getSession(sessionId);
@@ -55,8 +55,7 @@ export class AgentProcessingProcessor {
       await this.sessionService.addMessage(sessionId, responseMessage);
 
       // Send response to client
-      await this.chatGateway.sendAgentResponse(sessionId, {
-        type: 'agent_response',
+      this.chatGateway.sendAgentResponse(sessionId, {
         content: agentResponse.content,
         metadata: agentResponse.metadata,
       });
@@ -76,8 +75,7 @@ export class AgentProcessingProcessor {
         error instanceof Error ? error.message : 'An unknown error occurred.';
 
       // Send error to client
-      await this.chatGateway.sendAgentResponse(sessionId, {
-        type: 'error',
+      this.chatGateway.sendAgentResponse(sessionId, {
         content: 'Sorry, I encountered an error processing your message.',
         metadata: { error: errorMessage },
       });
@@ -85,7 +83,7 @@ export class AgentProcessingProcessor {
       throw error; // Re-throw to mark job as failed
     } finally {
       // Always stop thinking status
-      await this.chatGateway.sendAgentThinking(sessionId, false);
+      this.chatGateway.sendAgentThinking(sessionId, false);
     }
   }
 }
