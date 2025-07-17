@@ -4,4 +4,4 @@ export { WidgetStateService } from "./WidgetStateService";
 export { EventService } from "./EventService";
 export { StorageService } from "./StorageService";
 export { NotificationService } from "./NotificationService";
-export { ChromeExtensionWebSocketService } from "./ChromeExtensionWebSocketService";
+export { WebSocketService } from "./WebSocketService";

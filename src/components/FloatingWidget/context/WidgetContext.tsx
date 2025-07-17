@@ -7,7 +7,7 @@ import {
   EventService,
   StorageService,
   NotificationService,
-  ChromeExtensionWebSocketService,
+  WebSocketService,
 } from "../services";
 import { useAppDispatch } from "../../../store/hooks";
 
@@ -54,7 +54,7 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
     const stateService = new WidgetStateService();
     
     // Use ChromeExtensionWebSocketService for both Chrome extension and regular web pages
-    const chatService = new ChromeExtensionWebSocketService(dispatch);
+    const chatService = new WebSocketService(dispatch);
     
     const notificationService = NotificationService.getInstance();
     const storageService = new StorageService(onSettingsChange);
