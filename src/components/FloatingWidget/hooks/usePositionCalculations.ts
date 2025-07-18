@@ -15,7 +15,7 @@ export const usePositionCalculations = (
     const panelHeight = 280;
     const padding = 15;
 
-    let x = position.x - panelWidth;
+    let x = position.x - panelWidth - 5;
     let y = position.y - panelHeight - 10;
 
     if (x < padding) {
@@ -43,7 +43,7 @@ export const usePositionCalculations = (
     const padding = 10;
     const gap = 2;
 
-    let x = position.x + actualButtonSize + gap;
+    let x = position.x + actualButtonSize + gap + 10;
     let y = position.y + actualButtonSize + gap;
 
     if (x + menuWidth > window.innerWidth - padding) {
