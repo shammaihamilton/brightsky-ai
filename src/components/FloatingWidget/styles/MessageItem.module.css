@@ -27,7 +27,7 @@
 }
 
 .messageBubble {
-  max-width: 80%; /* Reduce from 80% to leave more margin */
+  max-width: 80%; 
   padding: 12px;
   border-radius: 12px;
   font-size: 14px;
