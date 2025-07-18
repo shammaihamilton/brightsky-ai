@@ -1,9 +1,9 @@
-// TestPopup.module.scss
+// TestPopup.module.scss - FIXED VERSION
 .popup {
   width: 380px;
   max-width: 100vw;
-  height: 500px;
-  max-height: 100vh;
+  height: 98vh;
+  max-height: 98vh;
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
@@ -18,6 +18,7 @@
   color: white;
   padding: 11px 20px;
   border-bottom: 1px solid #e0e0e0;
+  flex-shrink: 0; // Keep header fixed
 }
 
 .title {
@@ -29,12 +30,13 @@
 
 .content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: auto; // ✅ ALLOW SCROLLING in content area
   padding: 0;
   background: #f8f9fa;
+  min-height: 0; // ✅ Important for flex scrolling
 }
 
-// Scrollbar styling
+// Custom scrollbar for content area
 .content::-webkit-scrollbar {
   width: 6px;
 }
