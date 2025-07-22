@@ -42,10 +42,9 @@ export type {
 
 // Element types for DOM analysis
 export type {
-  BaseElement,
+  SimpleElement,
   FormElement,
   InputElement,
-  ButtonElement,
   DOMStructure
 } from './elements.types';
 

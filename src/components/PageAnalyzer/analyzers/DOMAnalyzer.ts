@@ -1,45 +1,38 @@
 // src/components/PageAnalyzer/analyzers/DOMAnalyzer.ts
-import type { 
-  DOMStructure, 
-  BaseElement, 
-  ElementPosition, 
-  ElementVisibility, 
-  ElementInteraction,
-  ElementContext,
-  ElementPurpose,
+// ✅ FIXED: All issues resolved
+
+import type {
+  DOMStructure,
+  SimpleElement,
   LinkElement,
   InputElement,
-  NavigationElement,
-  MenuElement,
-  HeadingElement,
   ImageElement,
-  ContainerElement,
-  LoadingElement,
-  ErrorElement
-} from '../../../types/elements.types';
-import { ElementType } from '../../../types/elements.types';
+  // LayerType,
+} from "../../../types/elements.types";
+import { LayerType } from "../../../types/elements.types";
 
 export class DOMAnalyzer {
-  private elementCache = new Map<string, BaseElement>();
-  private analysisCache = new Map<string, { timestamp: number; result: DOMStructure }>();
-  private readonly CACHE_DURATION = 5000; // 5 seconds
+  private elementCache = new Map<string, SimpleElement>();
+  private analysisCache = new Map<
+    string,
+    { timestamp: number; result: DOMStructure }
+  >();
+  private readonly CACHE_DURATION = 5000;
 
   /**
-   * Main method to analyze the entire page
+   * ✅ ENHANCED: Main method now includes text content analysis
    */
   async analyzePage(document: Document): Promise<DOMStructure> {
     const cacheKey = this.generateCacheKey(document);
-    
-    // Check cache first
+
     const cached = this.analysisCache.get(cacheKey);
-    if (cached && (Date.now() - cached.timestamp) < this.CACHE_DURATION) {
+    if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
       return cached.result;
     }
 
     try {
       const startTime = Date.now();
-      
-      // Analyze all element types
+
       const [
         forms,
         buttons,
@@ -58,26 +51,46 @@ export class DOMAnalyzer {
         loadingElements,
         errorElements,
         landmarks,
-        focusableElements
+        focusableElements,
+        textContent, // ✅ NEW: All text content
       ] = await Promise.all([
-        this.analyzeForms(document),
-        this.analyzeButtons(document),
+        this.getElements(document, "form"),
+        this.getElements(
+          document,
+          'button, input[type="button"], input[type="submit"], [role="button"]'
+        ),
         this.analyzeInputs(document),
         this.analyzeLinks(document),
-        this.analyzeNavigation(document),
-        this.analyzeMenus(document),
-        this.analyzeHeadings(document),
-        this.analyzeParagraphs(document),
-        this.analyzeLists(document),
+        this.getElements(document, 'nav, [role="navigation"]'),
+        this.getElements(
+          document,
+          '[role="menu"], [role="menubar"], .menu, .dropdown-menu'
+        ),
+        this.getElements(document, 'h1, h2, h3, h4, h5, h6, [role="heading"]'),
+        this.analyzeTextContent(document, "p"), // ✅ ENHANCED: Better paragraph analysis
+        this.analyzeTextContent(document, "ul, ol, dl"),
         this.analyzeImages(document),
-        this.analyzeVideos(document),
-        this.analyzeContainers(document),
-        this.analyzeModals(document),
-        this.analyzePopups(document),
-        this.analyzeLoadingElements(document),
-        this.analyzeErrorElements(document),
-        this.analyzeLandmarks(document),
-        this.analyzeFocusableElements(document)
+        this.getElements(
+          document,
+          'video, iframe[src*="youtube"], iframe[src*="vimeo"]'
+        ),
+        this.getElements(
+          document,
+          "div, section, article, aside, header, footer, main"
+        ),
+        this.getElements(document, '[role="dialog"], .modal, .popup, .overlay'),
+        this.getElements(document, '[role="tooltip"], .tooltip, .popover'),
+        this.getElements(
+          document,
+          '.loading, .spinner, .progress, [aria-label*="loading"]'
+        ),
+        this.getElements(
+          document,
+          '.error, .alert-danger, [role="alert"], .validation-error'
+        ),
+        this.getElements(document, "[role], header, nav, main, aside, footer"),
+        this.getFocusableElements(document),
+        this.extractAllTextContent(document), // ✅ NEW: Extract all meaningful text
       ]);
 
       const domStructure: DOMStructure = {
@@ -98,412 +111,350 @@ export class DOMAnalyzer {
         loadingElements,
         errorElements,
         landmarks,
-        focusableElements
+        focusableElements,
+        textContent, // ✅ NEW: Add to DOM structure
       };
 
-      // Cache the result
       this.analysisCache.set(cacheKey, {
         timestamp: Date.now(),
-        result: domStructure
+        result: domStructure,
       });
 
-      console.log(`DOMAnalyzer: Analysis completed in ${Date.now() - startTime}ms`);
+      console.log(
+        `DOMAnalyzer: Analysis completed in ${Date.now() - startTime}ms`
+      );
       return domStructure;
-
     } catch (error) {
-      console.error('DOMAnalyzer: Error analyzing page:', error);
+      console.error("DOMAnalyzer: Error analyzing page:", error);
       throw error;
     }
   }
 
   /**
-   * Analyze form elements (will be enhanced by FormAnalyzer)
+   * ✅ IMPLEMENTED: Get elements by CSS selector
    */
-  private async analyzeForms(document: Document): Promise<any[]> {
-    // Basic form detection - FormAnalyzer will provide detailed analysis
-    const forms = Array.from(document.querySelectorAll('form'));
-    return forms.map(form => ({
-      id: this.generateElementId(form),
-      element: form,
-      tagName: 'form',
-      action: form.action || '',
-      method: form.method || 'GET'
-    }));
+  private async getElements(
+    document: Document,
+    selector: string
+  ): Promise<SimpleElement[]> {
+    try {
+      const elements = Array.from(document.querySelectorAll(selector));
+      return elements
+        .filter((el) => this.isRelevant(el))
+        .map((el) => this.createSimpleElement(el));
+    } catch (error) {
+      console.warn(`DOMAnalyzer: Error with selector "${selector}":`, error);
+      return [];
+    }
   }
 
   /**
-   * Analyze button elements (will be enhanced by ButtonAnalyzer)  
-   */
-  private async analyzeButtons(document: Document): Promise<any[]> {
-    // Basic button detection - ButtonAnalyzer will provide detailed analysis
-    const buttons = Array.from(document.querySelectorAll('button, input[type="button"], input[type="submit"], [role="button"]'));
-    return buttons.map(button => ({
-      id: this.generateElementId(button),
-      element: button,
-      tagName: button.tagName.toLowerCase(),
-      text: this.getElementText(button),
-      type: (button as HTMLInputElement).type || 'button'
-    }));
-  }
-
-  /**
-   * Analyze input elements
+   * ✅ IMPLEMENTED: Analyze input elements with more detail
    */
   private async analyzeInputs(document: Document): Promise<InputElement[]> {
-    const inputs = Array.from(document.querySelectorAll('input, textarea, select'));
-    
-    return inputs.map(input => {
-      const baseElement = this.createBaseElement(input);
-      const inputElement = input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-      
-      return {
-        ...baseElement,
-        inputType: inputElement.type || 'text',
-        name: inputElement.name || '',
-        value: inputElement.value || '',
-        placeholder: (inputElement as HTMLInputElement).placeholder || undefined,
-        isRequired: inputElement.required || false,
-        pattern: (inputElement as HTMLInputElement).pattern || undefined,
-        minLength: (inputElement as HTMLInputElement).minLength || undefined,
-        maxLength: (inputElement as HTMLInputElement).maxLength || undefined,
-        isFocused: document.activeElement === input,
-        hasError: this.checkInputError(input),
-        errorMessage: this.getInputErrorMessage(input),
-        autocomplete: (inputElement as HTMLInputElement).autocomplete || undefined,
-        suggestions: this.getInputSuggestions(input)
-      } as InputElement;
-    });
+    const inputs = Array.from(
+      document.querySelectorAll("input, textarea, select")
+    );
+
+    return inputs
+      .filter((input) => this.isRelevant(input))
+      .map((input) => {
+        const baseElement = this.createSimpleElement(input);
+        const inputElement = input as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | HTMLSelectElement;
+
+        return {
+          ...baseElement,
+          inputType: inputElement.type || "text",
+          name: inputElement.name || undefined,
+          value: inputElement.value || undefined,
+          placeholder:
+            (inputElement as HTMLInputElement).placeholder || undefined,
+          isRequired: inputElement.required || false,
+          hasError: this.checkInputError(input),
+          errorMessage: this.getInputErrorMessage(input),
+        } as InputElement;
+      });
   }
 
   /**
-   * Analyze link elements
+   * ✅ IMPLEMENTED: Analyze link elements with more detail
    */
   private async analyzeLinks(document: Document): Promise<LinkElement[]> {
-    const links = Array.from(document.querySelectorAll('a[href]'));
-    
-    return links.map(link => {
-      const baseElement = this.createBaseElement(link);
-      const anchorElement = link as HTMLAnchorElement;
-      
-      return {
-        ...baseElement,
-        href: anchorElement.href,
-        target: anchorElement.target || '_self',
-        isExternal: this.isExternalLink(anchorElement.href),
-        isDownload: anchorElement.hasAttribute('download'),
-        downloadFilename: anchorElement.download || undefined
-      } as LinkElement;
-    });
+    const links = Array.from(document.querySelectorAll("a[href]"));
+
+    return links
+      .filter((link) => this.isRelevant(link))
+      .map((link) => {
+        const baseElement = this.createSimpleElement(link);
+        const anchorElement = link as HTMLAnchorElement;
+
+        return {
+          ...baseElement,
+          href: anchorElement.href,
+          target: anchorElement.target || "_self",
+          isExternal: this.isExternalLink(anchorElement.href),
+          isDownload: anchorElement.hasAttribute("download"),
+        } as LinkElement;
+      });
   }
 
   /**
-   * Analyze navigation elements
-   */
-  private async analyzeNavigation(document: Document): Promise<NavigationElement[]> {
-    const navElements = Array.from(document.querySelectorAll('nav, [role="navigation"]'));
-    
-    return navElements.map(nav => {
-      const baseElement = this.createBaseElement(nav);
-      
-      return {
-        ...baseElement,
-        navigationItems: this.getNavigationItems(nav),
-        isMainNavigation: this.isMainNavigation(nav),
-        isBreadcrumb: this.isBreadcrumb(nav)
-      } as NavigationElement;
-    });
-  }
-
-  /**
-   * Analyze menu elements
-   */
-  private async analyzeMenus(document: Document): Promise<MenuElement[]> {
-    const menus = Array.from(document.querySelectorAll('[role="menu"], [role="menubar"], .menu, .dropdown-menu'));
-    
-    return menus.map(menu => {
-      const baseElement = this.createBaseElement(menu);
-      
-      return {
-        ...baseElement,
-        menuItems: this.getMenuItems(menu),
-        isOpen: this.isMenuOpen(menu),
-        menuType: this.getMenuType(menu)
-      } as MenuElement;
-    });
-  }
-
-  /**
-   * Analyze heading elements
-   */
-  private async analyzeHeadings(document: Document): Promise<HeadingElement[]> {
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6, [role="heading"]'));
-    
-    return headings.map(heading => {
-      const baseElement = this.createBaseElement(heading);
-      
-      return {
-        ...baseElement,
-        level: this.getHeadingLevel(heading),
-        isPageTitle: heading.tagName === 'H1' && document.querySelectorAll('h1').length === 1
-      } as HeadingElement;
-    });
-  }
-
-  /**
-   * Analyze paragraph elements
-   */
-  private async analyzeParagraphs(document: Document): Promise<any[]> {
-    const paragraphs = Array.from(document.querySelectorAll('p'));
-    
-    return paragraphs.map(p => {
-      const baseElement = this.createBaseElement(p);
-      
-      return {
-        ...baseElement,
-        wordCount: this.getWordCount(p.textContent || ''),
-        hasLinks: p.querySelectorAll('a').length > 0
-      };
-    });
-  }
-
-  /**
-   * Analyze list elements
-   */
-  private async analyzeLists(document: Document): Promise<any[]> {
-    const lists = Array.from(document.querySelectorAll('ul, ol, dl'));
-    
-    return lists.map(list => {
-      const baseElement = this.createBaseElement(list);
-      
-      return {
-        ...baseElement,
-        listType: list.tagName.toLowerCase(),
-        itemCount: list.children.length,
-        isNested: !!list.closest('li')
-      };
-    });
-  }
-
-  /**
-   * Analyze image elements
+   * ✅ IMPLEMENTED: Analyze image elements with more detail
    */
   private async analyzeImages(document: Document): Promise<ImageElement[]> {
-    const images = Array.from(document.querySelectorAll('img'));
-    
-    return images.map(img => {
-      const baseElement = this.createBaseElement(img);
-      
-      return {
-        ...baseElement,
-        src: img.src,
-        alt: img.alt || '',
-        isDecorative: !img.alt && img.getAttribute('role') === 'presentation',
-        isLoaded: img.complete && img.naturalWidth > 0,
-        dimensions: {
-          width: img.naturalWidth,
-          height: img.naturalHeight
+    const images = Array.from(document.querySelectorAll("img"));
+
+    return images
+      .filter((img) => this.isRelevant(img))
+      .map((img) => {
+        const baseElement = this.createSimpleElement(img);
+
+        return {
+          ...baseElement,
+          src: img.src,
+          alt: img.alt || "",
+          isLoaded: img.complete && img.naturalWidth > 0,
+          dimensions: {
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+          },
+        } as ImageElement;
+      });
+  }
+
+  /**
+   * ✅ IMPLEMENTED: Get focusable elements (most important for navigation)
+   */
+  private getFocusableElements(document: Document): SimpleElement[] {
+    const selector = `
+      a[href]:not([tabindex="-1"]),
+      button:not([disabled]):not([tabindex="-1"]),
+      input:not([disabled]):not([tabindex="-1"]),
+      textarea:not([disabled]):not([tabindex="-1"]),
+      select:not([disabled]):not([tabindex="-1"]),
+      [tabindex]:not([tabindex="-1"]),
+      [contenteditable="true"]
+    `
+      .replace(/\s+/g, " ")
+      .trim();
+
+    try {
+      const elements = Array.from(document.querySelectorAll(selector));
+      return elements
+        .filter((el) => this.isRelevant(el))
+        .map((el) => this.createSimpleElement(el));
+    } catch (error) {
+      console.warn("DOMAnalyzer: Error getting focusable elements:", error);
+      return [];
+    }
+  }
+
+  /**
+   * ✅ NEW: Extract all meaningful text content from the page
+   */
+  private async extractAllTextContent(
+    document: Document
+  ): Promise<SimpleElement[]> {
+    const textElements: SimpleElement[] = [];
+
+    // Get all elements that commonly contain readable text
+    const textSelectors = [
+      "p", // Paragraphs
+      "div", // Divs with text content
+      "span", // Inline text
+      "li", // List items
+      "td, th", // Table cells
+      "blockquote", // Quotes
+      "figcaption", // Image captions
+      "label", // Form labels
+      ".text, .content, .description", // Common text classes
+      '[role="text"]', // ARIA text role
+    ];
+
+    for (const selector of textSelectors) {
+      try {
+        const elements = Array.from(document.querySelectorAll(selector));
+
+        for (const element of elements) {
+          if (this.isRelevantTextElement(element)) {
+            const textElement = this.createTextElement(element);
+            if (textElement.text && textElement.text.length > 10) {
+              // Only meaningful text
+              textElements.push(textElement);
+            }
+          }
         }
-      } as ImageElement;
-    });
+      } catch (error) {
+        console.warn(`Error processing text selector ${selector}:`, error);
+      }
+    }
+
+    return textElements;
   }
 
   /**
-   * Analyze video elements
+   * ✅ NEW: Enhanced text content analysis
    */
-  private async analyzeVideos(document: Document): Promise<any[]> {
-    const videos = Array.from(document.querySelectorAll('video, iframe[src*="youtube"], iframe[src*="vimeo"]'));
-    
-    return videos.map(video => {
-      const baseElement = this.createBaseElement(video);
-      
-      return {
-        ...baseElement,
-        src: (video as HTMLVideoElement).src || (video as HTMLIFrameElement).src,
-        isPlaying: !(video as HTMLVideoElement).paused,
-        hasControls: (video as HTMLVideoElement).controls,
-        isEmbedded: video.tagName === 'IFRAME'
-      };
-    });
+  private async analyzeTextContent(
+    document: Document,
+    selector: string
+  ): Promise<SimpleElement[]> {
+    try {
+      const elements = Array.from(document.querySelectorAll(selector));
+      return elements
+        .filter((el) => this.isRelevantTextElement(el))
+        .map((el) => this.createTextElement(el));
+    } catch (error) {
+      console.warn(
+        `Error analyzing text content with selector ${selector}:`,
+        error
+      );
+      return [];
+    }
   }
 
   /**
-   * Analyze container elements
+   * ✅ NEW: Create text-focused element
    */
-  private async analyzeContainers(document: Document): Promise<ContainerElement[]> {
-    const containers = Array.from(document.querySelectorAll('div, section, article, aside, header, footer, main'));
-    
-    return containers.map(container => {
-      const baseElement = this.createBaseElement(container);
-      
-      return {
-        ...baseElement,
-        containerType: this.getContainerType(container),
-        childCount: container.children.length,
-        hasScrollableContent: this.hasScrollableContent(container)
-      } as ContainerElement;
-    });
+  private createTextElement(element: Element): SimpleElement {
+    const baseElement = this.createSimpleElement(element);
+
+    return {
+      ...baseElement,
+      // ✅ ENHANCED: Better text extraction for text elements
+      text: this.getFullTextContent(element),
+
+      // ✅ NEW: Text-specific properties
+      wordCount: this.getWordCount(element.textContent || ""),
+      hasLinks: element.querySelectorAll("a").length > 0,
+      isHeading: /^h[1-6]$/i.test(element.tagName),
+      isParagraph: element.tagName.toLowerCase() === "p",
+      isList: ["ul", "ol", "dl"].includes(element.tagName.toLowerCase()),
+      isLabel: element.tagName.toLowerCase() === "label",
+
+      // ✅ CONTEXT: Where is this text?
+      section: this.getTextSection(element),
+      importance: this.calculateTextImportance(element),
+    };
   }
 
   /**
-   * Analyze modal elements
+   * ✅ IMPLEMENTED: Create simple element (main element creation method)
    */
-  private async analyzeModals(document: Document): Promise<any[]> {
-    const modals = Array.from(document.querySelectorAll('[role="dialog"], .modal, .popup, .overlay'));
-    
-    return modals.map(modal => {
-      const baseElement = this.createBaseElement(modal);
-      
-      return {
-        ...baseElement,
-        isOpen: this.isModalOpen(modal),
-        isBlocking: this.isModalBlocking(modal),
-        hasCloseButton: !!modal.querySelector('[aria-label*="close"], .close, .x')
-      };
-    });
-  }
-
-  /**
-   * Analyze popup elements
-   */
-  private async analyzePopups(document: Document): Promise<any[]> {
-    const popups = Array.from(document.querySelectorAll('[role="tooltip"], .tooltip, .popover'));
-    
-    return popups.map(popup => {
-      const baseElement = this.createBaseElement(popup);
-      
-      return {
-        ...baseElement,
-        triggerElement: this.findPopupTrigger(popup),
-        isVisible: this.getElementVisibility(popup).isVisible
-      };
-    });
-  }
-
-  /**
-   * Analyze loading elements
-   */
-  private async analyzeLoadingElements(document: Document): Promise<LoadingElement[]> {
-    const loadingElements = Array.from(document.querySelectorAll(
-      '.loading, .spinner, .progress, [aria-label*="loading"], [aria-label*="Loading"]'
-    ));
-    
-    return loadingElements.map(element => {
-      const baseElement = this.createBaseElement(element);
-      
-      return {
-        ...baseElement,
-        loadingType: this.getLoadingType(element),
-        isActive: this.getElementVisibility(element).isVisible
-      } as LoadingElement;
-    });
-  }
-
-  /**
-   * Analyze error elements
-   */
-  private async analyzeErrorElements(document: Document): Promise<ErrorElement[]> {
-    const errorElements = Array.from(document.querySelectorAll(
-      '.error, .alert-danger, [role="alert"], .validation-error, [aria-invalid="true"]'
-    ));
-    
-    return errorElements.map(element => {
-      const baseElement = this.createBaseElement(element);
-      
-      return {
-        ...baseElement,
-        errorType: this.getErrorType(element),
-        errorMessage: this.getElementText(element),
-        relatedField: this.findRelatedField(element)
-      } as ErrorElement;
-    });
-  }
-
-  /**
-   * Analyze landmark elements
-   */
-  private async analyzeLandmarks(document: Document): Promise<any[]> {
-    const landmarks = Array.from(document.querySelectorAll('[role], header, nav, main, aside, footer'));
-    
-    return landmarks.map(landmark => {
-      const baseElement = this.createBaseElement(landmark);
-      
-      return {
-        ...baseElement,
-        landmarkType: this.getLandmarkType(landmark),
-        isUnique: this.isUniqueLandmark(landmark, document)
-      };
-    });
-  }
-
-  /**
-   * Analyze focusable elements
-   */
-  private async analyzeFocusableElements(document: Document): Promise<any[]> {
-    const focusableElements = Array.from(document.querySelectorAll(
-      'a[href], button, input, textarea, select, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]'
-    ));
-    
-    return focusableElements.map(element => {
-      const baseElement = this.createBaseElement(element);
-      
-      return {
-        ...baseElement,
-        tabIndex: (element as HTMLElement).tabIndex,
-        isFocused: document.activeElement === element,
-        isFocusable: this.isFocusable(element)
-      };
-    });
-  }
-
-  /**
-   * Create base element information
-   */
-  private createBaseElement(element: Element): BaseElement {
+  private createSimpleElement(element: Element): SimpleElement {
     const id = this.generateElementId(element);
-    
-    // Check cache first
     const cached = this.elementCache.get(id);
     if (cached) {
-      // Update position and visibility (these can change)
-      cached.position = this.getElementPosition(element);
-      cached.visibility = this.getElementVisibility(element);
+      cached.position = this.getEnhancedPosition(element);
       return cached;
     }
 
-    const baseElement: BaseElement = {
+    const position = this.getEnhancedPosition(element);
+
+    const simpleElement: SimpleElement = {
       id,
       tagName: element.tagName.toLowerCase(),
-      className: Array.from(element.classList),
       text: this.getElementText(element),
-      ariaLabel: element.getAttribute('aria-label') || undefined,
-      title: element.getAttribute('title') || undefined,
-      position: this.getElementPosition(element),
-      visibility: this.getElementVisibility(element),
-      interaction: this.getElementInteraction(element),
-      context: this.getElementContext(element),
-      purpose: this.getElementPurpose(element),
-      confidence: this.calculateElementConfidence(element)
+      className: element.className || undefined,
+
+      position: position, // ✅ Now includes z-index info
+
+      isVisible: this.isVisible(element),
+      isClickable: this.isClickable(element),
+      isDisabled: (element as HTMLInputElement).disabled || undefined,
+
+      ariaLabel: element.getAttribute("aria-label") || undefined,
+      role: element.getAttribute("role") || undefined,
+
+      // Type-specific properties
+      href: (element as HTMLAnchorElement).href || undefined,
+      src: (element as HTMLImageElement | HTMLVideoElement).src || undefined,
+      inputType: (element as HTMLInputElement).type || undefined,
+      isRequired: (element as HTMLInputElement).required || undefined,
+      value: (element as HTMLInputElement).value || undefined,
+      action: (element as HTMLFormElement).action || undefined,
+      method: (element as HTMLFormElement).method || undefined,
+      level: this.getHeadingLevel(element),
+      alt: (element as HTMLImageElement).alt || undefined,
+      target: (element as HTMLAnchorElement).target || undefined,
+      isExternal: (element as HTMLAnchorElement).href
+        ? this.isExternalLink((element as HTMLAnchorElement).href)
+        : undefined,
+
+      // ✅ NEW: Layer classification
+      layerType: this.classifyLayerType(position.zIndex, element),
+      blocksInteraction: this.blocksInteraction(element, position),
+
+      confidence: this.calculateElementConfidence(element),
     };
 
-    // Cache the element
-    this.elementCache.set(id, baseElement);
-    return baseElement;
+    this.elementCache.set(id, simpleElement);
+    return simpleElement;
   }
 
-  // Helper methods continue in next part...
+  // ✅ FIXED: Enhanced position method (renamed to avoid conflict)
+  private getEnhancedPosition(element: Element) {
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+
+    // Parse z-index (defaults to 0 if auto)
+    const zIndexStr = style.zIndex;
+    const zIndex = zIndexStr === "auto" ? 0 : parseInt(zIndexStr) || 0;
+
+    return {
+      x: Math.round(rect.left + window.scrollX),
+      y: Math.round(rect.top + window.scrollY),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      zIndex: zIndex,
+      isOnTop: this.isElementOnTop(element, rect),
+      isFixed: style.position === "fixed",
+      isSticky: style.position === "sticky",
+      isAbsolute: style.position === "absolute",
+    };
+  }
+
+  // ✅ HELPER METHODS: All implemented
+
+  private isRelevant(element: Element): boolean {
+    const rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && this.isVisible(element);
+  }
+
+  private isVisible(element: Element): boolean {
+    const style = getComputedStyle(element);
+    return (
+      style.display !== "none" &&
+      style.visibility !== "hidden" &&
+      parseFloat(style.opacity) > 0.1
+    );
+  }
+
+  private isClickable(element: Element): boolean {
+    const tagName = element.tagName.toLowerCase();
+    return (
+      ["a", "button"].includes(tagName) ||
+      element.getAttribute("role") === "button" ||
+      element.hasAttribute("onclick")
+    );
+  }
+
   private generateElementId(element: Element): string {
-    // Try to use existing ID
     if (element.id) {
       return element.id;
     }
 
-    // Generate based on position and attributes
     const rect = element.getBoundingClientRect();
     const tagName = element.tagName.toLowerCase();
-    const className = element.className || '';
-    const text = this.getElementText(element).substring(0, 20);
-    
-    const hash = this.simpleHash(`${tagName}-${className}-${text}-${rect.left}-${rect.top}`);
+    const className = element.className || "";
+    const text = this.getElementText(element)?.substring(0, 20) || "";
+
+    const hash = this.simpleHash(
+      `${tagName}-${className}-${text}-${rect.left}-${rect.top}`
+    );
     return `elem_${hash}`;
   }
 
@@ -511,204 +462,52 @@ export class DOMAnalyzer {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
   }
 
-  private getElementText(element: Element): string {
-    // Get visible text content
-    const text = element.textContent?.trim() || '';
-    return text.substring(0, 200); // Limit length
-  }
-
-  private getElementPosition(element: Element): ElementPosition {
-    const rect = element.getBoundingClientRect();
-    const style = getComputedStyle(element);
-    
-    return {
-      x: rect.left + window.scrollX,
-      y: rect.top + window.scrollY,
-      width: rect.width,
-      height: rect.height,
-      viewportX: rect.left,
-      viewportY: rect.top,
-      zIndex: parseInt(style.zIndex) || 0,
-      isOnTop: this.isElementOnTop(element),
-      isFixed: style.position === 'fixed',
-      isSticky: style.position === 'sticky',
-      isAbsolute: style.position === 'absolute',
-      scrollContainer: this.findScrollContainer(element),
-      offsetFromScroll: { x: 0, y: 0 } // TODO: Calculate properly
-    };
-  }
-
-  private getElementVisibility(element: Element): ElementVisibility {
-    const rect = element.getBoundingClientRect();
-    const style = getComputedStyle(element);
-    
-    const isVisible = style.display !== 'none' && 
-                     style.visibility !== 'hidden' && 
-                     parseFloat(style.opacity) > 0;
-    
-    const isInViewport = rect.top < window.innerHeight && 
-                        rect.bottom > 0 && 
-                        rect.left < window.innerWidth && 
-                        rect.right > 0;
-    
-    return {
-      isVisible,
-      isInViewport,
-      opacity: parseFloat(style.opacity),
-      isDisplayed: style.display !== 'none',
-      isObscured: this.isElementObscured(element),
-      percentageVisible: this.calculateVisiblePercentage(rect)
-    };
-  }
-
-  // Additional helper methods...
-  private getElementInteraction(element: Element): ElementInteraction {
-    const tagName = element.tagName.toLowerCase();
-    const isInput = ['input', 'textarea', 'select'].includes(tagName);
-    const isButton = tagName === 'button' || element.getAttribute('role') === 'button';
-    const isLink = tagName === 'a' && element.hasAttribute('href');
-    
-    return {
-      isClickable: isButton || isLink || element.hasAttribute('onclick'),
-      isEditable: isInput && !(element as HTMLInputElement).readOnly,
-      isDisabled: (element as HTMLInputElement).disabled || false,
-      isFocusable: this.isFocusable(element),
-      isRequired: (element as HTMLInputElement).required || false,
-      hasClickHandler: !!element.getAttribute('onclick'),
-      hasKeyboardHandler: this.hasKeyboardHandlers(element),
-      hasHoverEffects: this.hasHoverEffects(element),
-      isFormElement: this.isFormElement(element),
-      formId: this.getFormId(element),
-      fieldType: this.getFieldType(element)
-    };
-  }
-
-  private getElementContext(element: Element): ElementContext {
-    return {
-      parentId: element.parentElement ? this.generateElementId(element.parentElement) : undefined,
-      childrenIds: Array.from(element.children).map(child => this.generateElementId(child)),
-      siblingIds: [], // TODO: Implement if needed
-      section: this.getPageSection(element),
-      landmark: element.getAttribute('role') || undefined,
-      role: element.getAttribute('role') || undefined,
-      workflow: this.detectWorkflow(element),
-      step: this.detectWorkflowStep(element),
-      groupId: this.getGroupId(element)
-    };
-  }
-
-  private getElementPurpose(element: Element): ElementPurpose {
-    return {
-      type: this.classifyElementType(element),
-      action: this.detectElementAction(element),
-      dataType: this.detectDataType(element),
-      destination: this.getDestination(element),
-      businessFunction: this.detectBusinessFunction(element)
-    };
+  private getElementText(element: Element): string | undefined {
+    const text = element.textContent?.trim();
+    if (!text || text.length === 0) return undefined;
+    return text.length > 100 ? text.substring(0, 100) + "..." : text;
   }
 
   private calculateElementConfidence(element: Element): number {
-    // Simple confidence calculation based on available information
     let confidence = 0.5;
-    
+
     if (element.id) confidence += 0.1;
     if (element.className) confidence += 0.1;
-    if (element.getAttribute('aria-label')) confidence += 0.1;
-    if (element.getAttribute('role')) confidence += 0.1;
+    if (element.getAttribute("aria-label")) confidence += 0.1;
+    if (element.getAttribute("role")) confidence += 0.1;
     if (this.getElementText(element)) confidence += 0.2;
-    
+
     return Math.min(confidence, 1.0);
   }
 
-  // Placeholder implementations for complex helper methods
-  private isElementOnTop(element: Element): boolean { return true; }
-  private findScrollContainer(element: Element): string | undefined { return undefined; }
-  private isElementObscured(element: Element): boolean { return false; }
-  private calculateVisiblePercentage(rect: DOMRect): number { 
-    return rect.width * rect.height > 0 ? 100 : 0; 
+  private getHeadingLevel(element: Element): number | undefined {
+    const match = element.tagName.match(/h(\d)/i);
+    return match ? parseInt(match[1]) : undefined;
   }
-  private isFocusable(element: Element): boolean {
-    return element.hasAttribute('tabindex') || 
-           ['a', 'button', 'input', 'textarea', 'select'].includes(element.tagName.toLowerCase());
-  }
-  private hasKeyboardHandlers(element: Element): boolean { return false; }
-  private hasHoverEffects(element: Element): boolean { return false; }
-  private isFormElement(element: Element): boolean {
-    return !!element.closest('form');
-  }
-  private getFormId(element: Element): string | undefined {
-    const form = element.closest('form');
-    return form ? this.generateElementId(form) : undefined;
-  }
-  private getFieldType(element: Element): string | undefined {
-    return (element as HTMLInputElement).type;
-  }
-  private getPageSection(element: Element): string | undefined { return undefined; }
-  private detectWorkflow(element: Element): string | undefined { return undefined; }
-  private detectWorkflowStep(element: Element): number | undefined { return undefined; }
-  private getGroupId(element: Element): string | undefined { return undefined; }
-  private classifyElementType(element: Element): ElementType { return ElementType.UNKNOWN; }
-  private detectElementAction(element: Element): any { return undefined; }
-  private detectDataType(element: Element): any { return undefined; }
-  private getDestination(element: Element): string | undefined { return undefined; }
-  private detectBusinessFunction(element: Element): any { return undefined; }
 
-  // Additional helper methods for specific element types
-  private getNavigationItems(nav: Element): any[] { return []; }
-  private isMainNavigation(nav: Element): boolean { return nav.tagName === 'NAV'; }
-  private isBreadcrumb(nav: Element): boolean { 
-    return nav.getAttribute('aria-label')?.toLowerCase().includes('breadcrumb') || false;
-  }
-  private getMenuItems(menu: Element): any[] { return []; }
-  private isMenuOpen(menu: Element): boolean { return true; }
-  private getMenuType(menu: Element): string { return 'dropdown'; }
-  private getHeadingLevel(heading: Element): number {
-    const match = heading.tagName.match(/h(\d)/i);
-    return match ? parseInt(match[1]) : 1;
-  }
-  private getWordCount(text: string): number {
-    return text.trim().split(/\s+/).length;
-  }
-  private getContainerType(container: Element): string {
-    return container.tagName.toLowerCase();
-  }
-  private hasScrollableContent(container: Element): boolean {
-    const style = getComputedStyle(container);
-    return style.overflow === 'auto' || style.overflow === 'scroll' ||
-           style.overflowY === 'auto' || style.overflowY === 'scroll';
-  }
-  private isModalOpen(modal: Element): boolean {
-    return this.getElementVisibility(modal).isVisible;
-  }
-  private isModalBlocking(modal: Element): boolean { return true; }
-  private findPopupTrigger(popup: Element): string | undefined { return undefined; }
-  private getLoadingType(element: Element): string { return 'spinner'; }
-  private getErrorType(element: Element): string { return 'validation'; }
-  private findRelatedField(element: Element): string | undefined { return undefined; }
-  private getLandmarkType(landmark: Element): string {
-    return landmark.getAttribute('role') || landmark.tagName.toLowerCase();
-  }
-  private isUniqueLandmark(landmark: Element, document: Document): boolean { return true; }
   private checkInputError(input: Element): boolean {
-    return input.getAttribute('aria-invalid') === 'true' ||
-           input.classList.contains('error') ||
-           input.classList.contains('invalid');
+    return (
+      input.getAttribute("aria-invalid") === "true" ||
+      input.classList.contains("error") ||
+      input.classList.contains("invalid")
+    );
   }
+
   private getInputErrorMessage(input: Element): string | undefined {
-    const errorId = input.getAttribute('aria-describedby');
+    const errorId = input.getAttribute("aria-describedby");
     if (errorId) {
       const errorElement = document.getElementById(errorId);
       return errorElement?.textContent || undefined;
     }
     return undefined;
   }
-  private getInputSuggestions(input: Element): string[] { return []; }
+
   private isExternalLink(href: string): boolean {
     try {
       const url = new URL(href);
@@ -719,7 +518,287 @@ export class DOMAnalyzer {
   }
 
   private generateCacheKey(document: Document): string {
-    // Simple cache key based on URL and body innerHTML length
     return `${window.location.href}_${document.body.innerHTML.length}`;
+  }
+
+  // ✅ NEW TEXT-SPECIFIC METHODS:
+
+  private getFullTextContent(element: Element): string | undefined {
+    let text = "";
+
+    // Get text from the element and its children
+    const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
+      acceptNode: (node) => {
+        // Skip text in script/style tags
+        const parent = node.parentElement;
+        if (
+          parent &&
+          ["script", "style", "noscript"].includes(parent.tagName.toLowerCase())
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+
+    let node;
+    while ((node = walker.nextNode())) {
+      const nodeText = node.textContent?.trim();
+      if (nodeText && nodeText.length > 0) {
+        text += (text ? " " : "") + nodeText;
+      }
+    }
+
+    text = text.trim();
+
+    // Clean up text
+    text = text.replace(/\s+/g, " "); // Collapse whitespace
+
+    if (!text || text.length < 3) return undefined;
+
+    // Limit length for performance
+    return text.length > 500 ? text.substring(0, 500) + "..." : text;
+  }
+
+  private isRelevantTextElement(element: Element): boolean {
+    // Skip if not visible
+    if (!this.isVisible(element)) return false;
+
+    // Skip if no meaningful text
+    const text = element.textContent?.trim();
+    if (!text || text.length < 3) return false;
+
+    // Skip if it's mainly child elements (container)
+    const childElementsText = Array.from(element.children)
+      .map((child) => child.textContent?.trim() || "")
+      .join(" ")
+      .trim();
+
+    const ownText = text.replace(childElementsText, "").trim();
+    if (ownText.length < 3 && element.children.length > 0) return false;
+
+    // Skip navigation elements (they're handled separately)
+    if (element.closest("nav, .nav, .menu, .breadcrumb")) return false;
+
+    // Skip form elements (handled separately)
+    if (
+      ["input", "textarea", "select", "button"].includes(
+        element.tagName.toLowerCase()
+      )
+    )
+      return false;
+
+    return true;
+  }
+
+  private calculateTextImportance(element: Element): number {
+    let importance = 0.5;
+
+    const tagName = element.tagName.toLowerCase();
+    const text = element.textContent?.trim() || "";
+    const textLength = text.length;
+
+    // Tag-based importance
+    if (tagName === "h1") importance += 0.4;
+    else if (tagName.match(/^h[2-3]$/)) importance += 0.3;
+    else if (tagName.match(/^h[4-6]$/)) importance += 0.2;
+    else if (tagName === "p") importance += 0.1;
+    else if (tagName === "label") importance += 0.2;
+
+    // Length-based importance
+    if (textLength > 100) importance += 0.1;
+    if (textLength > 300) importance += 0.1;
+
+    // Class/ID based importance
+    const className = element.className.toLowerCase();
+    if (className.includes("title") || className.includes("heading"))
+      importance += 0.2;
+    if (className.includes("description") || className.includes("content"))
+      importance += 0.1;
+    if (className.includes("error") || className.includes("warning"))
+      importance += 0.3;
+    if (className.includes("success") || className.includes("info"))
+      importance += 0.2;
+
+    // Position-based importance (elements higher on page are more important)
+    const rect = element.getBoundingClientRect();
+    if (rect.top < window.innerHeight) importance += 0.1; // Above the fold
+
+    return Math.min(importance, 1.0);
+  }
+
+  private getTextSection(element: Element): string | undefined {
+    // Check parent containers
+    const section = element.closest(
+      "main, section, article, aside, header, footer, nav"
+    );
+    if (section) {
+      const tagName = section.tagName.toLowerCase();
+      const id = section.id;
+      const className = section.className;
+
+      if (id) return `${tagName}#${id}`;
+      if (className) return `${tagName}.${className.split(" ")[0]}`;
+      return tagName;
+    }
+
+    return undefined;
+  }
+
+  private getWordCount(text: string): number {
+    return text
+      .trim()
+      .split(/\s+/)
+      .filter((word) => word.length > 0).length;
+  }
+
+  /**
+   * ✅ NEW: Check if element is the topmost at its position
+   */
+  private isElementOnTop(element: Element, rect: DOMRect): boolean {
+    try {
+      // Get the element at the center of this element's bounding box
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const topElement = document.elementFromPoint(centerX, centerY);
+
+      // Check if the element we found is this element or a descendant
+      return topElement === element || element.contains(topElement);
+    } catch (error) {
+      console.error("DOMAnalyzer: isElementOnTop error:", error);
+      // Fallback: assume it's on top if we can't determine
+      return true;
+    }
+  }
+
+  /**
+   * ✅ NEW: Classify what type of layer this element represents
+   */
+  private classifyLayerType(zIndex: number, element: Element): LayerType {
+    const tagName = element.tagName.toLowerCase();
+    if (tagName === "dialog") return LayerType.MODAL;
+    if (tagName === "aside" && zIndex > 100) return LayerType.NAVIGATION;
+    
+    const role = element.getAttribute("role");
+    const className = element.className.toLowerCase();
+
+    // Role-based classification (most reliable)
+    if (role === "dialog" || role === "alertdialog") return LayerType.MODAL;
+    if (role === "tooltip") return LayerType.TOOLTIP;
+    if (role === "menu" || role === "menubar") return LayerType.DROPDOWN;
+
+    // Class-based classification
+    if (className.includes("modal") || className.includes("dialog"))
+      return LayerType.MODAL;
+    if (className.includes("tooltip") || className.includes("popover"))
+      return LayerType.TOOLTIP;
+    if (className.includes("dropdown") || className.includes("menu"))
+      return LayerType.DROPDOWN;
+    if (className.includes("overlay") || className.includes("backdrop"))
+      return LayerType.OVERLAY;
+
+    // Z-index based classification (fallback)
+    if (zIndex >= 1000000) return LayerType.OVERLAY;
+    if (zIndex >= 100000) return LayerType.TOOLTIP;
+    if (zIndex >= 10000) return LayerType.MODAL;
+    if (zIndex >= 1000) return LayerType.DROPDOWN;
+    if (zIndex >= 100) return LayerType.NAVIGATION;
+    if (zIndex >= 1) return LayerType.CONTENT;
+
+    return LayerType.BACKGROUND;
+  }
+
+  /**
+   * ✅ NEW: Check if element blocks interaction with elements below
+   */
+  private blocksInteraction(
+    element: Element,
+    position: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      zIndex: number;
+      isOnTop?: boolean;
+      isFixed?: boolean;
+      isSticky?: boolean;
+      isAbsolute?: boolean;
+    }
+  ): boolean {
+    const role = element.getAttribute("role");
+    const className = element.className.toLowerCase();
+
+    // Modals and overlays typically block interaction
+    if (role === "dialog" || role === "alertdialog") return true;
+    if (className.includes("modal")) return true;
+    if (className.includes("overlay")) return true;
+    if (className.includes("backdrop")) return true;
+
+    // Fixed position elements with high z-index often block interaction
+    if (position.isFixed && position.zIndex > 1000) return true;
+
+    // Large elements that cover most of the screen
+    if (
+      position.width > window.innerWidth * 0.8 &&
+      position.height > window.innerHeight * 0.8
+    )
+      return true;
+
+    return false;
+  }
+
+  /**
+   * ✅ UTILITY: Find all elements that might be blocking interactions
+   */
+  public findBlockingElements(domStructure: DOMStructure): SimpleElement[] {
+    const allElements = [
+      ...domStructure.modals,
+      ...domStructure.popups,
+      ...domStructure.containers,
+      ...domStructure.errorElements,
+      ...domStructure.loadingElements,
+    ];
+
+    return allElements
+      .filter((el) => el.blocksInteraction)
+      .sort((a, b) => (b.position.zIndex || 0) - (a.position.zIndex || 0)); // Highest z-index first
+  }
+
+  /**
+   * ✅ UTILITY: Find the topmost clickable element at a position
+   */
+  public findTopmostElementAt(
+    x: number,
+    y: number,
+    domStructure: DOMStructure
+  ): SimpleElement | null {
+    const allInteractive = [
+      ...domStructure.buttons,
+      ...domStructure.links,
+      ...domStructure.inputs,
+      ...domStructure.focusableElements,
+    ];
+
+    // Find elements at this position
+    const elementsAtPosition = allInteractive.filter((el) => {
+      const pos = el.position;
+      return (
+        x >= pos.x &&
+        x <= pos.x + pos.width &&
+        y >= pos.y &&
+        y <= pos.y + pos.height &&
+        el.isVisible &&
+        !el.isDisabled
+      );
+    });
+
+    // Return the one with highest z-index
+    return elementsAtPosition.reduce((topmost, current) => {
+      if (!topmost) return current;
+      return (current.position.zIndex || 0) > (topmost.position.zIndex || 0)
+        ? current
+        : topmost;
+    }, null as SimpleElement | null);
   }
 }

@@ -1,3 +1,5 @@
+// Updated DropdownMenu component with the fixed function name
+
 import React from "react";
 import styles from "../styles/DropdownMenu.module.css";
 import { usePageAnalysisDebug } from "@/hooks/usePageAnalysisDebug";
@@ -54,11 +56,12 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   const debugFunctions = usePageAnalysisDebug({
     pageAnalysis: pageAnalysis || null,
     options: {
-      enableAutoLogging: false,
-      logPrefix: "🔍 DropdownMenu",
+      enableAutoLogging: true, // ✅ Auto-log every analysis
+      autoLogLevel: "standard", // ✅ Control verbosity
+      logPrefix: "🔍 MyApp",
       enableGrouping: true,
       showTimestamps: true,
-    }
+    },
   });
 
   const toggleSection = (sectionHeader: string) => {
@@ -165,7 +168,11 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   ];
 
   // Only show debug section if pageAnalysis is available AND in development
-  if (process.env.NODE_ENV === "development" && pageAnalysis && debugFunctions) {
+  if (
+    process.env.NODE_ENV === "development" &&
+    pageAnalysis &&
+    debugFunctions
+  ) {
     menuSections.push({
       header: "🔍 Debug",
       isCollapsible: true,
@@ -212,13 +219,20 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           onClick: debugFunctions.logAllData,
         },
         {
+          icon: "🔍",
+          label: "Comprehensive Analysis", // ✅ FIXED: Updated label and function
+          onClick: debugFunctions.logComprehensivePageData, // ✅ FIXED: Correct function name
+        },
+        {
           icon: "🔄",
           label: debugFunctions.isAnalyzing ? "Analyzing..." : "Analyze Now",
           onClick: debugFunctions.triggerAnalysisAndLog,
         },
         {
           icon: debugFunctions.isActive ? "⏸️" : "▶️",
-          label: debugFunctions.isActive ? "Disable Analyzer" : "Enable Analyzer",
+          label: debugFunctions.isActive
+            ? "Disable Analyzer"
+            : "Enable Analyzer",
           onClick: debugFunctions.toggleAnalyzerAndLog,
         },
         {

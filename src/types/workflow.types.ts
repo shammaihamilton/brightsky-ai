@@ -1,7 +1,5 @@
 // src/types/workflow.types.ts
-
 import type { Warning, Note, DifficultyLevel } from './core.types';
-import type { DataType } from './elements.types';
 
 // ====================================
 // NAVIGATION STEP TYPES
@@ -36,7 +34,7 @@ export interface TargetElement {
   action: TargetAction;
   
   inputValue?: string;
-  inputType?: DataType;
+  inputType?: string;
   
   highlightStyle: HighlightStyle;
   animationType: AnimationType;

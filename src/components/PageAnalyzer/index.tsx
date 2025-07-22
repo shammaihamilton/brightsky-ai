@@ -1,10 +1,8 @@
 // src/components/PageAnalyzer/index.tsx
+// ✅ SIMPLIFIED: Only DOMAnalyzer + MutationObserver
+
 import React, { useEffect, useRef, useCallback } from "react";
-// Note: PageAnalyzer no longer uses usePageAnalysis - it's a pure component
 import { DOMAnalyzer } from "./analyzers/DOMAnalyzer";
-import { FormAnalyzer } from "./analyzers/FormAnalyzer";
-import { ButtonAnalyzer } from "./analyzers/ButtonAnalyzer";
-import { PlatformDetector } from "./analyzers/PlatformDetector";
 import { MutationObserver as CustomMutationObserver } from "./observers/MutationObserver";
 import type {
   PageContext,
@@ -20,28 +18,24 @@ interface PageAnalyzerProps {
     newContext: PageContext,
     previousContext?: PageContext
   ) => void;
-  analysisInterval?: number; // ms between analyses
+  analysisInterval?: number;
 }
 
 export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
   isActive,
   onPageAnalyzed,
   onPageChanged,
-  analysisInterval = 2000, // Default: analyze every 2 seconds
+  analysisInterval = 2000,
 }) => {
   const previousContextRef = useRef<PageContext | null>(null);
   const analysisTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mutationObserverRef = useRef<CustomMutationObserver | null>(null);
 
-  // Initialize analyzers
+  // ✅ SIMPLIFIED: Only one analyzer needed
   const domAnalyzer = useRef(new DOMAnalyzer());
-  const formAnalyzer = useRef(new FormAnalyzer());
-  const buttonAnalyzer = useRef(new ButtonAnalyzer());
-  const platformDetector = useRef(new PlatformDetector());
-
 
   /**
-   * Main analysis function that orchestrates all analyzers
+   * ✅ SIMPLIFIED: Main analysis function
    */
   const performPageAnalysis =
     useCallback(async (): Promise<PageContext | null> => {
@@ -56,26 +50,14 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
         const domain = window.location.hostname;
         const path = window.location.pathname;
 
-        // 2. Detect platform (AWS, Azure, GitHub, etc.)
-        const platform = await platformDetector.current.detectPlatform(
-          url,
-          document
-        );
-        // 3. Analyze DOM structure
+        // 2. ✅ FAST: Single analyzer does everything
         const domStructure = await domAnalyzer.current.analyzePage(document);
 
-        // 4. Analyze forms specifically
-        const forms = await formAnalyzer.current.analyzeForms(document);
-        domStructure.forms = forms;
-
-        // 5. Analyze buttons specifically
-        const buttons = await buttonAnalyzer.current.analyzeButtons(document);
-        domStructure.buttons = buttons;
-
-        // 6. Get viewport information
+        // 3. Viewport information
         const orientation: ViewportInfo["orientation"] =
           window.innerWidth > window.innerHeight ? "landscape" : "portrait";
-        const viewport = {
+
+        const viewport: ViewportInfo = {
           width: window.innerWidth,
           height: window.innerHeight,
           scrollPosition: {
@@ -90,7 +72,7 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
           orientation,
         };
 
-        // 7. Extract metadata
+        // 4. ✅ SIMPLIFIED: Basic metadata
         const metadata: PageMetadata = {
           language: document.documentElement.lang || "en",
           direction: getComputedStyle(document.documentElement).direction as
@@ -107,12 +89,12 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
             ? new Date(document.lastModified)
             : undefined,
           pageType: detectPageType(document, url) as PageType,
-          platform: platform,
+          platform: detectPlatform(url, document), // ✅ MOVED: Inline platform detection
           isSecure: url.startsWith("https://"),
           hasTrackers: detectTrackers(document),
         };
 
-        // 8. Create complete page context
+        // 5. Create page context
         const pageContext: PageContext = {
           url,
           title,
@@ -147,6 +129,10 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
         Math.abs(
           previousContext.domStructure.forms.length -
             newContext.domStructure.forms.length
+        ) > 0 ||
+        Math.abs(
+          previousContext.domStructure.buttons.length -
+            newContext.domStructure.buttons.length
         ) > 0;
 
       if (isSignificantChange) {
@@ -195,30 +181,65 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
   }, []);
 
   /**
-   * Setup mutation observer for real-time changes
+   * ✅ IMPROVED: Setup mutation observer with better filtering
    */
   const setupMutationObserver = useCallback(() => {
     if (!isActive) return;
 
     mutationObserverRef.current = new CustomMutationObserver({
       onMutation: (mutations) => {
-        // Debounced analysis on DOM changes
-        if (analysisTimeoutRef.current) {
-          clearTimeout(analysisTimeoutRef.current);
-        }
+        // ✅ SMART: Only re-analyze if there are significant changes
+        const hasSignificantChanges = mutations.some((mutation) => {
+          if (mutation.type === "childList") {
+            // Check for new interactive elements
+            const addedElements = Array.from(mutation.addedNodes).filter(
+              (node) => node.nodeType === Node.ELEMENT_NODE
+            ) as Element[];
 
-        analysisTimeoutRef.current = setTimeout(async () => {
-          const pageContext = await performPageAnalysis();
-          if (pageContext) {
-            handlePageChange(pageContext);
+            return addedElements.some((element) => {
+              const tagName = element.tagName?.toLowerCase();
+              return (
+                ["form", "button", "input", "textarea", "select", "a"].includes(
+                  tagName
+                ) ||
+                element.getAttribute("role") === "button" ||
+                element.querySelector(
+                  "form, button, input, textarea, select, a"
+                )
+              );
+            });
           }
-        }, 500); // Wait 500ms after last mutation
+
+          if (mutation.type === "attributes") {
+            const attrName = mutation.attributeName;
+            return ["style", "hidden", "disabled", "class"].includes(
+              attrName || ""
+            );
+          }
+
+          return false;
+        });
+
+        if (hasSignificantChanges) {
+          // Clear existing timeout
+          if (analysisTimeoutRef.current) {
+            clearTimeout(analysisTimeoutRef.current);
+          }
+
+          // Debounced re-analysis
+          analysisTimeoutRef.current = setTimeout(async () => {
+            const pageContext = await performPageAnalysis();
+            if (pageContext) {
+              handlePageChange(pageContext);
+            }
+          }, 750); // Wait 750ms after last significant change
+        }
       },
       options: {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ["class", "id", "data-*"],
+        attributeFilter: ["class", "id", "style", "hidden", "disabled"],
       },
     });
 
@@ -256,11 +277,11 @@ export const PageAnalyzer: React.FC<PageAnalyzerProps> = ({
     return () => window.removeEventListener("popstate", handlePopState);
   }, [isActive, performPageAnalysis, handlePageChange]);
 
-  // This component doesn't render anything visible
   return null;
 };
 
-// Helper functions
+// ✅ HELPER FUNCTIONS: Moved to the right place (bottom of file)
+
 function extractMetaContent(name: string): string | undefined {
   const meta = document.querySelector(
     `meta[name="${name}"], meta[property="${name}"]`
@@ -300,7 +321,6 @@ function detectPageType(document: Document, url: string): string {
 }
 
 function detectTrackers(document: Document): boolean {
-  // Simple tracker detection
   const trackerSelectors = [
     'script[src*="google-analytics"]',
     'script[src*="gtag"]',
@@ -309,6 +329,64 @@ function detectTrackers(document: Document): boolean {
   ];
 
   return trackerSelectors.some((selector) => document.querySelector(selector));
+}
+
+// ✅ MOVED: Platform detection inline (since PlatformDetector is not used)
+function detectPlatform(url: string, document: Document) {
+  const hostname = new URL(url).hostname.toLowerCase();
+  const title = document.title.toLowerCase();
+
+  // AWS Detection
+  if (
+    hostname.includes("aws.amazon.com") ||
+    hostname.includes("console.aws.amazon.com") ||
+    title.includes("aws")
+  ) {
+    return { name: "AWS", isKnownPlatform: true };
+  }
+
+  // Azure Detection
+  if (
+    hostname.includes("portal.azure.com") ||
+    hostname.includes("azure.microsoft.com") ||
+    title.includes("azure")
+  ) {
+    return { name: "Azure", isKnownPlatform: true };
+  }
+
+  // Google Cloud Detection
+  if (
+    hostname.includes("console.cloud.google.com") ||
+    hostname.includes("cloud.google.com") ||
+    title.includes("google cloud")
+  ) {
+    return { name: "Google Cloud", isKnownPlatform: true };
+  }
+
+  // GitHub Detection
+  if (hostname.includes("github.com") || title.includes("github")) {
+    return { name: "GitHub", isKnownPlatform: true };
+  }
+
+  // Generic detection
+  const commonPlatforms = [
+    { keywords: ["vercel"], name: "Vercel" },
+    { keywords: ["netlify"], name: "Netlify" },
+    { keywords: ["heroku"], name: "Heroku" },
+    { keywords: ["digitalocean"], name: "DigitalOcean" },
+  ];
+
+  for (const platform of commonPlatforms) {
+    if (
+      platform.keywords.some(
+        (keyword) => hostname.includes(keyword) || title.includes(keyword)
+      )
+    ) {
+      return { name: platform.name, isKnownPlatform: true };
+    }
+  }
+
+  return { name: "Unknown", isKnownPlatform: false };
 }
 
 export default PageAnalyzer;
