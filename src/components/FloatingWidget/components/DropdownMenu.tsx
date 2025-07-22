@@ -62,26 +62,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     }
   });
 
-  // ✅ CRITICAL FIX: Improved close handler with proper event handling
-const handleCloseClick = React.useCallback((e: React.MouseEvent) => {
-  console.log("🔴 Menu close button clicked");
-  e.preventDefault();
-  e.stopPropagation();
-  
-  // ✅ FIX: Access the native DOM event
-  if (e.nativeEvent) {
-    e.nativeEvent.stopImmediatePropagation();
-  }
-  
-  onClose();
-}, [onClose]);
-
-  // ✅ CRITICAL FIX: Prevent menu container from closing when clicked inside
-  const handleMenuClick = React.useCallback((e: React.MouseEvent) => {
-    console.log("📋 Menu container clicked"); // Debug log
-    e.stopPropagation(); // Prevent click-outside handler from firing
-  }, []);
-
   const toggleSection = (sectionHeader: string) => {
     setCollapsedSections((prev) => ({
       ...prev,
@@ -272,7 +252,6 @@ const handleCloseClick = React.useCallback((e: React.MouseEvent) => {
       }
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      onClick={handleMenuClick} // ✅ ADD: Prevent click-outside when clicking menu
     >
       <div
         className={styles.dropdownMenu}
@@ -282,10 +261,14 @@ const handleCloseClick = React.useCallback((e: React.MouseEvent) => {
           overflowX: "hidden",
         }}
       >
-        {/* ✅ IMPROVED: Close Button with better event handling */}
+        {/* ✅ FIXED: Simplified close button like the original */}
         <button
           className={styles.menuCloseButton}
-          onClick={handleCloseClick} // ✅ USE: Improved handler
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onClose();
+          }}
           aria-label="Close menu"
           style={{
             position: "sticky",
@@ -359,7 +342,6 @@ const handleCloseClick = React.useCallback((e: React.MouseEvent) => {
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      console.log(`🔘 Menu item clicked: ${item.label}`); // Debug log
                       item.onClick();
                     }}
                     disabled={item.label.includes("Analyzing...")}
