@@ -11,7 +11,7 @@ interface UsePageAnalysisDebugOptions {
 }
 
 interface UsePageAnalysisDebugParams {
-  pageAnalysis: ReturnType<typeof usePageAnalysis>;
+  pageAnalysis: ReturnType<typeof usePageAnalysis> | null;
   options?: UsePageAnalysisDebugOptions;
 }
 
@@ -57,7 +57,7 @@ export const usePageAnalysisDebug = ({
   options = {}
 }: UsePageAnalysisDebugParams): UsePageAnalysisDebugReturn => {
   const {
-    enableAutoLogging = false,
+    // enableAutoLogging = false,
     logPrefix = "🔍 PageAnalysis",
     enableGrouping = true,
     showTimestamps = true,
@@ -76,7 +76,20 @@ export const usePageAnalysisDebug = ({
     clearLog,
     handlePageAnalyzed,
     handlePageChanged,
-  } = pageAnalysis;
+  } = pageAnalysis || {
+    // ✅ FALLBACK: Provide default values when pageAnalysis is null
+    currentPageContext: null,
+    isAnalyzing: false,
+    isActive: false,
+    analysisHistory: [],
+    analysisLog: [],
+    setActive: () => {},
+    analyzeCurrentPage: async () => null,
+    clearHistory: () => {},
+    clearLog: () => {},
+    handlePageAnalyzed: () => {},
+    handlePageChanged: () => {},
+  };
 
   // Helper function to create timestamped logs
   const createLog = useCallback(
@@ -106,6 +119,11 @@ export const usePageAnalysisDebug = ({
 
   // 1. Log current page analysis
   const logCurrentPage = useCallback(() => {
+    if (!pageAnalysis) {
+      console.warn("❌ PageAnalysis not available - debug features disabled");
+      return;
+    }
+    
     logGroup("📄 Current Page Analysis", () => {
       if (currentPageContext) {
         console.log("📋 Basic Info:", {
@@ -162,6 +180,7 @@ export const usePageAnalysisDebug = ({
     analysisHistory.length,
     analysisLog.length,
     logGroup,
+    pageAnalysis
   ]);
 
   // 2. Log analysis history
@@ -375,6 +394,11 @@ export const usePageAnalysisDebug = ({
 
   // 9. Trigger analysis and log results
   const triggerAnalysisAndLog = useCallback(async () => {
+    if (!pageAnalysis) {
+      console.warn("❌ PageAnalysis not available - cannot trigger analysis");
+      return;
+    }
+    
     console.log(createLog("🔄 Triggering manual analysis..."));
     try {
       const result = await analyzeCurrentPage();
@@ -387,10 +411,15 @@ export const usePageAnalysisDebug = ({
     } catch (error) {
       console.error(createLog("❌ Error during manual analysis:"), error);
     }
-  }, [analyzeCurrentPage, logCurrentPage, createLog]);
+  }, [analyzeCurrentPage, logCurrentPage, createLog, pageAnalysis]);
 
   // 10. Toggle analyzer and log state
   const toggleAnalyzerAndLog = useCallback(() => {
+    if (!pageAnalysis) {
+      console.warn("❌ PageAnalysis not available - cannot toggle analyzer");
+      return;
+    }
+    
     const newState = !isActive;
     setActive(newState);
     console.log(
@@ -404,7 +433,7 @@ export const usePageAnalysisDebug = ({
         willAnalyze: newState && !isAnalyzing,
       });
     });
-  }, [isActive, setActive, isAnalyzing, createLog, logGroup]);
+  }, [isActive, setActive, isAnalyzing, createLog, logGroup, pageAnalysis]);
 
   // 11. Clear all data and log action
   const clearAllAndLog = useCallback(() => {

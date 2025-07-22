@@ -30,7 +30,7 @@ interface DropdownMenuProps {
   onClose: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-  pageAnalysis: ReturnType<typeof usePageAnalysis>; 
+  pageAnalysis?: ReturnType<typeof usePageAnalysis>; // ✅ MAKE OPTIONAL
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -43,7 +43,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   onClose,
   onMouseEnter,
   onMouseLeave,
-  pageAnalysis, // ✅ RECEIVE: pageAnalysis from parent
+  pageAnalysis, // ✅ OPTIONAL: pageAnalysis from parent
 }) => {
   const [collapsedSections, setCollapsedSections] = React.useState<
     Record<string, boolean>
@@ -51,30 +51,9 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     "🔍 Debug": true, // Debug section starts collapsed
   });
 
-  // ✅ CLEAN: Use the fixed debug hook with pageAnalysis parameter
-  const {
-    // State for displaying counts/status
-    isActive,
-    isAnalyzing,
-    analysisHistory,
-    analysisLog,
-
-    // All the logging functions (now extracted back to the hook)
-    logCurrentPage,
-    logAnalysisHistory,
-    logActivityLog,
-    logAllData,
-    logPageElements,
-    logPlatformInfo,
-    logViewportInfo,
-    logPerformanceStats,
-    triggerAnalysisAndLog,
-    toggleAnalyzerAndLog,
-    clearAllAndLog,
-    exportAnalysisData,
-    getAnalysisSummary,
-  } = usePageAnalysisDebug({
-    pageAnalysis,
+  // ✅ FIXED: Always call hook, but pass null pageAnalysis when not available
+  const debugFunctions = usePageAnalysisDebug({
+    pageAnalysis: pageAnalysis || null,
     options: {
       enableAutoLogging: false, // Manual logging via buttons
       logPrefix: "🔍 DropdownMenu",
@@ -186,8 +165,8 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     },
   ];
 
-  // Only show debug section in development
-  if (process.env.NODE_ENV === "development") {
+  // ✅ CONDITIONAL: Only show debug section if pageAnalysis is available AND in development
+  if (process.env.NODE_ENV === "development" && pageAnalysis && debugFunctions) {
     menuSections.push({
       header: "🔍 Debug",
       isCollapsible: true,
@@ -196,67 +175,67 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
         {
           icon: "📄",
           label: "Log Current Page",
-          onClick: logCurrentPage,
+          onClick: debugFunctions.logCurrentPage,
         },
         {
           icon: "🧩",
           label: "Log Page Elements",
-          onClick: logPageElements,
+          onClick: debugFunctions.logPageElements,
         },
         {
           icon: "🏢",
           label: "Log Platform Info",
-          onClick: logPlatformInfo,
+          onClick: debugFunctions.logPlatformInfo,
         },
         {
           icon: "📱",
           label: "Log Viewport Info",
-          onClick: logViewportInfo,
+          onClick: debugFunctions.logViewportInfo,
         },
         {
           icon: "⚡",
           label: "Log Performance",
-          onClick: logPerformanceStats,
+          onClick: debugFunctions.logPerformanceStats,
         },
         {
           icon: "📚",
-          label: `Log History (${analysisHistory.length})`,
-          onClick: logAnalysisHistory,
+          label: `Log History (${debugFunctions.analysisHistory.length})`,
+          onClick: debugFunctions.logAnalysisHistory,
         },
         {
           icon: "📋",
-          label: `Log Activity (${analysisLog.length})`,
-          onClick: logActivityLog,
+          label: `Log Activity (${debugFunctions.analysisLog.length})`,
+          onClick: debugFunctions.logActivityLog,
         },
         {
           icon: "🎯",
           label: "Log ALL Data",
-          onClick: logAllData,
+          onClick: debugFunctions.logAllData,
         },
         {
           icon: "🔄",
-          label: isAnalyzing ? "Analyzing..." : "Analyze Now",
-          onClick: triggerAnalysisAndLog,
+          label: debugFunctions.isAnalyzing ? "Analyzing..." : "Analyze Now",
+          onClick: debugFunctions.triggerAnalysisAndLog,
         },
         {
-          icon: isActive ? "⏸️" : "▶️",
-          label: isActive ? "Disable Analyzer" : "Enable Analyzer",
-          onClick: toggleAnalyzerAndLog,
+          icon: debugFunctions.isActive ? "⏸️" : "▶️",
+          label: debugFunctions.isActive ? "Disable Analyzer" : "Enable Analyzer",
+          onClick: debugFunctions.toggleAnalyzerAndLog,
         },
         {
           icon: "📤",
           label: "Export Data",
-          onClick: exportAnalysisData,
+          onClick: debugFunctions.exportAnalysisData,
         },
         {
           icon: "📋",
           label: "Get Summary",
-          onClick: getAnalysisSummary,
+          onClick: debugFunctions.getAnalysisSummary,
         },
         {
           icon: "🗑️",
           label: "Clear All Data",
-          onClick: clearAllAndLog,
+          onClick: debugFunctions.clearAllAndLog,
         },
       ],
     });
