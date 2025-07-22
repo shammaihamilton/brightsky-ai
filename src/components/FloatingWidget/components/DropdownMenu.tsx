@@ -30,7 +30,7 @@ interface DropdownMenuProps {
   onClose: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
-  pageAnalysis?: ReturnType<typeof usePageAnalysis>; // ✅ MAKE OPTIONAL
+  pageAnalysis?: ReturnType<typeof usePageAnalysis>;
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -43,24 +43,44 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   onClose,
   onMouseEnter,
   onMouseLeave,
-  pageAnalysis, // ✅ OPTIONAL: pageAnalysis from parent
+  pageAnalysis,
 }) => {
   const [collapsedSections, setCollapsedSections] = React.useState<
     Record<string, boolean>
   >({
-    "🔍 Debug": true, // Debug section starts collapsed
+    "🔍 Debug": true,
   });
 
   // ✅ FIXED: Always call hook, but pass null pageAnalysis when not available
   const debugFunctions = usePageAnalysisDebug({
     pageAnalysis: pageAnalysis || null,
     options: {
-      enableAutoLogging: false, // Manual logging via buttons
+      enableAutoLogging: false,
       logPrefix: "🔍 DropdownMenu",
       enableGrouping: true,
       showTimestamps: true,
     }
   });
+
+  // ✅ CRITICAL FIX: Improved close handler with proper event handling
+const handleCloseClick = React.useCallback((e: React.MouseEvent) => {
+  console.log("🔴 Menu close button clicked");
+  e.preventDefault();
+  e.stopPropagation();
+  
+  // ✅ FIX: Access the native DOM event
+  if (e.nativeEvent) {
+    e.nativeEvent.stopImmediatePropagation();
+  }
+  
+  onClose();
+}, [onClose]);
+
+  // ✅ CRITICAL FIX: Prevent menu container from closing when clicked inside
+  const handleMenuClick = React.useCallback((e: React.MouseEvent) => {
+    console.log("📋 Menu container clicked"); // Debug log
+    e.stopPropagation(); // Prevent click-outside handler from firing
+  }, []);
 
   const toggleSection = (sectionHeader: string) => {
     setCollapsedSections((prev) => ({
@@ -108,7 +128,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.5 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
               />
               <path
                 strokeLinecap="round"
@@ -165,7 +185,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     },
   ];
 
-  // ✅ CONDITIONAL: Only show debug section if pageAnalysis is available AND in development
+  // Only show debug section if pageAnalysis is available AND in development
   if (process.env.NODE_ENV === "development" && pageAnalysis && debugFunctions) {
     menuSections.push({
       header: "🔍 Debug",
@@ -252,6 +272,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       }
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
+      onClick={handleMenuClick} // ✅ ADD: Prevent click-outside when clicking menu
     >
       <div
         className={styles.dropdownMenu}
@@ -261,14 +282,10 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           overflowX: "hidden",
         }}
       >
-        {/* Close Button */}
+        {/* ✅ IMPROVED: Close Button with better event handling */}
         <button
           className={styles.menuCloseButton}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onClose();
-          }}
+          onClick={handleCloseClick} // ✅ USE: Improved handler
           aria-label="Close menu"
           style={{
             position: "sticky",
@@ -342,6 +359,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
+                      console.log(`🔘 Menu item clicked: ${item.label}`); // Debug log
                       item.onClick();
                     }}
                     disabled={item.label.includes("Analyzing...")}
