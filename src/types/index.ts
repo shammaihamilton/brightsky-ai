@@ -9,7 +9,7 @@
 export * from './core.types';
 
 // Page context and analysis
-export * from './page.types';
+// export * from './page.types';
 
 // DOM elements and interactions  
 export * from './elements.types';
@@ -21,7 +21,7 @@ export * from './user.types';
 export * from './workflow.types';
 
 // Visual instructions and styling
-export * from './visual.types';
+// export * from './visual.types';
 
 // API requests and responses
 export * from './api.types';
@@ -38,13 +38,7 @@ export type {
 } from './api.types';
 
 // Core context types
-export type {
-  PageContext,
-  UserProfile,
-  NavigationStep,
-  WorkflowInfo,
-  VisualInstruction
-} from './page.types';
+
 
 // Element types for DOM analysis
 export type {

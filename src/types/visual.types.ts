@@ -447,13 +447,13 @@ export interface InteractionBehavior {
 export interface ClickAction {
   type: 'dismiss' | 'next_step' | 'toggle_details' | 'open_link' | 'custom';
   target?: string;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }
 
 export interface HoverAction {
   type: 'show_details' | 'highlight_target' | 'show_preview' | 'custom';
   delay?: number;
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }
 
 export interface DragConstraints {
@@ -471,7 +471,7 @@ export interface DismissAction {
 
 export interface FocusAction {
   type: 'highlight' | 'show_details' | 'activate' | 'custom';
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
 }
 
 // ====================================
@@ -684,6 +684,6 @@ export interface StateChange {
 
 export interface CleanupCondition {
   type: 'timeout' | 'step_complete' | 'page_change' | 'user_dismiss' | 'goal_achieved';
-  parameters?: Record<string, any>;
+  parameters?: Record<string, unknown>;
   delay?: number;
 }

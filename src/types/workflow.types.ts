@@ -215,7 +215,7 @@ export interface NavigationIntent {
   service?: string;
   
   // Parameters
-  parameters: Record<string, any>;
+  parameters: Record<string, unknown>;
   
   // Confidence
   confidence: number;

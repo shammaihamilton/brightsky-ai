@@ -51,7 +51,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     "🔍 Debug": true,
   });
 
-  // ✅ FIXED: Always call hook, but pass null pageAnalysis when not available
   const debugFunctions = usePageAnalysisDebug({
     pageAnalysis: pageAnalysis || null,
     options: {
@@ -71,7 +70,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
 
   const menuSections: MenuSection[] = [
     {
-      header: "Chat",
+      header: "Settings",
       items: [
         {
           icon: isPanelOpen ? (
@@ -99,7 +98,7 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
       ],
     },
     {
-      header: "Settings",
+      header: "Popup Settings",
       items: [
         {
           icon: (
@@ -261,7 +260,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
           overflowX: "hidden",
         }}
       >
-        {/* ✅ FIXED: Simplified close button like the original */}
         <button
           className={styles.menuCloseButton}
           onClick={(e) => {
@@ -270,12 +268,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             onClose();
           }}
           aria-label="Close menu"
-          style={{
-            position: "sticky",
-            top: 0,
-            zIndex: 10,
-            backgroundColor: "inherit",
-          }}
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
