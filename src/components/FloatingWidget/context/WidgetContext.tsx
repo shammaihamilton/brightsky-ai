@@ -10,6 +10,7 @@ import {
 } from "../services";
 import { WebSocketService } from '../services/websocket';
 import { useAppDispatch } from "../../../store/hooks";
+import { usePageAnalysis } from "@/hooks/usePageAnalysis";
 
 interface StorageSettings {
   apiSettings?: unknown;
@@ -41,6 +42,11 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
 }) => {
   const dispatch = useAppDispatch();
 
+  const pageAnalysis = usePageAnalysis({
+      autoStart: true,
+      analysisInterval: 3000,
+      enableLogging: true
+  });
   const services = useMemo<IWidgetServices>(() => {
     const finalConfig = { ...DEFAULT_CONFIG, ...config };
 
@@ -61,6 +67,7 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
 
     const eventService = new EventService(stateService, chatService);
 
+
     return {
       positionService,
       stateService,
@@ -68,8 +75,9 @@ export const WidgetProvider: React.FC<WidgetProviderProps> = ({
       storageService,
       chatService,
       notificationService,
+      pageAnalysis,
     };
-  }, [config, onSettingsChange, dispatch]);
+  }, [config, onSettingsChange, dispatch, pageAnalysis]);
 
   return (
     <WidgetContext.Provider value={services}>{children}</WidgetContext.Provider>

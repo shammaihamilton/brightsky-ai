@@ -97,6 +97,7 @@ export interface IWidgetServices {
   storageService: IStorageService;
   chatService: IChatService;
   notificationService: INotificationService;
+  pageAnalysis?: unknown
 }
 // Configuration interfaces
 export interface WidgetConfiguration {

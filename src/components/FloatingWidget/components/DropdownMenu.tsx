@@ -1,5 +1,24 @@
-import React from 'react';
-import styles from '../styles/DropdownMenu.module.css';
+import React from "react";
+import styles from "../styles/DropdownMenu.module.css";
+import { usePageAnalysisDebug } from "@/hooks/usePageAnalysisDebug";
+import { usePageAnalysis } from "@/hooks/usePageAnalysis";
+
+// Add this type definition at the top, after imports
+type MenuIcon = React.ReactElement | string;
+
+interface MenuItem {
+  icon: MenuIcon;
+  label: string;
+  onClick: () => void;
+  variant?: "danger";
+}
+
+interface MenuSection {
+  header: string;
+  items: MenuItem[];
+  isCollapsible?: boolean;
+  defaultCollapsed?: boolean;
+}
 
 interface DropdownMenuProps {
   position: { x: number; y: number };
@@ -11,6 +30,7 @@ interface DropdownMenuProps {
   onClose: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  pageAnalysis: ReturnType<typeof usePageAnalysis>; 
 }
 
 const DropdownMenu: React.FC<DropdownMenuProps> = ({
@@ -23,14 +43,59 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
   onClose,
   onMouseEnter,
   onMouseLeave,
+  pageAnalysis, // ✅ RECEIVE: pageAnalysis from parent
 }) => {
-  const menuSections = [
+  const [collapsedSections, setCollapsedSections] = React.useState<
+    Record<string, boolean>
+  >({
+    "🔍 Debug": true, // Debug section starts collapsed
+  });
+
+  // ✅ CLEAN: Use the fixed debug hook with pageAnalysis parameter
+  const {
+    // State for displaying counts/status
+    isActive,
+    isAnalyzing,
+    analysisHistory,
+    analysisLog,
+
+    // All the logging functions (now extracted back to the hook)
+    logCurrentPage,
+    logAnalysisHistory,
+    logActivityLog,
+    logAllData,
+    logPageElements,
+    logPlatformInfo,
+    logViewportInfo,
+    logPerformanceStats,
+    triggerAnalysisAndLog,
+    toggleAnalyzerAndLog,
+    clearAllAndLog,
+    exportAnalysisData,
+    getAnalysisSummary,
+  } = usePageAnalysisDebug({
+    pageAnalysis,
+    options: {
+      enableAutoLogging: false, // Manual logging via buttons
+      logPrefix: "🔍 DropdownMenu",
+      enableGrouping: true,
+      showTimestamps: true,
+    }
+  });
+
+  const toggleSection = (sectionHeader: string) => {
+    setCollapsedSections((prev) => ({
+      ...prev,
+      [sectionHeader]: !prev[sectionHeader],
+    }));
+  };
+
+  const menuSections: MenuSection[] = [
     {
       header: "Chat",
       items: [
         {
           icon: isPanelOpen ? (
-            // Close icon when chat is open
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -40,7 +105,6 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
               />
             </svg>
           ) : (
-            // Chat icon when chat is closed
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -122,26 +186,117 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
     },
   ];
 
+  // Only show debug section in development
+  if (process.env.NODE_ENV === "development") {
+    menuSections.push({
+      header: "🔍 Debug",
+      isCollapsible: true,
+      defaultCollapsed: true,
+      items: [
+        {
+          icon: "📄",
+          label: "Log Current Page",
+          onClick: logCurrentPage,
+        },
+        {
+          icon: "🧩",
+          label: "Log Page Elements",
+          onClick: logPageElements,
+        },
+        {
+          icon: "🏢",
+          label: "Log Platform Info",
+          onClick: logPlatformInfo,
+        },
+        {
+          icon: "📱",
+          label: "Log Viewport Info",
+          onClick: logViewportInfo,
+        },
+        {
+          icon: "⚡",
+          label: "Log Performance",
+          onClick: logPerformanceStats,
+        },
+        {
+          icon: "📚",
+          label: `Log History (${analysisHistory.length})`,
+          onClick: logAnalysisHistory,
+        },
+        {
+          icon: "📋",
+          label: `Log Activity (${analysisLog.length})`,
+          onClick: logActivityLog,
+        },
+        {
+          icon: "🎯",
+          label: "Log ALL Data",
+          onClick: logAllData,
+        },
+        {
+          icon: "🔄",
+          label: isAnalyzing ? "Analyzing..." : "Analyze Now",
+          onClick: triggerAnalysisAndLog,
+        },
+        {
+          icon: isActive ? "⏸️" : "▶️",
+          label: isActive ? "Disable Analyzer" : "Enable Analyzer",
+          onClick: toggleAnalyzerAndLog,
+        },
+        {
+          icon: "📤",
+          label: "Export Data",
+          onClick: exportAnalysisData,
+        },
+        {
+          icon: "📋",
+          label: "Get Summary",
+          onClick: getAnalysisSummary,
+        },
+        {
+          icon: "🗑️",
+          label: "Clear All Data",
+          onClick: clearAllAndLog,
+        },
+      ],
+    });
+  }
+
   return (
-    <div 
+    <div
       className={styles.dropdownContainer}
-      style={{
-        '--menu-left': `${position.x}px`,
-        '--menu-top': `${position.y}px`,
-      } as React.CSSProperties}
+      style={
+        {
+          "--menu-left": `${position.x}px`,
+          "--menu-top": `${position.y}px`,
+        } as React.CSSProperties
+      }
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <div className={styles.dropdownMenu}>
+      <div
+        className={styles.dropdownMenu}
+        style={{
+          maxHeight: "400px",
+          overflowY: "auto",
+          overflowX: "hidden",
+        }}
+      >
         {/* Close Button */}
-        <button 
-          className={styles.menuCloseButton} 
+        <button
+          className={styles.menuCloseButton}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
             onClose();
           }}
           aria-label="Close menu"
+          style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 10,
+            backgroundColor: "inherit",
+          }}
         >
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -152,28 +307,78 @@ const DropdownMenu: React.FC<DropdownMenuProps> = ({
             />
           </svg>
         </button>
-        
+
         {menuSections.map((section) => (
           <div key={section.header} className={styles.menuSection}>
-            <div className={styles.menuHeader}>{section.header}</div>
-            {section.items.map((item, itemIndex) => (
-              <button
-                key={itemIndex}
-                className={`${styles.menuItem} ${
-                  'variant' in item && item.variant === 'danger' 
-                    ? styles.menuItemDanger 
-                    : styles.menuItemDefault
-                }`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  item.onClick();
+            {/* Section Header - Clickable if collapsible */}
+            <div
+              className={styles.menuHeader}
+              onClick={
+                section.isCollapsible
+                  ? () => toggleSection(section.header)
+                  : undefined
+              }
+              style={{
+                cursor: section.isCollapsible ? "pointer" : "default",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                userSelect: "none",
+              }}
+            >
+              <span>{section.header}</span>
+              {section.isCollapsible && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    opacity: 0.7,
+                    transform: collapsedSections[section.header]
+                      ? "rotate(0deg)"
+                      : "rotate(90deg)",
+                    transition: "transform 0.2s ease",
+                  }}
+                >
+                  ▶
+                </span>
+              )}
+            </div>
+
+            {/* Section Items - Hidden if collapsed */}
+            {(!section.isCollapsible || !collapsedSections[section.header]) && (
+              <div
+                style={{
+                  maxHeight: section.isCollapsible ? "200px" : "none",
+                  overflowY: section.isCollapsible ? "auto" : "visible",
+                  transition: "max-height 0.3s ease",
                 }}
               >
-                <span className={styles.menuIcon}>{item.icon}</span>
-                <span className={styles.menuLabel}>{item.label}</span>
-              </button>
-            ))}
+                {section.items.map((item, itemIndex) => (
+                  <button
+                    key={itemIndex}
+                    className={`${styles.menuItem} ${
+                      "variant" in item && item.variant === "danger"
+                        ? styles.menuItemDanger
+                        : styles.menuItemDefault
+                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      item.onClick();
+                    }}
+                    disabled={item.label.includes("Analyzing...")}
+                  >
+                    <span className={styles.menuIcon}>
+                      {typeof item.icon === "string" ? (
+                        <span style={{ fontSize: "14px" }}>{item.icon}</span>
+                      ) : (
+                        item.icon
+                      )}
+                    </span>
+                    <span className={styles.menuLabel}>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>

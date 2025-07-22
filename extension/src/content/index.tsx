@@ -4,8 +4,8 @@ import FloatingWidget from "../../../src/components/FloatingWidget";
 declare const chrome: typeof globalThis.chrome;
 
 // Inject Tailwind CSS into the page
-const injectTailwindCSS = () => {
-  const id = "floating-widget-tailwind-css";
+const injectWidgetCSS = () => {
+  const id = "floating-widget-css";
   if (document.getElementById(id)) return; 
   const link = document.createElement("link");
   link.id = id;
@@ -17,7 +17,7 @@ const injectTailwindCSS = () => {
 
 // Create widget container
 const createWidget = () => {
-  injectTailwindCSS();
+  injectWidgetCSS();
   const container = document.createElement("div");
   container.id = "floating-widget-root";
   container.style.cssText = `

@@ -18,7 +18,7 @@ Welcome to the Floating Widget Project! This repository contains a modular, acce
 
 ### Floating Widget System
 
-- **`FloatingWidgetOOP`**  
+- **`FloatingWidget`**  
   - Main container for the floating widget (Object-Oriented design).
   - Implements drag-and-drop, position persistence (localStorage), and viewport boundary logic.
   - Uses React Context for configuration and state sharing.

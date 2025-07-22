@@ -100,7 +100,7 @@ class AdvancedPositionService implements IPositionService {
 import FloatingWidgetOOP from './components/FloatingWidgetOOP';
 
 // Use the SOLID version
-<FloatingWidgetOOP />
+<FloatingWidget />
 ```
 
 ## Comparison with Original

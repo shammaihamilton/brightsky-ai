@@ -11,13 +11,13 @@ This project uses **React 18** with **TypeScript**, **Vite** as the build tool, 
 - Modular component architecture
 
 ## Key Components
-- `FloatingWidgetOOP`: Main draggable widget container (OOP version), implements SOLID principles, drag-and-drop, position persistence, and advanced UI features using context and hooks.
+- `FloatingWidget`: Main draggable widget container (OOP version), implements SOLID principles, drag-and-drop, position persistence, and advanced UI features using context and hooks.
 - `WidgetPanel`: Collapsible panel for main content (chat, actions, settings), manages transitions and accessibility.
 - `FloatingButton`: Button to open/close the widget, fully accessible.
 - `ChatPanel`: Chat interface, manages messages, input, and AI service integration.
 - `DropdownMenu`: Contextual menu for actions or tool selection.
 - `ChatInput`: Multiline, accessible input for chat messages.
-- Custom hooks: `useDrag`, `useLocalStorage`, `useAIChat` for encapsulating logic.
+- Custom hooks: `useDrag`, `useLocalStorage`, for encapsulating logic.
 - Context Providers: `WidgetContextProvider`, `Providers` for state/configuration.
 - Popup components: `PopupApp`, `PopupHeader`, `SettingsPanel` for extension settings UI.
 - Services: `aiService`, `notificationService` for API and notification logic.

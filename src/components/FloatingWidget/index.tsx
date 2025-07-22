@@ -28,6 +28,8 @@ import {
 import FloatingButton from "./components/FloatingButton";
 import ChatPanel from "./components/ChatPanel";
 import DropdownMenu from "./components/DropdownMenu";
+import  PageAnalyzer  from "../PageAnalyzer/index";
+import { usePageAnalysis } from "../../hooks/usePageAnalysis";
 
 /**
  * This component now follows the Single Responsibility Principle:
@@ -35,7 +37,15 @@ import DropdownMenu from "./components/DropdownMenu";
  * - All business logic moved to custom hooks
  * - Each hook has a single, focused responsibility
  */
-const FloatingWidgetOOPInner: React.FC = () => {
+
+interface FloatingWidgetOOPInnerProps {
+  pageAnalysis: ReturnType<typeof usePageAnalysis>;
+}
+
+const FloatingWidgetInner: React.FC<FloatingWidgetOOPInnerProps> = ({
+  pageAnalysis, // ✅ RECEIVE: pageAnalysis as prop
+}) => {
+
   const chatPanelRef = useRef<HTMLDivElement>(null);
 
   // Redux selectors (only what's needed for rendering)
@@ -121,6 +131,7 @@ const FloatingWidgetOOPInner: React.FC = () => {
           onMouseLeave={() => {
             /* Menu stays open */
           }}
+          pageAnalysis={pageAnalysis}
         />
       )}
 
@@ -152,8 +163,14 @@ const FloatingWidgetOOPInner: React.FC = () => {
   );
 };
 
-// Main wrapper component with dependency injection
 const FloatingWidget: React.FC = () => {
+    const pageAnalysis = usePageAnalysis({
+    autoStart: true,
+    analysisInterval: 3000,
+    enableLogging: true,
+  });
+  // Lift the hook to this scope so pageAnalysis is available
+
   return (
     <Providers>
       <WidgetProvider
@@ -163,7 +180,13 @@ const FloatingWidget: React.FC = () => {
           menuDimensions: { width: 200, height: 300 },
         }}
       >
-        <FloatingWidgetOOPInner />
+        <FloatingWidgetInner pageAnalysis={pageAnalysis} />
+        <PageAnalyzer
+        isActive={pageAnalysis.isActive}
+        onPageAnalyzed={pageAnalysis.handlePageAnalyzed}
+        onPageChanged={pageAnalysis.handlePageChanged}
+        analysisInterval={3000}
+      />
       </WidgetProvider>
     </Providers>
   );

@@ -4,4 +4,4 @@ export { WidgetStateService } from "./WidgetStateService";
 export { EventService } from "./EventService";
 export { StorageService } from "./StorageService";
 export { NotificationService } from "./NotificationService";
-export { WebSocketService } from "./WebSocketService";
+export { WebSocketService } from "./websocket";
