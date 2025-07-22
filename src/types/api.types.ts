@@ -4,7 +4,7 @@ import type { PageContext } from './page.types';
 import type { UserProfile } from './user.types';
 import type { NavigationStep, NavigationIntent, NavigationOptions, WorkflowInfo, IntentRecognitionResult } from './workflow.types';
 import type { VisualInstruction } from './visual.types';
-import type { Resource, DifficultyLevel } from './core.types';
+import type { Resource } from './core.types';
 
 // ====================================
 // REQUEST/RESPONSE DTOs
@@ -86,7 +86,7 @@ export interface VideoContent {
 
 export interface InteractiveElement {
   type: 'quiz' | 'demo' | 'simulator' | 'checklist';
-  content: any;
+  content: unknown;
   title: string;
   description: string;
 }
@@ -145,7 +145,7 @@ export interface PageIssue {
 
 export interface PersonalizationFactor {
   factor: string;
-  value: any;
+  value: unknown;
   impact: 'low' | 'medium' | 'high';
 }
 
